@@ -15,4 +15,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Run Django migrations and start the development server
-CMD ["sh", "-c", "python bot.py"]
+CMD ["sh", "-c", "python run.py"]
