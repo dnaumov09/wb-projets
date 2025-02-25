@@ -1,20 +1,18 @@
+from dotenv import load_dotenv
+load_dotenv()
+
+from threading import Thread
+
+import db.init
+import scheduler
 from bot import bot
 
-from services import sheets_api, wb_api
+def main():
+    thread = Thread(target=scheduler.run_scheduler)
+    thread.start()
 
-
-def test():
-    nm = wb_api.get_item_id('https://www.wildberries.ru/catalog/59102656/detail.aspx')
-
-    item = wb_api.load_details(nm)
-    wb_api.load_feedbacks(item)
-    wb_api.load_questions(item)
-
-    sheets_api.fill_data(item)
-
-    return
+    bot.run_bot()
     
 
 if __name__ == "__main__":
-    # test()
-    bot.run_bot()
+    main()

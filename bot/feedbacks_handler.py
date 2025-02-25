@@ -4,7 +4,7 @@ from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 from aiogram.filters.state import State, StatesGroup
 
-from services import wb_api, sheets_api
+from api import wb_api, sheets_api
 
 router = Router()
 

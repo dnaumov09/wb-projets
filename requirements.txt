@@ -5,3 +5,7 @@ google-auth-httplib2
 google-api-python-client
 python-dotenv
 aiogram
+sqlalchemy
+psycopg2-binary
+schedule
+ratelimit
