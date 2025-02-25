@@ -4,3 +4,4 @@ __pycache__
 wbparser-*.json
 venv
 INSTRUCTIONS
+docker-compose.yml
