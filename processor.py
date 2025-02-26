@@ -17,8 +17,7 @@ def load_stat():
         begin = datetime.combine(current_date, dt_time.min)
         end = datetime.combine(current_date, dt_time.max)
         for card in cards:
-            save_pipeline(wb_merchant_api.load_pipeline(begin, end, card))
+            save_pipeline(wb_merchant_api.load_pipeline(begin, end, card))    
         current_date += timedelta(days=1)
-
-    settings.last_updated = end_date
-    save_settings(settings)
+        settings.last_updated = current_date if current_date <= end_date else end_date
+        save_settings(settings)

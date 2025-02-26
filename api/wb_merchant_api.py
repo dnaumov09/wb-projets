@@ -44,7 +44,7 @@ def load_cards():
 @limits(calls=CALLS_COUNT, period=ONE_MINUTE)
 def load_pipeline(begin: datetime, end: datetime, card: Card) -> Pipeline:
     end = end if end < datetime.now() else datetime.now()
-    print(f"Начало дня: {begin} | Конец дня: {end} | {card.vendor_code}")
+    print(f"Начало дня: {begin} | Текущее время: {end} | {card.vendor_code}")
 
 
     url = 'https://seller-analytics-api.wildberries.ru/api/v2/nm-report/detail'
