@@ -49,64 +49,158 @@ class Sale(Base):
     status: Mapped[SaleStatus] = mapped_column(nullable=True)
 
 
-#TODO отфилльтровать по полю is_cancel и сохранять батчем 2 массива
-def save(
-    date, last_change_date, warehouse_name, warehouseType, country_name, oblast_okrug_name, 
-    region_name, supplier_article, card, barcode, category, subject, brand, tech_size, 
-    income_id, is_supply, is_realization, total_price, discount_percent, spp, for_pay,
-    finished_price, price_with_disc, sale_id, order_type, sticker, g_number, srid
-):
-    # Check if an order with the same g_number and srid exists
-    obj = session.query(Sale).filter_by(g_number=g_number, srid=srid).first()
+def save_update_sales(data, card_map: dict[int, Card]) -> list[Sale]:
+    sales_to_insert = []
+    sales_to_update = []
 
-    if obj:
-        # Update existing order
-        obj.date = date
-        obj.last_change_date = last_change_date
-        obj.warehouse_name = warehouse_name
-        obj.warehouseType = warehouseType
-        obj.country_name = country_name
-        obj.oblast_okrug_name = oblast_okrug_name
-        obj.region_name = region_name
-        obj.supplier_article = supplier_article
-        obj.card = card
-        obj.barcode = barcode
-        obj.category = category
-        obj.subject = subject
-        obj.brand = brand
-        obj.tech_size = tech_size
-        obj.income_id = income_id
-        obj.is_supply = is_supply
-        obj.is_realization = is_realization
-        obj.total_price = total_price
-        obj.discount_percent = discount_percent
-        obj.spp = spp
-        obj.for_pay = for_pay
-        obj.finished_price = finished_price
-        obj.price_with_disc = price_with_disc
-        obj.sale_id = sale_id
-        obj.order_type = order_type
-        obj.sticker = sticker
-    else:
-        # Create new sale
-        obj = Sale(
-            date=date, last_change_date=last_change_date, warehouse_name=warehouse_name, warehouseType=warehouseType,
-            country_name=country_name, oblast_okrug_name=oblast_okrug_name, region_name=region_name, supplier_article=supplier_article,
-            card=card, barcode=barcode, category=category, subject=subject, brand=brand, tech_size=tech_size,
-            income_id=income_id, is_supply=is_supply, is_realization=is_realization, total_price=total_price,
-            discount_percent=discount_percent, spp=spp, for_pay=for_pay, finished_price=finished_price, 
-            price_with_disc=price_with_disc, sale_id=sale_id, order_type=order_type, sticker=sticker,
-            g_number=g_number, srid=srid
-        )
-        session.add(obj)
-    
-    obj.status = define_existing_sale_status(obj)
+    # Fetch existing orders (g_number, srid) in bulk
+    existing_sales = {
+        (sale.g_number, sale.srid): sale
+        for sale in session.query(Sale).filter(
+            Sale.g_number.in_([item.get("gNumber") for item in data]),
+            Sale.srid.in_([item.get("srid") for item in data])
+        ).all()
+    }
+
+    for item in data:
+        card = card_map.get(item.get("nmId"))
+        sale_key = (item.get("gNumber"), item.get("srid"))
+
+        if sale_key in existing_sales:
+            # Update existing sale
+            sale = existing_sales[sale_key]
+            sale.date = item.get("date")
+            sale.last_change_date = item.get("lastChangeDate")
+            sale.warehouse_name = item.get("warehouseName")
+            sale.warehouseType = item.get("warehouseType")
+            sale.country_name = item.get("countryName")
+            sale.oblast_okrug_name = item.get("oblastOkrugName")
+            sale.region_name = item.get("regionName")
+            sale.supplier_article = item.get("supplierArticle")
+            sale.card = card
+            sale.barcode = item.get("barcode")
+            sale.category = item.get("category")
+            sale.subject = item.get("subject")
+            sale.brand = item.get("brand")
+            sale.tech_size = item.get("techSize")
+            sale.income_id = item.get("incomeID")
+            sale.is_supply = item.get("isSupply")
+            sale.is_realization = item.get("isRealization")
+            sale.total_price = item.get("totalPrice")
+            sale.discount_percent = item.get("discountPercent")
+            sale.spp = item.get("spp")
+            sale.for_pay = item.get("forPay")
+            sale.finished_price = item.get("finishedPrice")
+            sale.price_with_disc = item.get("priceWithDisc")
+            sale.order_type = item.get("orderType")
+            sale.sticker = item.get("sticker")
+            sale.status = define_existing_sale_status(sale)
+            sales_to_update.append(sale)
+        else:
+            # Create new sale
+            sale = Sale(
+                date=item.get("date"),
+                last_change_date=item.get("lastChangeDate"),
+                warehouse_name=item.get("warehouseName"),
+                warehouseType=item.get("warehouseType"),
+                country_name=item.get("countryName"),
+                oblast_okrug_name=item.get("oblastOkrugName"),
+                region_name=item.get("regionName"),
+                supplier_article=item.get("supplierArticle"),
+                card=card,
+                barcode=item.get("barcode"),
+                category=item.get("category"),
+                subject=item.get("subject"),
+                brand=item.get("brand"),
+                tech_size=item.get("techSize"),
+                income_id=item.get("incomeID"),
+                is_supply=item.get("isSupply"),
+                is_realization=item.get("isRealization"),
+                total_price=item.get("totalPrice"),
+                discount_percent=item.get("discountPercent"),
+                spp=item.get("spp"),
+                for_pay=item.get("forPay"),
+                finished_price=item.get("finishedPrice"),
+                price_with_disc=item.get("priceWithDisc"),
+                order_type=item.get("orderType"),
+                sticker=item.get("sticker"),
+                g_number=item.get("gNumber"),
+                sale_id=item.get("saleID"),
+                srid=item.get("srid"),
+                status=define_existing_sale_status(),
+            )
+            sales_to_insert.append(sale)
+
+    # Bulk save for efficiency
+    if sales_to_insert:
+        session.bulk_save_objects(sales_to_insert)
+
+    if sales_to_update:
+        session.bulk_save_objects(sales_to_update)
+
+    # Commit once for all operations
     session.commit()
-    return obj
+
+    return sales_to_insert + sales_to_update
 
 
-def define_existing_sale_status(obj: Order):
-    if not obj.status:
+# def save(
+#     date, last_change_date, warehouse_name, warehouseType, country_name, oblast_okrug_name, 
+#     region_name, supplier_article, card, barcode, category, subject, brand, tech_size, 
+#     income_id, is_supply, is_realization, total_price, discount_percent, spp, for_pay,
+#     finished_price, price_with_disc, sale_id, order_type, sticker, g_number, srid
+# ):
+#     # Check if an order with the same g_number and srid exists
+#     obj = session.query(Sale).filter_by(g_number=g_number, srid=srid).first()
+
+#     if obj:
+#         # Update existing order
+#         obj.date = date
+#         obj.last_change_date = last_change_date
+#         obj.warehouse_name = warehouse_name
+#         obj.warehouseType = warehouseType
+#         obj.country_name = country_name
+#         obj.oblast_okrug_name = oblast_okrug_name
+#         obj.region_name = region_name
+#         obj.supplier_article = supplier_article
+#         obj.card = card
+#         obj.barcode = barcode
+#         obj.category = category
+#         obj.subject = subject
+#         obj.brand = brand
+#         obj.tech_size = tech_size
+#         obj.income_id = income_id
+#         obj.is_supply = is_supply
+#         obj.is_realization = is_realization
+#         obj.total_price = total_price
+#         obj.discount_percent = discount_percent
+#         obj.spp = spp
+#         obj.for_pay = for_pay
+#         obj.finished_price = finished_price
+#         obj.price_with_disc = price_with_disc
+#         obj.sale_id = sale_id
+#         obj.order_type = order_type
+#         obj.sticker = sticker
+#     else:
+#         # Create new sale
+#         obj = Sale(
+#             date=date, last_change_date=last_change_date, warehouse_name=warehouse_name, warehouseType=warehouseType,
+#             country_name=country_name, oblast_okrug_name=oblast_okrug_name, region_name=region_name, supplier_article=supplier_article,
+#             card=card, barcode=barcode, category=category, subject=subject, brand=brand, tech_size=tech_size,
+#             income_id=income_id, is_supply=is_supply, is_realization=is_realization, total_price=total_price,
+#             discount_percent=discount_percent, spp=spp, for_pay=for_pay, finished_price=finished_price, 
+#             price_with_disc=price_with_disc, sale_id=sale_id, order_type=order_type, sticker=sticker,
+#             g_number=g_number, srid=srid
+#         )
+#         session.add(obj)
+    
+#     obj.status = define_existing_sale_status(obj)
+#     session.commit()
+#     return obj
+
+
+def define_existing_sale_status(obj: Sale = None):
+    if not obj:
         status = SaleStatus.NEW
     
     return status if status else SaleStatus.UNDEFINED

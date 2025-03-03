@@ -3,10 +3,10 @@ import requests
 import logging
 from datetime import datetime, time
 from db.card import get_all as get_all_cards, save as save_card
-from db.order import Order, save as save_order
-from db.sale import save as save_sale
-from db.card_stat import save as save_card_stat
+from db.order import Order
+from db.sale import Sale
 from db import settings
+from services.statistics import save_orders, save_sales, save_cards_stat
 
 from ratelimit import limits, sleep_and_retry
 
@@ -50,28 +50,14 @@ def load_orders() -> list[Order]:
 
     logging.info("Orders data received")
 
-    updates = []
-    card_map = {c.nm_id: c for c in cards}
-    for item in data:
-        card = card_map.get(item.get('nmId'))
-        order = save_order(
-            item.get('date'), item.get('lastChangeDate'), item.get('warehouseName'), item.get('warehouseType'),
-            item.get('countryName'), item.get('oblastOkrugName'), item.get('regionName'), item.get('supplierArticle'),
-            card, item.get('barcode'), item.get('category'), item.get('subject'), item.get('brand'),
-            item.get('techSize'), item.get('incomeID'), item.get('isSupply'), item.get('isRealization'),
-            item.get('totalPrice'), item.get('discountPercent'), item.get('spp'), item.get('finishedPrice'),
-            item.get('priceWithDisc'), item.get('isCancel'), item.get('cancelDate'), item.get('orderType'),
-            item.get('sticker'), item.get('gNumber'), item.get('srid')
-        )
-        updates.append(order)
+    updates = save_orders(data, now)
     logging.info(f"Orders data saved until {now}")
-    settings.set_orders_last_updated(now)
     return updates
 
 
 @sleep_and_retry
 @limits(calls=1, period=ONE_MINUTE)
-def load_sales():
+def load_sales() -> list[Sale]:
     logging.info("Loading sales data")
     now = datetime.now()
     last_updated = settings.get_sales_last_updated()
@@ -94,21 +80,8 @@ def load_sales():
     
     logging.info("Sales data received")
 
-    updates = []
-    card_map = {c.nm_id: c for c in cards}
-    for item in data:
-        card = card_map.get(item.get('nmId'))
-        sale = save_sale(
-            item.get('date'), item.get('lastChangeDate'), item.get('warehouseName'), item.get('warehouseType'),
-            item.get('countryName'), item.get('oblastOkrugName'), item.get('regionName'), item.get('supplierArticle'),
-            card, item.get('barcode'), item.get('category'), item.get('subject'), item.get('brand'),
-            item.get('techSize'), item.get('incomeID'), item.get('isSupply'), item.get('isRealization'),
-            item.get('totalPrice'), item.get('discountPercent'), item.get('spp'), item.get('forPay'),
-            item.get('finishedPrice'), item.get('priceWithDisc'), item.get('saleID'), item.get('orderType'),
-            item.get('sticker'), item.get('gNumber'), item.get('srid'))
-        updates.append(sale)
+    updates = save_sales(data, now)
     logging.info(f"Sales data saved until {now}")
-    settings.set_sales_last_updated(now)
     return updates
 
 
@@ -117,7 +90,6 @@ def load_sales():
 def load_cards_stat():
     logging.info("Loading cards stat data")
     now = datetime.now()
-    now_begin = datetime.combine(now, time.min)
     begin = datetime.combine(settings.get_cards_stat_last_updated(), time.min)
     payload = {
                 "nmIDs": [c.nm_id for c in cards],
@@ -141,19 +113,5 @@ def load_cards_stat():
         return
     
     logging.info("Cards stat data received")
-
-    card_map = {c.nm_id: c for c in cards}
-    for item in data:
-        card = card_map.get(item.get('nmID'))
-        history = item.get('history')
-        for day in history:
-            dt = datetime.strptime(day.get('dt'), "%Y-%m-%d")
-            dt_end = datetime.combine(dt, time.max) if dt < now_begin else now
-            save_card_stat(
-                dt,  dt_end, card, day.get('openCardCount'), day.get('addToCartCount'), day.get('ordersCount'),
-                day.get('ordersSumRub'), day.get('buyoutsCount'), day.get('buyoutsSumRub'), day.get('cancelCount'), day.get('cancelSumRub')
-                )
-    
-
+    save_cards_stat(data, now)
     logging.info(f"Cards stat data saved until {now}")
-    settings.set_cards_stat_last_updated(now)

@@ -1,15 +1,10 @@
 from dotenv import load_dotenv
 load_dotenv()
 
-
-
 from logging_settings import init_logging, logging
 import db.init
-import threading
 
-from datetime import datetime
-from scheduler import start_scheduler
-
+from services.scheduler import start_scheduler
 from bot.bot import start_bot
 
 
