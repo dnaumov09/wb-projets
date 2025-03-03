@@ -35,3 +35,4 @@ async def process_url(message: Message, state: FSMContext):
         await state.clear()
     else:
         await message.answer(f'Товар не найден')
+        await state.clear()
