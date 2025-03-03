@@ -32,7 +32,6 @@ async def process_url(message: Message, state: FSMContext):
         streadsheet_link = sheets_api.get_spreadsheet_link(spredsheet_id)
 
         await message.answer(f'Отчет сформирован:\n{streadsheet_link}')
-        await state.clear()
     else:
         await message.answer(f'Товар не найден')
-        await state.clear()
+    await state.clear()
