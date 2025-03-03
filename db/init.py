@@ -1,7 +1,9 @@
 from db.model import Base, engine
 
 import db.card
-import db.pipeline
+import db.order
+import db.sale
+import db.card_stat
 import db.user
 import db.settings
 

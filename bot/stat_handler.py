@@ -5,7 +5,7 @@ import locale
 
 from aiogram.types import Message
 
-from db.statistics import get_today_stat, get_yesterday_stat, get_current_week_stat, get_current_month_stat
+from services.statistics import get_today_stat, get_yesterday_stat, get_current_week_stat, get_current_month_stat
 
 router = Router()
 
@@ -38,24 +38,24 @@ async def cmd_pipeline(message: Message):
     await message.answer(result)
 
 
-@router.message(Command('pipeline_detailed'))
-async def cmd_pipeline_detailed(message: Message):
-    now = datetime.now()
+# @router.message(Command('pipeline_detailed'))
+# async def cmd_pipeline_detailed(message: Message):
+#     now = datetime.now()
 
-    await message.answer("📊 <b>Воронка продаж (по товарам)</b>")
+#     await message.answer("📊 <b>Воронка продаж (по товарам)</b>")
 
-    today_stat = get_today_stat(is_detailed=True)
-    yesterday_stat = get_yesterday_stat(is_detailed=True)
-    week_stat = get_current_week_stat(is_detailed=True)
-    month_stat = get_current_month_stat(is_detailed=True)
+#     today_stat = get_today_stat(is_detailed=True)
+#     yesterday_stat = get_yesterday_stat(is_detailed=True)
+#     week_stat = get_current_week_stat(is_detailed=True)
+#     month_stat = get_current_month_stat(is_detailed=True)
 
-    for i in range(len(month_stat)):
-        result = f"<b>{month_stat[i]['title']} ({month_stat[i]['vendor_code']})</b>"
-        result += "\n\n" + build_daily_stat('Сегодня', now, today_stat[i], True)
-        result += "\n\n" + build_daily_stat('Вчера', now - timedelta(days=1), yesterday_stat[i], True)
-        result += "\n\n" + build_weekly_stat(now, week_stat[i], True)
-        result += "\n\n" + build_monthly_stat(now, month_stat[i], True)    
-        await message.answer(result)
+#     for i in range(len(month_stat)):
+#         result = f"<b>{month_stat[i]['title']} ({month_stat[i]['vendor_code']})</b>"
+#         result += "\n\n" + build_daily_stat('Сегодня', now, today_stat[i], True)
+#         result += "\n\n" + build_daily_stat('Вчера', now - timedelta(days=1), yesterday_stat[i], True)
+#         result += "\n\n" + build_weekly_stat(now, week_stat[i], True)
+#         result += "\n\n" + build_monthly_stat(now, month_stat[i], True)    
+#         await message.answer(result)
 
 
 def build_daily_stat(when, day, stat, is_detailed: bool = False) -> str:
@@ -85,19 +85,19 @@ def build_monthly_stat(day, stat, is_detailed: bool = False) -> str:
 
 
 def build_stat_data(stat, is_detailed: bool = False) -> str:
-    oreders_count = stat['orders_count']
-    buyouts_count = stat['buyouts_count']
-    cancel_count = stat['cancel_count']
+    oreders_count = stat['orders_count'] if stat['orders_count'] else 0
+    sales_count = stat['sales_count'] if stat['sales_count'] else 0
+    cancel_count = stat['orders_cancelled_count'] if stat['orders_cancelled_count'] else 0
 
     result = ""
     if is_detailed:
-        result += f"Открытий карточки: <b>{stat['open_card_count']}</b>\n"
-        result += f"Добавлений в корзину: <b>{stat['add_to_cart_count']}</b>\n"
+        result += f"Открытий карточки: <b>{stat['open_card_count'] if stat['open_card_count'] else 0}</b>\n"
+        result += f"Добавлений в корзину: <b>{stat['add_to_cart_count'] if stat['add_to_cart_count'] else 0}</b>\n"
 
     result += f"Заказов: <b>{oreders_count}</b>"
-    result += f" ({format(round(stat['orders_sum_rub']), ",d").replace(",", " ")} руб.)\n" if oreders_count > 0 else "\n"
-    result += f"Выкупов: <b>{buyouts_count}</b>"
-    result += f" ({format(round(stat['buyouts_sum_rub']), ",d").replace(",", " ")} руб.)\n" if buyouts_count > 0 else "\n"
+    result += f" ({format(round(stat['orders_sum']), ",d").replace(",", " ")} руб.)\n" if oreders_count > 0 else "\n"
+    result += f"Выкупов: <b>{sales_count}</b>"
+    result += f" ({format(round(stat['sales_sum']), ",d").replace(",", " ")} руб.)\n" if sales_count > 0 else "\n"
     result += f"Количество отказов: <b>{cancel_count}</b>"
-    result += f" ({format(round(stat['cancel_sum_rub']), ",d").replace(",", " ")} руб.)\n\n" if cancel_count > 0 else ""
+    result += f" ({format(round(stat['orders_cancelled_sum']), ",d").replace(",", " ")} руб.)\n" if cancel_count > 0 else "\n"
     return result

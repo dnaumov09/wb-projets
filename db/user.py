@@ -10,3 +10,7 @@ class User(Base):
 
 def get_user(chat_id: int) -> User:
     return session.query(User).get(chat_id)
+
+
+def get_admins() -> list[User]:
+    return session.query(User).all()

@@ -1,17 +1,23 @@
 from dotenv import load_dotenv
 load_dotenv()
 
-from threading import Thread
 
+
+from logging_settings import init_logging, logging
 import db.init
-import scheduler
-from bot import bot
+import threading
+
+from datetime import datetime
+from scheduler import start_scheduler
+
+from bot.bot import start_bot
+
 
 def main():
-    thread = Thread(target=scheduler.run_scheduler)
-    thread.start()
+    init_logging(logging.INFO)
 
-    bot.run_bot()
+    start_scheduler()
+    start_bot()
     
 
 if __name__ == "__main__":
