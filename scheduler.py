@@ -10,7 +10,7 @@ from api import wb_merchant_api
 from bot.bot import send_message
 
 
-CHAT_IDS = [102421129] #[a.chat_id for a in get_admins()]
+admins = get_admins()
 
 def init_scheduler():
     while True:
@@ -56,8 +56,9 @@ def notify_updated_orders(orders: list[Order]):
         
         text += "\n\n" + build_order_data(order) 
 
-        for chat_id in CHAT_IDS:
-            send_message(chat_id=chat_id, text=text)
+        for user in admins:
+            if user.receive_orders:
+                send_message(chat_id=user.tg_chat_id, text=text)
 
 
 def notify_updated_sales(sales: list[Sale]):
@@ -69,8 +70,9 @@ def notify_updated_sales(sales: list[Sale]):
 
         text += "\n\n" + build_sale_data(sale)  
     
-        for chat_id in CHAT_IDS:
-            send_message(chat_id=chat_id, text=text)
+        for user in admins:
+            if user.receive_orders:
+                send_message(chat_id=user.tg_chat_id, text=text)
 
 
 def build_order_data(order: Order) -> str:

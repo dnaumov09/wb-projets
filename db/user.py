@@ -6,6 +6,7 @@ class User(Base):
 
     tg_chat_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=False)
     name: Mapped[str] = mapped_column()
+    receive_orders: Mapped[bool] = mapped_column()
 
 
 def get_user(chat_id: int) -> User:
