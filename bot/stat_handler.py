@@ -98,6 +98,6 @@ def build_stat_data(stat, is_detailed: bool = False) -> str:
     result += f" ({format(round(stat['orders_sum']), ",d").replace(",", " ")} руб.)\n" if oreders_count > 0 else "\n"
     result += f"Выкупов: <b>{sales_count}</b>"
     result += f" ({format(round(stat['sales_sum']), ",d").replace(",", " ")} руб.)\n" if sales_count > 0 else "\n"
-    result += f"Количество отказов: <b>{cancel_count}</b>"
+    result += f"Отказов: <b>{cancel_count}</b>"
     result += f" ({format(round(stat['orders_cancelled_sum']), ",d").replace(",", " ")} руб.)\n" if cancel_count > 0 else "\n"
     return result
