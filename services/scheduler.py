@@ -3,7 +3,7 @@ import time
 from threading import Thread
 
 from api import wb_merchant_api
-from services.notifications import notify_updated_orders, notify_updated_sales
+from services.notifications import notify_updated_orders, notify_updated_sales, notyfy_pipeline
 
 
 def init_scheduler():
@@ -19,6 +19,8 @@ def start_scheduler():
     schedule.every(5).minutes.do(load_orders)
     schedule.every(5).minutes.do(load_sales)
     schedule.every(5).minutes.do(load_cards_stat)
+
+    schedule.every().day.at("21:00").do(notyfy_pipeline)
 
 
 def load_orders():

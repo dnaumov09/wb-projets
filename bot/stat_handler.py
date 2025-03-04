@@ -28,35 +28,17 @@ months_nominative = {
 
 @router.message(Command('pipeline'))
 async def cmd_pipeline(message: Message):
-    now = datetime.now()
-
     await message.answer("💰 <b>Воронка продаж</b>")
+    await message.answer(build_pipeline_data())
+
+
+def build_pipeline_data() -> str:
+    now = datetime.now()
     result = build_daily_stat('Сегодня', now, get_today_stat()[0])
     result += "\n\n" + build_daily_stat('Вчера', now - timedelta(days=1), get_yesterday_stat()[0])
     result += "\n\n" + build_weekly_stat(now, get_current_week_stat()[0])
     result += "\n\n" + build_monthly_stat(now, get_current_month_stat()[0])
-    await message.answer(result)
-
-
-# @router.message(Command('pipeline_detailed'))
-# async def cmd_pipeline_detailed(message: Message):
-#     now = datetime.now()
-
-#     await message.answer("📊 <b>Воронка продаж (по товарам)</b>")
-
-#     today_stat = get_today_stat(is_detailed=True)
-#     yesterday_stat = get_yesterday_stat(is_detailed=True)
-#     week_stat = get_current_week_stat(is_detailed=True)
-#     month_stat = get_current_month_stat(is_detailed=True)
-
-#     for i in range(len(month_stat)):
-#         result = f"<b>{month_stat[i]['title']} ({month_stat[i]['vendor_code']})</b>"
-#         result += "\n\n" + build_daily_stat('Сегодня', now, today_stat[i], True)
-#         result += "\n\n" + build_daily_stat('Вчера', now - timedelta(days=1), yesterday_stat[i], True)
-#         result += "\n\n" + build_weekly_stat(now, week_stat[i], True)
-#         result += "\n\n" + build_monthly_stat(now, month_stat[i], True)    
-#         await message.answer(result)
-
+    return result
 
 def build_daily_stat(when, day, stat, is_detailed: bool = False) -> str:
     day_str = day.strftime("%d.%m - %A")

@@ -1,8 +1,12 @@
+from datetime import datetime
+
 from db.user import get_admins
 from bot.bot import send_message
 
 from db.order import Order, OrderStatus
 from db.sale import Sale, SaleStatus
+
+from bot.stat_handler import build_pipeline_data
 
 
 order_status_messages = {
@@ -36,6 +40,12 @@ def notify_updated_sales(sales: list[Sale]):
 
             for user in admins_to_notify:
                 send_message(chat_id=user.tg_chat_id, text=text)
+
+
+def notyfy_pipeline():
+     for user in admins_to_notify:
+        send_message(chat_id=user.tg_chat_id, text="💰 <b>Воронка продаж</b>")
+        send_message(chat_id=user.tg_chat_id, text=build_pipeline_data())
 
 
 def build_order_data(order: Order) -> str:
