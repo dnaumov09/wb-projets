@@ -101,7 +101,7 @@ def save_update_orders(data, card_map: dict[int, Card]) -> list[Order]:
             order.cancel_date = item.get("cancelDate")
             order.order_type = item.get("orderType")
             order.sticker = item.get("sticker")
-            order.status = define_existing_order_status(sticker=item.get("sticker"), is_cancel=item.get("isCancel"), obj=order)
+            order.status = define_existing_order_status(sticker=item.get("sticker"), is_cancel=item.get("isCancel"))
             orders_to_update.append(order)
         else:
             # Create new order
@@ -154,13 +154,10 @@ def save_update_orders(data, card_map: dict[int, Card]) -> list[Order]:
     return orders_to_insert + orders_to_update
 
 
-def define_existing_order_status(sticker: str = '', is_cancel: bool = False, obj: Order = None):
-    status = None
-
-    if not obj:
+def define_existing_order_status(sticker: str = '', is_cancel: bool = False):
+    if sticker == '':
         status = OrderStatus.NEW
-
-    if sticker != '':
+    else:
         status = OrderStatus.ACCEPTED_TO_WH
     
     if is_cancel:

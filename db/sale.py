@@ -97,7 +97,7 @@ def save_update_sales(data, card_map: dict[int, Card]) -> list[Sale]:
             sale.price_with_disc = item.get("priceWithDisc")
             sale.order_type = item.get("orderType")
             sale.sticker = item.get("sticker")
-            sale.status = define_existing_sale_status(obj=sale)
+            sale.status = define_existing_sale_status(sale)
             sales_to_update.append(sale)
         else:
             # Create new sale
@@ -131,7 +131,7 @@ def save_update_sales(data, card_map: dict[int, Card]) -> list[Sale]:
                 g_number=item.get("gNumber"),
                 sale_id=item.get("saleID"),
                 srid=item.get("srid"),
-                status=define_existing_sale_status(obj=None),
+                status=define_existing_sale_status(),
             )
             sales_to_insert.append(sale)
 
@@ -151,10 +151,9 @@ def save_update_sales(data, card_map: dict[int, Card]) -> list[Sale]:
 
 
 
-def define_existing_sale_status(obj: Sale = None):
-    status = None
-
-    if not obj:
-        status = SaleStatus.NEW
+def define_existing_sale_status(obj: Sale = None) -> SaleStatus:
+    if obj is not None:
+        return SaleStatus.UNDEFINED 
+    else:
+        return SaleStatus.NEW
     
-    return status if status else SaleStatus.UNDEFINED

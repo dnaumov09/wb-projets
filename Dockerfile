@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y locales && \
     locale-gen ru_RU.UTF-8
 ENV LANG=ru_RU.UTF-8
 ENV LANGUAGE=ru_RU:ru
+ENV TZ=Europe/Moscow
 
 # Copy the requirements file into the container
 COPY requirements.txt .

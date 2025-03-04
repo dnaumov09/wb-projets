@@ -39,7 +39,7 @@ def get_yesterday_stat(is_detailed: bool = False):
 
 def get_current_week_stat(is_detailed: bool = False):
     function_name = "get_pipeline_by_period" if is_detailed else "get_pipeline_by_period_ttl" 
-    sql_query = text(f"select * from {function_name}('week', (SELECT DATE_TRUNC('day', CURRENT_DATE)::DATE))")
+    sql_query = text(f"select * from {function_name}('week', (SELECT DATE_TRUNC('week', CURRENT_DATE)::DATE))")
     return session.execute(sql_query).mappings().fetchall()
 
 

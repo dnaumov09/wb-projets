@@ -6,7 +6,7 @@ from db.card import get_all as get_all_cards, save as save_card
 from db.order import Order, save_update_orders
 from db.sale import Sale, save_update_sales
 from db import settings
-from services.statistics import save_sales, save_cards_stat
+from services.statistics import save_cards_stat
 
 from ratelimit import limits, sleep_and_retry
 
