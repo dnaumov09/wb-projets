@@ -8,6 +8,9 @@ from services.scheduler import start_scheduler
 from bot.bot import start_bot
 
 
+from api import wb_merchant_api
+
+
 def main():
     init_logging(logging.INFO)
 

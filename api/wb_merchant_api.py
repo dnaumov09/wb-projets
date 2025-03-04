@@ -3,10 +3,10 @@ import requests
 import logging
 from datetime import datetime, time
 from db.card import get_all as get_all_cards, save as save_card
-from db.order import Order
-from db.sale import Sale
+from db.order import Order, save_update_orders
+from db.sale import Sale, save_update_sales
 from db import settings
-from services.statistics import save_orders, save_sales, save_cards_stat
+from services.statistics import save_sales, save_cards_stat
 
 from ratelimit import limits, sleep_and_retry
 
@@ -23,13 +23,13 @@ headers = {
 ONE_MINUTE = 60
 
 cards = get_all_cards()
+card_map = {c.nm_id: c for c in get_all_cards()}
 
 
 @sleep_and_retry
 @limits(calls=1, period=ONE_MINUTE)
 def load_orders() -> list[Order]:
     logging.info("Loading orders data")
-    now = datetime.now()
     last_updated = settings.get_orders_last_updated()
     params = {
         "dateFrom": last_updated.strftime("%Y-%m-%dT%H:%M:%S"), 
@@ -50,8 +50,8 @@ def load_orders() -> list[Order]:
 
     logging.info("Orders data received")
 
-    updates = save_orders(data, now)
-    logging.info(f"Orders data saved until {now}")
+    updates = save_update_orders(data, card_map)
+    logging.info(f"Orders data saved")
     return updates
 
 
@@ -59,7 +59,6 @@ def load_orders() -> list[Order]:
 @limits(calls=1, period=ONE_MINUTE)
 def load_sales() -> list[Sale]:
     logging.info("Loading sales data")
-    now = datetime.now()
     last_updated = settings.get_sales_last_updated()
     params = {
         "dateFrom": last_updated.strftime("%Y-%m-%dT%H:%M:%S"), 
@@ -80,8 +79,8 @@ def load_sales() -> list[Sale]:
     
     logging.info("Sales data received")
 
-    updates = save_sales(data, now)
-    logging.info(f"Sales data saved until {now}")
+    updates = save_update_sales(data, card_map)
+    logging.info(f"Sales data saved until")
     return updates
 
 

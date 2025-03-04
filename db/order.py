@@ -5,6 +5,8 @@ from db.card import Card
 from datetime import datetime
 from enum import Enum
 
+from db.settings import set_orders_last_updated
+
 
 class OrderStatus(Enum):
     UNDEFINED = -1
@@ -53,6 +55,7 @@ class Order(Base):
 
 
 def save_update_orders(data, card_map: dict[int, Card]) -> list[Order]:
+    new_last_updated = datetime.now()
     orders_to_insert = []
     orders_to_update = []
 
@@ -98,7 +101,7 @@ def save_update_orders(data, card_map: dict[int, Card]) -> list[Order]:
             order.cancel_date = item.get("cancelDate")
             order.order_type = item.get("orderType")
             order.sticker = item.get("sticker")
-            order.status = define_existing_order_status(order)
+            order.status = define_existing_order_status(sticker=item.get("sticker"), is_cancel=item.get("isCancel"), obj=order)
             orders_to_update.append(order)
         else:
             # Create new order
@@ -111,6 +114,7 @@ def save_update_orders(data, card_map: dict[int, Card]) -> list[Order]:
                 oblast_okrug_name=item.get("oblastOkrugName"),
                 region_name=item.get("regionName"),
                 supplier_article=item.get("supplierArticle"),
+                nm_id=card.nm_id,
                 card=card,
                 barcode=item.get("barcode"),
                 category=item.get("category"),
@@ -131,7 +135,7 @@ def save_update_orders(data, card_map: dict[int, Card]) -> list[Order]:
                 sticker=item.get("sticker"),
                 g_number=item.get("gNumber"),
                 srid=item.get("srid"),
-                status=define_existing_order_status(),
+                status=define_existing_order_status(sticker=item.get("sticker"), is_cancel=item.get("isCancel"))
             )
             orders_to_insert.append(order)
 
@@ -145,72 +149,21 @@ def save_update_orders(data, card_map: dict[int, Card]) -> list[Order]:
     # Commit once for all operations
     session.commit()
 
+    set_orders_last_updated(new_last_updated)
+
     return orders_to_insert + orders_to_update
 
 
-# def save(
-#     date, last_change_date, warehouse_name, warehouseType, country_name, oblast_okrug_name, 
-#     region_name, supplier_article, card, barcode, category, subject, brand, tech_size, 
-#     income_id, is_supply, is_realization, total_price, discount_percent, spp, finished_price, 
-#     price_with_disc, is_cancel, cancel_date, order_type, sticker, g_number, srid
-# ):
-#     # Check if an order with the same g_number and srid exists
-#     obj = session.query(Order).filter_by(g_number=g_number, srid=srid).first()
+def define_existing_order_status(sticker: str = '', is_cancel: bool = False, obj: Order = None):
+    status = None
 
-#     if obj:
-#         # Update existing order
-#         obj.date = date
-#         obj.last_change_date = last_change_date
-#         obj.warehouse_name = warehouse_name
-#         obj.warehouseType = warehouseType
-#         obj.country_name = country_name
-#         obj.oblast_okrug_name = oblast_okrug_name
-#         obj.region_name = region_name
-#         obj.supplier_article = supplier_article
-#         obj.card = card
-#         obj.barcode = barcode
-#         obj.category = category
-#         obj.subject = subject
-#         obj.brand = brand
-#         obj.tech_size = tech_size
-#         obj.income_id = income_id
-#         obj.is_supply = is_supply
-#         obj.is_realization = is_realization
-#         obj.total_price = total_price
-#         obj.discount_percent = discount_percent
-#         obj.spp = spp
-#         obj.finished_price = finished_price
-#         obj.price_with_disc = price_with_disc
-#         obj.is_cancel = is_cancel
-#         obj.cancel_date = cancel_date
-#         obj.order_type = order_type
-#         obj.sticker = sticker
-#     else:
-#         # Create new order
-#         obj = Order(
-#             date=date, last_change_date=last_change_date, warehouse_name=warehouse_name, warehouseType=warehouseType,
-#             country_name=country_name, oblast_okrug_name=oblast_okrug_name, region_name=region_name, supplier_article=supplier_article,
-#             card=card, barcode=barcode, category=category, subject=subject, brand=brand, tech_size=tech_size,
-#             income_id=income_id, is_supply=is_supply, is_realization=is_realization, total_price=total_price,
-#             discount_percent=discount_percent, spp=spp, finished_price=finished_price, price_with_disc=price_with_disc,
-#             is_cancel=is_cancel, cancel_date=cancel_date, order_type=order_type, sticker=sticker,
-#             g_number=g_number, srid=srid
-#         )
-#         session.add(obj)
-    
-#     obj.status = define_existing_order_status(obj)
-#     session.commit()
-#     return obj
-
-
-def define_existing_order_status(obj: Order = None):
     if not obj:
         status = OrderStatus.NEW
 
-    if obj.sticker != '':
+    if sticker != '':
         status = OrderStatus.ACCEPTED_TO_WH
     
-    if obj.is_cancel:
+    if is_cancel:
         status = OrderStatus.CANCELLED
     
     return status if status else OrderStatus.UNDEFINED

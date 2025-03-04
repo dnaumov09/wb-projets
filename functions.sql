@@ -194,11 +194,11 @@ BEGIN
             cs.open_card_count,
             cs.add_to_cart_count,
             o.count as orders_count,
-            o.finished_price as orders_sum,
+            o.price_with_disc as orders_sum,
             s.count as sales_count,
-            s.finished_price as sales_sum,
+            s.price_with_disc as sales_sum,
             oc.count as orders_cancelled_count,
-            oc.finished_price as orders_cancelled_sum
+            oc.price_with_disc as orders_cancelled_sum
         FROM get_cards_stat_by_period(%L) cs
         LEFT JOIN get_orders_by_period(%L) o ON o.nm_id = cs.nm_id AND o.period = cs.period
         LEFT JOIN get_sales_by_period(%L) s ON s.nm_id = cs.nm_id AND s.period = cs.period

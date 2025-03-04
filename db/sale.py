@@ -5,6 +5,7 @@ from db.card import Card
 from db.order import Order
 from datetime import datetime
 from enum import Enum
+from db.settings import set_sales_last_updated
 
 class SaleStatus(Enum):
     UNDEFINED = -1
@@ -50,6 +51,7 @@ class Sale(Base):
 
 
 def save_update_sales(data, card_map: dict[int, Card]) -> list[Sale]:
+    new_last_updated = datetime.now()
     sales_to_insert = []
     sales_to_update = []
 
@@ -77,6 +79,7 @@ def save_update_sales(data, card_map: dict[int, Card]) -> list[Sale]:
             sale.oblast_okrug_name = item.get("oblastOkrugName")
             sale.region_name = item.get("regionName")
             sale.supplier_article = item.get("supplierArticle")
+            sale.nm_id = card.nm_id
             sale.card = card
             sale.barcode = item.get("barcode")
             sale.category = item.get("category")
@@ -94,7 +97,7 @@ def save_update_sales(data, card_map: dict[int, Card]) -> list[Sale]:
             sale.price_with_disc = item.get("priceWithDisc")
             sale.order_type = item.get("orderType")
             sale.sticker = item.get("sticker")
-            sale.status = define_existing_sale_status(sale)
+            sale.status = define_existing_sale_status(obj=sale)
             sales_to_update.append(sale)
         else:
             # Create new sale
@@ -107,6 +110,7 @@ def save_update_sales(data, card_map: dict[int, Card]) -> list[Sale]:
                 oblast_okrug_name=item.get("oblastOkrugName"),
                 region_name=item.get("regionName"),
                 supplier_article=item.get("supplierArticle"),
+                nm_id=card.nm_id,
                 card=card,
                 barcode=item.get("barcode"),
                 category=item.get("category"),
@@ -127,7 +131,7 @@ def save_update_sales(data, card_map: dict[int, Card]) -> list[Sale]:
                 g_number=item.get("gNumber"),
                 sale_id=item.get("saleID"),
                 srid=item.get("srid"),
-                status=define_existing_sale_status(),
+                status=define_existing_sale_status(obj=None),
             )
             sales_to_insert.append(sale)
 
@@ -141,65 +145,15 @@ def save_update_sales(data, card_map: dict[int, Card]) -> list[Sale]:
     # Commit once for all operations
     session.commit()
 
+    set_sales_last_updated(new_last_updated)
+
     return sales_to_insert + sales_to_update
 
 
-# def save(
-#     date, last_change_date, warehouse_name, warehouseType, country_name, oblast_okrug_name, 
-#     region_name, supplier_article, card, barcode, category, subject, brand, tech_size, 
-#     income_id, is_supply, is_realization, total_price, discount_percent, spp, for_pay,
-#     finished_price, price_with_disc, sale_id, order_type, sticker, g_number, srid
-# ):
-#     # Check if an order with the same g_number and srid exists
-#     obj = session.query(Sale).filter_by(g_number=g_number, srid=srid).first()
-
-#     if obj:
-#         # Update existing order
-#         obj.date = date
-#         obj.last_change_date = last_change_date
-#         obj.warehouse_name = warehouse_name
-#         obj.warehouseType = warehouseType
-#         obj.country_name = country_name
-#         obj.oblast_okrug_name = oblast_okrug_name
-#         obj.region_name = region_name
-#         obj.supplier_article = supplier_article
-#         obj.card = card
-#         obj.barcode = barcode
-#         obj.category = category
-#         obj.subject = subject
-#         obj.brand = brand
-#         obj.tech_size = tech_size
-#         obj.income_id = income_id
-#         obj.is_supply = is_supply
-#         obj.is_realization = is_realization
-#         obj.total_price = total_price
-#         obj.discount_percent = discount_percent
-#         obj.spp = spp
-#         obj.for_pay = for_pay
-#         obj.finished_price = finished_price
-#         obj.price_with_disc = price_with_disc
-#         obj.sale_id = sale_id
-#         obj.order_type = order_type
-#         obj.sticker = sticker
-#     else:
-#         # Create new sale
-#         obj = Sale(
-#             date=date, last_change_date=last_change_date, warehouse_name=warehouse_name, warehouseType=warehouseType,
-#             country_name=country_name, oblast_okrug_name=oblast_okrug_name, region_name=region_name, supplier_article=supplier_article,
-#             card=card, barcode=barcode, category=category, subject=subject, brand=brand, tech_size=tech_size,
-#             income_id=income_id, is_supply=is_supply, is_realization=is_realization, total_price=total_price,
-#             discount_percent=discount_percent, spp=spp, for_pay=for_pay, finished_price=finished_price, 
-#             price_with_disc=price_with_disc, sale_id=sale_id, order_type=order_type, sticker=sticker,
-#             g_number=g_number, srid=srid
-#         )
-#         session.add(obj)
-    
-#     obj.status = define_existing_sale_status(obj)
-#     session.commit()
-#     return obj
-
 
 def define_existing_sale_status(obj: Sale = None):
+    status = None
+
     if not obj:
         status = SaleStatus.NEW
     
