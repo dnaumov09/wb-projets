@@ -125,6 +125,7 @@ END;
 $$;
 
 
+-- возмонжно last_change_date надо поменять на cancel_date
 DROP FUNCTION IF EXISTS get_orders_cancelled_by_period(text);
 CREATE OR REPLACE FUNCTION get_orders_cancelled_by_period(
 	period_type text)
@@ -147,7 +148,7 @@ AS $$
 BEGIN
     RETURN QUERY EXECUTE format(
         'SELECT 
-            date_trunc(%L, cancel_date) AS period,
+            date_trunc(%L, cancel_date) AS period, 
 			nm_id as nm_id,
             count(id) as count,
             sum(total_price) as total_price,
