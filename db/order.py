@@ -5,8 +5,6 @@ from db.card import Card
 from datetime import datetime
 from enum import Enum
 
-from db.settings import set_orders_last_updated
-
 
 class OrderStatus(Enum):
     UNDEFINED = -1
@@ -55,7 +53,6 @@ class Order(Base):
 
 
 def save_update_orders(data, card_map: dict[int, Card]) -> list[Order]:
-    new_last_updated = datetime.now()
     orders_to_insert = []
     orders_to_update = []
 
@@ -148,8 +145,6 @@ def save_update_orders(data, card_map: dict[int, Card]) -> list[Order]:
 
     # Commit once for all operations
     session.commit()
-
-    set_orders_last_updated(new_last_updated)
 
     return orders_to_insert + orders_to_update
 

@@ -23,5 +23,9 @@ def save(item):
     session.commit()
 
 
-def get_all():
+def get_all() -> list[Card]:
     return session.query(Card).all()
+
+
+def get_by_nm_id(nm_id) -> Card:
+    return session.query(Card).filter(Card.nm_id == nm_id).first()

@@ -5,7 +5,7 @@ import locale
 
 from aiogram.types import Message
 
-from services.statistics import get_today_stat, get_yesterday_stat, get_current_week_stat, get_current_month_stat
+from services.statistics import get_today_stat, get_yesterday_stat, get_current_week_stat, get_last_week_stat, get_current_month_stat, get_last_month_stat
 
 router = Router()
 
@@ -35,9 +35,11 @@ async def cmd_pipeline(message: Message):
 def build_pipeline_data() -> str:
     now = datetime.now()
     result = build_daily_stat('Сегодня', now, get_today_stat()[0])
-    result += "\n\n" + build_daily_stat('Вчера', now - timedelta(days=1), get_yesterday_stat()[0])
-    result += "\n\n" + build_weekly_stat(now, get_current_week_stat()[0])
-    result += "\n\n" + build_monthly_stat(now, get_current_month_stat()[0])
+    result += "\n" + build_daily_stat('Вчера', now - timedelta(days=1), get_yesterday_stat()[0])
+    result += "\n" + build_weekly_stat(now, get_current_week_stat()[0])
+    # result += "\n" + build_weekly_stat(now, get_last_week_stat()[0])
+    result += "\n" + build_monthly_stat(now, get_current_month_stat()[0])
+    # result += "\n" + build_monthly_stat(now, get_last_month_stat()[0])
     return result
 
 def build_daily_stat(when, day, stat, is_detailed: bool = False) -> str:

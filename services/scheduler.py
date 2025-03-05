@@ -20,7 +20,7 @@ def start_scheduler():
     schedule.every(5).minutes.do(load_sales)
     schedule.every(5).minutes.do(load_cards_stat)
 
-    schedule.every().day.at("21:00").do(notyfy_pipeline)
+    schedule.every().day.at("23:30").do(notyfy_pipeline)
 
 
 def load_orders():
