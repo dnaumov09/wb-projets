@@ -1,10 +1,10 @@
 from datetime import datetime
 
-from db.user import get_admins
+from db.models.user import get_admins
 from bot.bot import send_message
 
-from db.order import Order, OrderStatus
-from db.sale import Sale, SaleStatus
+from db.models.order import Order, OrderStatus
+from db.models.sale import Sale, SaleStatus
 
 from bot.stat_handler import build_pipeline_data
 

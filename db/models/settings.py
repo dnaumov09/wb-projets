@@ -2,7 +2,7 @@ from datetime import datetime
 from sqlalchemy import DateTime
 
 from sqlalchemy.orm import Mapped, mapped_column
-from db.model import Base, session
+from db.base import Base, session
 
 
 SETTINGS_ID = 0

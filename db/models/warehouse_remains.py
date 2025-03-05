@@ -1,11 +1,11 @@
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from db.model import Base, session
+from db.base import Base, session
 from sqlalchemy.schema import PrimaryKeyConstraint
 
 
-from db.warehouse import Warehouse
-from db.remains import Remains
+from db.models.warehouse import Warehouse
+from db.models.remains import Remains
 
 class WarehouseRemains(Base):
     __tablename__ = 'warehouse_remains'

@@ -2,9 +2,9 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.schema import PrimaryKeyConstraint
 
-from db.model import Base, session
-from db.card import Card
-from db.warehouse import Warehouse
+from db.base import Base, session
+from db.models.card import Card
+from db.models.warehouse import Warehouse
 
 
 class Remains(Base):

@@ -1,18 +1,20 @@
 from sqlalchemy import ForeignKey, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from db.model import Base, session
-from db.card import Card
-from db.order import Order
+from db.base import Base, session
+from db.models.card import Card
 from datetime import datetime
 from enum import Enum
 
 
-class SaleStatus(Enum):
+class OrderStatus(Enum):
     UNDEFINED = -1
     NEW = 0
+    ACCEPTED_TO_WH = 1
+    CANCELLED = 2
 
-class Sale(Base):
-    __tablename__ = 'sales'
+
+class Order(Base):
+    __tablename__ = 'orders'
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
@@ -39,68 +41,68 @@ class Sale(Base):
     total_price: Mapped[float] = mapped_column(nullable=False) #Цена без скидок
     discount_percent: Mapped[float] = mapped_column(nullable=False) #Скидка продавца
     spp: Mapped[float] = mapped_column(nullable=False) #Скидка WB
-    for_pay: Mapped[float] = mapped_column(nullable=False) #Сумма к оплате
-    finished_price: Mapped[float] = mapped_column(nullable=False) #Оплачено с WB Кошелька
-    price_with_disc: Mapped[float] = mapped_column(nullable=False) #К перечислению продавцу
-    sale_id: Mapped[str] = mapped_column(nullable=False) #Номер продажи
+    finished_price: Mapped[float] = mapped_column(nullable=False) #Цена с учетом всех скидок, кроме суммы по WB Кошельку
+    price_with_disc: Mapped[float] = mapped_column(nullable=False) #Цена со скидкой продавца (= totalPrice * (1 - discountPercent/100))
+    is_cancel: Mapped[bool] = mapped_column(nullable=False)
+    cancel_date: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     order_type: Mapped[str] = mapped_column(nullable=False) #Тип заказа
     sticker: Mapped[str] = mapped_column(nullable=True) #ID стикера
     g_number: Mapped[str] = mapped_column(nullable=True) #Номер заказа
     srid: Mapped[str] = mapped_column(nullable=True) #Уникальный ID заказа WB
-    status: Mapped[SaleStatus] = mapped_column(nullable=True)
+    status: Mapped[OrderStatus] = mapped_column(nullable=True)
 
 
-def save_update_sales(data, card_map: dict[int, Card]) -> list[Sale]:
-    sales_to_insert = []
-    sales_to_update = []
+def save_update_orders(data, card_map: dict[int, Card]) -> list[Order]:
+    orders_to_insert = []
+    orders_to_update = []
 
     # Fetch existing orders (g_number, srid) in bulk
-    existing_sales = {
-        (sale.g_number, sale.srid): sale
-        for sale in session.query(Sale).filter(
-            Sale.g_number.in_([item.get("gNumber") for item in data]),
-            Sale.srid.in_([item.get("srid") for item in data])
+    existing_orders = {
+        (order.g_number, order.srid): order
+        for order in session.query(Order).filter(
+            Order.g_number.in_([item.get("gNumber") for item in data]),
+            Order.srid.in_([item.get("srid") for item in data])
         ).all()
     }
 
     for item in data:
         card = card_map.get(item.get("nmId"))
-        sale_key = (item.get("gNumber"), item.get("srid"))
+        order_key = (item.get("gNumber"), item.get("srid"))
 
-        if sale_key in existing_sales:
-            # Update existing sale
-            sale = existing_sales[sale_key]
-            sale.date = item.get("date")
-            sale.last_change_date = item.get("lastChangeDate")
-            sale.warehouse_name = item.get("warehouseName")
-            sale.warehouseType = item.get("warehouseType")
-            sale.country_name = item.get("countryName")
-            sale.oblast_okrug_name = item.get("oblastOkrugName")
-            sale.region_name = item.get("regionName")
-            sale.supplier_article = item.get("supplierArticle")
-            sale.nm_id = card.nm_id
-            sale.card = card
-            sale.barcode = item.get("barcode")
-            sale.category = item.get("category")
-            sale.subject = item.get("subject")
-            sale.brand = item.get("brand")
-            sale.tech_size = item.get("techSize")
-            sale.income_id = item.get("incomeID")
-            sale.is_supply = item.get("isSupply")
-            sale.is_realization = item.get("isRealization")
-            sale.total_price = item.get("totalPrice")
-            sale.discount_percent = item.get("discountPercent")
-            sale.spp = item.get("spp")
-            sale.for_pay = item.get("forPay")
-            sale.finished_price = item.get("finishedPrice")
-            sale.price_with_disc = item.get("priceWithDisc")
-            sale.order_type = item.get("orderType")
-            sale.sticker = item.get("sticker")
-            sale.status = define_existing_sale_status(sale)
-            sales_to_update.append(sale)
+        if order_key in existing_orders:
+            # Update existing order
+            order = existing_orders[order_key]
+            order.date = item.get("date")
+            order.last_change_date = item.get("lastChangeDate")
+            order.warehouse_name = item.get("warehouseName")
+            order.warehouseType = item.get("warehouseType")
+            order.country_name = item.get("countryName")
+            order.oblast_okrug_name = item.get("oblastOkrugName")
+            order.region_name = item.get("regionName")
+            order.supplier_article = item.get("supplierArticle")
+            order.card = card
+            order.barcode = item.get("barcode")
+            order.category = item.get("category")
+            order.subject = item.get("subject")
+            order.brand = item.get("brand")
+            order.tech_size = item.get("techSize")
+            order.income_id = item.get("incomeID")
+            order.is_supply = item.get("isSupply")
+            order.is_realization = item.get("isRealization")
+            order.total_price = item.get("totalPrice")
+            order.discount_percent = item.get("discountPercent")
+            order.spp = item.get("spp")
+            order.finished_price = item.get("finishedPrice")
+            order.price_with_disc = item.get("priceWithDisc")
+            order.is_cancel = item.get("isCancel")
+            order.cancel_date = item.get("cancelDate")
+            order.order_type = item.get("orderType")
+            order.sticker = item.get("sticker")
+            order.status = define_existing_order_status(sticker=item.get("sticker"), is_cancel=item.get("isCancel"))
+            orders_to_update.append(order)
         else:
-            # Create new sale
-            sale = Sale(
+            # Create new order
+            order = Order(
                 date=item.get("date"),
                 last_change_date=item.get("lastChangeDate"),
                 warehouse_name=item.get("warehouseName"),
@@ -122,35 +124,38 @@ def save_update_sales(data, card_map: dict[int, Card]) -> list[Sale]:
                 total_price=item.get("totalPrice"),
                 discount_percent=item.get("discountPercent"),
                 spp=item.get("spp"),
-                for_pay=item.get("forPay"),
                 finished_price=item.get("finishedPrice"),
                 price_with_disc=item.get("priceWithDisc"),
+                is_cancel=item.get("isCancel"),
+                cancel_date=item.get("cancelDate"),
                 order_type=item.get("orderType"),
                 sticker=item.get("sticker"),
                 g_number=item.get("gNumber"),
-                sale_id=item.get("saleID"),
                 srid=item.get("srid"),
-                status=define_existing_sale_status(),
+                status=define_existing_order_status(sticker=item.get("sticker"), is_cancel=item.get("isCancel"))
             )
-            sales_to_insert.append(sale)
+            orders_to_insert.append(order)
 
     # Bulk save for efficiency
-    if sales_to_insert:
-        session.bulk_save_objects(sales_to_insert)
+    if orders_to_insert:
+        session.bulk_save_objects(orders_to_insert)
 
-    if sales_to_update:
-        session.bulk_save_objects(sales_to_update)
+    if orders_to_update:
+        session.bulk_save_objects(orders_to_update)
 
     # Commit once for all operations
     session.commit()
 
-    return sales_to_insert + sales_to_update
+    return orders_to_insert + orders_to_update
 
 
-
-def define_existing_sale_status(obj: Sale = None) -> SaleStatus:
-    if obj is not None:
-        return SaleStatus.UNDEFINED 
+def define_existing_order_status(sticker: str = '', is_cancel: bool = False):
+    if sticker == '':
+        status = OrderStatus.NEW
     else:
-        return SaleStatus.NEW
+        status = OrderStatus.ACCEPTED_TO_WH
     
+    if is_cancel:
+        status = OrderStatus.CANCELLED
+    
+    return status if status else OrderStatus.UNDEFINED

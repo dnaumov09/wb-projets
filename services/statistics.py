@@ -1,25 +1,5 @@
 from sqlalchemy import text
-from db.model import session
-from datetime import datetime, time
-
-from db.card_stat import save as save_card_stat
-from db.card import get_all as get_all_cards
-
-
-card_map = {c.nm_id: c for c in get_all_cards()}
-
-
-def save_cards_stat(data, new_last_updated: datetime):
-    for item in data:
-        card = card_map.get(item.get('nmID'))
-        history = item.get('history')
-        for day in history:
-            dt = datetime.strptime(day.get('dt'), "%Y-%m-%d")
-            dt_end = datetime.combine(dt, time.max) if dt < datetime.combine(new_last_updated, time.min) else new_last_updated
-            save_card_stat(
-                dt,  dt_end, card, day.get('openCardCount'), day.get('addToCartCount'), day.get('ordersCount'),
-                day.get('ordersSumRub'), day.get('buyoutsCount'), day.get('buyoutsSumRub'), day.get('cancelCount'), day.get('cancelSumRub')
-                )
+from db.base import session
 
 
 def get_today_stat(is_detailed: bool = False):

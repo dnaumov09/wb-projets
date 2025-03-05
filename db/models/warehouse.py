@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Mapped, mapped_column
-from db.model import Base, session
+from db.base import Base, session
 
 class Warehouse(Base):
     __tablename__ = 'warehouses'

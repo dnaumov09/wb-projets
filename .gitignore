@@ -6,3 +6,5 @@ venv
 INSTRUCTIONS
 docker-compose.yml
 deploy.sh
+alembic
+alembic.ini

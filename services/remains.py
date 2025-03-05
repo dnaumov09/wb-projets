@@ -1,8 +1,8 @@
 import json
-from db.warehouse import check_warehouse
-from db.card import get_by_nm_id
-from db.remains import save_or_update_remains
-from db.warehouse_remains import check_warehouse_remains, update_warehouse_remains
+from db.models.warehouse import check_warehouse
+from db.models.card import get_by_nm_id
+from db.models.remains import save_or_update_remains
+from db.models.warehouse_remains import check_warehouse_remains, update_warehouse_remains
 
 def parse_remains_data(data):
     for item in data:

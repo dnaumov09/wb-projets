@@ -1,1 +1,11 @@
 .env
+__pycache__
+.vscode
+wbparser-*.json
+venv
+INSTRUCTIONS
+docker-compose.yml
+deploy.sh
+alembic
+alembic.ini
+.gitignore
