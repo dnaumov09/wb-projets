@@ -25,6 +25,8 @@ admins_to_notify = [user for user in get_admins() if user.receive_orders]
 
 
 def notify_updated_orders(orders: list[Order]):
+    if not orders:
+        return
     for order in orders:
         if order.status in order_status_messages:
             text = order_status_messages[order.status].format(order.id) + "\n\n" + build_order_data(order)
@@ -34,6 +36,8 @@ def notify_updated_orders(orders: list[Order]):
 
 
 def notify_updated_sales(sales: list[Sale]):
+    if not sales:
+        return
     for sale in sales:
         if sale.status in sales_status_messages:
             text = sales_status_messages[sale.status].format(sale.id) + "\n\n" + build_sale_data(sale)

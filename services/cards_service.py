@@ -5,7 +5,7 @@ from db.models.card import save_cards
 from api import wb_merchant_api
 
 
-def load_cards_stat():
+def load_cards():
     for seller in get_sellers():
         if seller.id == 1:
             create_update_seller_cards(seller)
