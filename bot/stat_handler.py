@@ -5,7 +5,7 @@ import locale
 
 from aiogram.types import Message
 
-from services.statistics import get_today_stat, get_yesterday_stat, get_current_week_stat, get_last_week_stat, get_current_month_stat, get_last_month_stat
+from db.views import get_today_stat, get_yesterday_stat, get_current_week_stat, get_last_week_stat, get_current_month_stat, get_last_month_stat
 
 router = Router()
 

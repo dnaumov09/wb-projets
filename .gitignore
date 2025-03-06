@@ -8,3 +8,4 @@ docker-compose.yml
 deploy.sh
 alembic
 alembic.ini
+google-credentials.json

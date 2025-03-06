@@ -6,39 +6,53 @@ from sqlalchemy.schema import PrimaryKeyConstraint
 
 from db.models.warehouse import Warehouse
 from db.models.remains import Remains
+from db.models.seller import Seller
+from db.models.card import Card
 
 class WarehouseRemains(Base):
     __tablename__ = 'warehouse_remains'
-
-    warehouse_id: Mapped[int] = mapped_column(ForeignKey('warehouses.id'), primary_key=True, nullable=False)
-    remains_id: Mapped[int] = mapped_column(ForeignKey('remains.nm_id'), primary_key=True, nullable=False)
 
     __table_args__ = (
         PrimaryKeyConstraint('warehouse_id', 'remains_id'),
     )
 
+    warehouse_id: Mapped[int] = mapped_column(ForeignKey('warehouses.id'), primary_key=True, nullable=False)
     warehouse: Mapped[Warehouse] = relationship("Warehouse")
-    remain: Mapped[Remains] = relationship("Remains")
+
+    remains_id: Mapped[str] = mapped_column(ForeignKey('remains.barcode'), primary_key=True, nullable=False)
+    remains: Mapped[Remains] = relationship("Remains")
 
     quantity: Mapped[int] = mapped_column(nullable=True)
 
-    def __init__(self, warehouse_id, remains_id):
+    def __init__(self, warehouse_id: int, warehouse: Warehouse, remains_id: int, remains: Remains, quantity: int):
         self.warehouse_id = warehouse_id
+        self.warehouse = warehouse
         self.remains_id = remains_id
+        self.remains = remains
+        self.quantity = quantity
 
 
-def check_warehouse_remains(warehouse_id: int, remains_id: int) -> WarehouseRemains:
-    warehouse_remains = session.query(WarehouseRemains).filter(WarehouseRemains.warehouse_id == warehouse_id, WarehouseRemains.remains_id == remains_id).first()
-    
+def find_or_create_warehouse_remains(warehouse: Warehouse, remains: Remains, quantity: int) -> WarehouseRemains:
+    warehouse_remains = session.query(WarehouseRemains).filter(WarehouseRemains.warehouse_id == warehouse.id, WarehouseRemains.remains_id == remains.barcode).first()
+   
+    if warehouse_remains:
+        warehouse_remains.quantity = quantity
     if not warehouse_remains:
-        warehouse_remains = WarehouseRemains(warehouse_id, remains_id)
-        session.add(warehouse_remains)
-        session.commit()
+        warehouse_remains = WarehouseRemains(warehouse.id, warehouse, remains.barcode, remains, quantity)
     
     return warehouse_remains
 
 
-def update_warehouse_remains(warehouse_remains: WarehouseRemains, quantity: int):
-    warehouse_remains.quantity = quantity
-    session.add(warehouse_remains)
+def save_warehouse_remains_list(warehouse_remains_list: list[WarehouseRemains]):
+    session.bulk_save_objects(warehouse_remains_list)
     session.commit()
+    
+
+def get_warehouse_remains_by_seller_id(seller_id: int):
+    return (
+        session.query(WarehouseRemains)
+            .join(Remains, Remains.barcode == WarehouseRemains.remains_id)
+            .join(Card, Card.nm_id == Remains.nm_id)
+            .join(Seller, Seller.id == Card.seller_id)
+            .filter(Seller.id == seller_id).all()
+    )

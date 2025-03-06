@@ -1,26 +1,30 @@
 import os
 import requests
 import logging
-import time as t
 from datetime import datetime, time
 from db.models.card import get_seller_cards
 from db.models.order import Order, save_update_orders
 from db.models.sale import Sale, save_update_sales
 from db.models.card_stat import save_update_card_stat
-from db.models.seller import Seller, update_seller_data
+from db.models.seller import Seller
 import db.models.settings as settings
-from services.remains import parse_remains_data
 
 from ratelimit import limits, sleep_and_retry
 
 
+LOAD_SELLER_INFO_URL = 'https://common-api.wildberries.ru/api/v1/seller-info'
+LOAD_SELLER_CARDS_URL = 'https://content-api.wildberries.ru/content/v2/get/cards/list'
+
 LOAD_ORDERS_URL = 'https://statistics-api.wildberries.ru/api/v1/supplier/orders'
+
 LOAD_SALES_URL = 'https://statistics-api.wildberries.ru/api/v1/supplier/sales'
+
 LOAD_CARD_STAT_DAILY_URL = 'https://seller-analytics-api.wildberries.ru/api/v2/nm-report/detail/history'
+
 CREATE_WAREHOUSE_REMAINS_TASK_URL = 'https://seller-analytics-api.wildberries.ru/api/v1/warehouse_remains?groupByBrand={group_by_brand}&groupBySubject={group_by_subject}&groupBySa={group_by_sa}&groupByNm={group_by_nm}&groupByBarcode={group_by_barcode}&groupBySize={group_by_size}'
 CHECK_WAREHOUSE_REMAINS_TASK_STATUS_URL = 'https://seller-analytics-api.wildberries.ru/api/v1/warehouse_remains/tasks/{task_id}/status'
 GET_WAREHOUSE_REMAINS_REPORT_URL = 'https://seller-analytics-api.wildberries.ru/api/v1/warehouse_remains/tasks/{task_id}/download'
-LOAD_SELLER_INFO_URL = 'https://common-api.wildberries.ru/api/v1/seller-info'
+
 
 
 ONE_MINUTE = 60
@@ -34,22 +38,38 @@ def get_headers(seller: Seller):
 
 
 def load_seller_info(seller: Seller):
-    logging.info("Loading seller info")
-    
     try:
         response = requests.get(LOAD_SELLER_INFO_URL, headers=get_headers(seller))
         response.raise_for_status()
-        data = response.json()
+        return response.json()
     except requests.RequestException as e:
         logging.debug(f"Failed to fetch seller info: {e}")
-        return
-
-    update_seller_data(seller.token, data.get('sid'), data.get('name'), data.get('tradeMark'))
-    logging.info("Seller info loaded")
 
 
-def load_warehouse_remains(seller: Seller):
-    logging.info("Creating warehouse remains task")
+@sleep_and_retry
+@limits(calls=100, period=ONE_MINUTE)
+def load_seller_cards(seller: Seller):
+    try:
+        payload = {
+            "settings": {                      
+                "cursor": {
+                    "limit": 100
+                },
+                "filter": {
+                    "withPhoto": -1
+                }
+            }
+        }
+        response = requests.post(LOAD_SELLER_CARDS_URL, headers=get_headers(seller), json=payload)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        logging.debug(f"Failed to fetch seller info: {e}")
+
+
+@sleep_and_retry
+@limits(calls=1, period=ONE_MINUTE)
+def create_warehouse_remains_task(seller: Seller):
     try:
         response = requests.get(CREATE_WAREHOUSE_REMAINS_TASK_URL.format(
             group_by_brand=True,
@@ -59,26 +79,32 @@ def load_warehouse_remains(seller: Seller):
             group_by_barcode=True,
             group_by_size=True
         ), headers=get_headers(seller))
-        response.raise_for_status()
-        task_id = response.json().get('data').get('taskId')
-        logging.debug(f"Task ID: {task_id}")
-        while True:
-            t.sleep(5)
-            response = requests.get(CHECK_WAREHOUSE_REMAINS_TASK_STATUS_URL.format(task_id=task_id), headers=get_headers(seller))
-            response.raise_for_status()
-            status = response.json().get('data').get('status')
-            logging.debug(f"Task status: {status}")
-            if status == 'done':
-                logging.debug("Warehouse remains loading...")
-                response = requests.get(GET_WAREHOUSE_REMAINS_REPORT_URL.format(task_id=task_id), headers=get_headers(seller))
-                response.raise_for_status()
-                parse_remains_data(response.json())
-                break
+        return response.json().get('data').get('taskId')
     except requests.RequestException as e:
         logging.debug(f"Failed to create warehouse remains task: {e}")
-        return
 
-    logging.info("Warehouse remains loaded")
+
+@sleep_and_retry
+@limits(calls=1, period=5)
+def check_warehouse_remains_task_status(seller: Seller, task_id: str):
+    try:
+        response = requests.get(CHECK_WAREHOUSE_REMAINS_TASK_STATUS_URL.format(task_id=task_id), headers=get_headers(seller))
+        return response.json().get('data').get('status')
+    except requests.RequestException as e:
+        logging.debug(f"Failed to check warehouse remains task status: {e}")
+
+
+@sleep_and_retry
+@limits(calls=1, period=ONE_MINUTE)
+def load_warehouse_remains_report(seller: Seller, task_id: str):
+    try:
+        response = requests.get(GET_WAREHOUSE_REMAINS_REPORT_URL.format(task_id=task_id), headers=get_headers(seller))
+        return response.json()
+    except requests.RequestException as e:
+        logging.debug(f"Failed to load warehouse remains report: {e}")
+
+
+#----------------
 
 
 @sleep_and_retry

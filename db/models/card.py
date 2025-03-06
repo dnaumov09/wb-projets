@@ -16,25 +16,47 @@ class Card(Base):
     seller: Mapped[Seller] = relationship("Seller")
 
 
-    def __init__(self, nm_id, imt_id, title, vendor_code):
-        self.nm_id = nm_id
-        self.imt_id = imt_id
-        self.title = title
-        self.vendor_code = vendor_code
-    
-
-def save(item):
-    session.add(item)
-    session.commit()
-
-
-def get_all() -> list[Card]:
-    return session.query(Card).all()
-
-
 def get_seller_cards(seller_id) -> list[Card]:
     return session.query(Card).filter(Card.seller_id == seller_id).all()
 
 
-def get_by_nm_id(nm_id) -> Card:
+def get_card_by_nm_id(nm_id) -> Card:
     return session.query(Card).filter(Card.nm_id == nm_id).first()
+
+
+def save_cards(data, seller: Seller) -> list[Card]:
+    cards_to_insert = []
+    cards_to_update = []
+
+    existing_cards = {card.nm_id: card for card in get_seller_cards(seller.id)}
+
+    for item in data.get('cards'):
+        nm_id = item.get('nmID')
+        if nm_id in existing_cards:
+            # Update existing card
+            card = existing_cards[nm_id]
+            card.imt_id = item.get('imtID')
+            card.title = item.get('title')
+            card.vendor_code = item.get('vendorCode')
+            cards_to_update.append(card)
+        else:
+            # Create new card
+            card = Card(
+                nm_id=nm_id,
+                imt_id=item.get('imtID'),
+                title=item.get('title'),
+                vendor_code=item.get('vendorCode'),
+                seller_id=seller.id,
+                seller=seller
+            )
+            cards_to_insert.append(card)
+
+    # Bulk save for efficiency
+    if cards_to_insert:
+        session.bulk_save_objects(cards_to_insert)
+
+    if cards_to_update:
+        session.bulk_save_objects(cards_to_update)
+
+    # Commit once for all operations
+    session.commit()

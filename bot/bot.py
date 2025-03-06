@@ -22,6 +22,21 @@ loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
 
 
+START_TEXT = ( 
+    '📊 <b>Привет! Добро пожаловать в бота статистики Wildberries!</b>'
+    '\n\n'
+    'Я помогу тебе следить за динамикой заказов и продаж твоего магазина на Wildberries.'
+    '\n\n\n'
+    '🔍 <b>Что я умею:</b>'
+    '\n\n'
+    '📈 Показывать динамику заказов, продаж и отказов'
+    '\n\n'
+    '🔔 Присылать уведомления о новых заказах, продажах и отказах'
+    '\n\n\n'
+    'Выбери нужный раздел, чтобы получить данные. 🚀'
+)
+
+
 def start_bot():
     loop.create_task(dp.start_polling(bot))
     loop.run_forever()
@@ -33,4 +48,4 @@ def send_message(chat_id: int, text: str):
 
 @dp.message(CommandStart())
 async def cmd_start(message: Message):
-    await message.answer(f"OK")
+    await message.answer(START_TEXT)

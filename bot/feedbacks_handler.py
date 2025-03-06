@@ -4,7 +4,7 @@ from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 from aiogram.filters.state import State, StatesGroup
 
-from api import wb_api, sheets_api
+from api import sheets_api_feedbacks, wb_api
 
 router = Router()
 
@@ -28,8 +28,8 @@ async def process_url(message: Message, state: FSMContext):
 
         wb_api.load_feedbacks(item)
         wb_api.load_questions(item)
-        spredsheet_id = sheets_api.fill_data(item)
-        streadsheet_link = sheets_api.get_spreadsheet_link(spredsheet_id)
+        spredsheet_id = sheets_api_feedbacks.fill_data(item)
+        streadsheet_link = sheets_api_feedbacks.get_spreadsheet_link(spredsheet_id)
 
         await message.answer(f'Отчет сформирован:\n{streadsheet_link}')
     else:
