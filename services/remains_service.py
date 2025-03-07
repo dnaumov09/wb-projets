@@ -5,18 +5,23 @@ from db.models.seller import Seller, get_sellers
 from db.models.card import get_seller_cards
 from db.models.warehouse import check_warehouse
 from db.models.remains import Remains, save_or_update_remains
-from db.models.warehouse_remains import save_warehouse_remains_list, find_or_create_warehouse_remains
+from db.models.warehouse_remains import WarehouseRemains, save_warehouse_remains_list, find_or_create_warehouse_remains
+from services import reporting_service
 
 from api import wb_merchant_api
 
 
 def load_remains():
     for seller in get_sellers():
+        logging.info(f"Loading remains for seller {seller.name} ({seller.id})...")
         update_remains_data(seller)
+        logging.info("Remains updated")
+        reporting_service.update_remains_data(seller)
+        logging.info("Google Sheets report updated")
 
 
-def update_remains_data(seller: Seller):
-    logging.info(f"Creating remains loading task for seller {seller.name} ({seller.id})...")
+def update_remains_data(seller: Seller) -> list[Remains, WarehouseRemains]:
+    
     task_id = wb_merchant_api.create_warehouse_remains_task(seller)
     
     while wb_merchant_api.check_warehouse_remains_task_status(seller, task_id) != 'done':
@@ -24,14 +29,11 @@ def update_remains_data(seller: Seller):
         time.sleep(1)
     
     data = wb_merchant_api.load_warehouse_remains_report(seller, task_id)
-    update_warehouse_remains_data(data, seller)
-    logging.info(f"Remains loaded")
 
-
-def update_warehouse_remains_data(data, seller: Seller) -> list[Remains]:
     warehouse_remains_to_save = []
     seller_cards = {card.nm_id: card for card in get_seller_cards(seller.id)}
     
+    remains_list = []
     for item in data:
         nm_id = item.get('nmId')
         if nm_id not in seller_cards:
@@ -39,6 +41,7 @@ def update_warehouse_remains_data(data, seller: Seller) -> list[Remains]:
 
         card = seller_cards[nm_id]
         remains = save_or_update_remains(card, item)
+        remains_list.append(remains)
        
         warehouses = item.get('warehouses')
         if not warehouses:
@@ -50,4 +53,4 @@ def update_warehouse_remains_data(data, seller: Seller) -> list[Remains]:
             warehouse_remains_to_save.append(warehouse_remains)
     
     save_warehouse_remains_list(warehouse_remains_to_save)
-    return warehouse_remains_to_save
+    return remains_list, warehouse_remains_to_save

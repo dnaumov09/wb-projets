@@ -28,8 +28,11 @@ months_nominative = {
 
 @router.message(Command('pipeline'))
 async def cmd_pipeline(message: Message):
-    await message.answer("💰 <b>Воронка продаж</b>")
-    await message.answer(build_pipeline_data())
+    await message.answer((
+        '📈 <b>Динамика продаж</b>'
+        '\n\n' + build_pipeline_data()
+    ))
+    
 
 
 def build_pipeline_data() -> str:

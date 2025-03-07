@@ -9,11 +9,13 @@ from bot.bot import start_bot
 
 from db.models.seller import get_seller
 
-from services.card_stat_service import load_cards_stat
+from services.remains_service import load_remains
 
 
 def main():
     init_logging(logging.INFO)
+
+    # load_remains()
 
     start_scheduler()
     start_bot()

@@ -48,8 +48,10 @@ def notify_updated_sales(sales: list[Sale]):
 
 def notyfy_pipeline():
      for user in admins_to_notify:
-        send_message(chat_id=user.tg_chat_id, text="💰 <b>Воронка продаж</b>")
-        send_message(chat_id=user.tg_chat_id, text=build_pipeline_data())
+        send_message(chat_id=user.tg_chat_id, text=(
+            '📈 <b>Динамика продаж</b>'
+            '\n\n' + build_pipeline_data()
+        ))
 
 
 def build_order_data(order: Order) -> str:
