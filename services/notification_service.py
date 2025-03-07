@@ -60,9 +60,9 @@ def build_order_data(order: Order) -> str:
         f"Сумма: <b>{order.price_with_disc}</b>\n"
         f"Регион: <b>{order.region_name}, {order.oblast_okrug_name}</b>\n"
         f"Со склада: <b>{order.warehouse_name}</b>\n\n"
-        f"<i>Дата заказа: <b>{order.date}</b></i>\n"
-        f"<i>Обновлено: <b>{order.last_change_date}</b></i>"
-        f"<i>ID заказа: <b>{order.id}</b></i>" if order.id else ""
+        f"<i>Дата заказа: <b>{order.date.strftime('%d.%m.%Y %H:%M:%S')}</b></i>\n"
+        f"<i>Обновлено: <b>{order.last_change_date.strftime('%d.%m.%Y %H:%M:%S')}</b></i>"
+        f"<i>ID заказа: <b>{order.id}</b></i>" if order.id is not None else "---"
     )
 
 
@@ -72,7 +72,7 @@ def build_sale_data(sale: Sale) -> str:
         f"Сумма: <b>{sale.price_with_disc}</b>\n"
         f"Регион: <b>{sale.region_name}, {sale.oblast_okrug_name}</b>\n"
         f"Со склада: <b>{sale.warehouse_name}</b>\n\n"
-        f"<i>Дата выкупа: <b>{sale.date}</b></i>\n"
-        f"<i>Обновлено: <b>{sale.last_change_date}</b></i>"
-        f"<i>ID выкупа: <b>{sale.id}</b></i>" if sale.id else ""
+        f"<i>Дата выкупа: <b>{sale.date.strftime('%d.%m.%Y %H:%M:%S')}</b></i>\n"
+        f"<i>Обновлено: <b>{sale.last_change_date.strftime('%d.%m.%Y %H:%M:%S')}</b></i>"
+        f"<i>ID выкупа: <b>{sale.id}</b></i>" if sale.id is not None else "---"
     )
