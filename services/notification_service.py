@@ -10,15 +10,15 @@ from bot.stat_handler import build_pipeline_data
 
 
 order_status_messages = {
-        OrderStatus.NEW: "✅ <b>Новый заказ (ID: {}):</b>",
-        # OrderStatus.ACCEPTED_TO_WH: "📦 <b>Заказ принят складом (ID: {}):</b>",
-        OrderStatus.CANCELLED: "❌ <b>Заказ отменен (ID: {}):</b>",
-        OrderStatus.UNDEFINED: "❓ <b>Статус заказа не определен (ID: {}):</b>"
+        OrderStatus.NEW: "✅ <b>Новый заказ:</b>",
+        # OrderStatus.ACCEPTED_TO_WH: "📦 <b>Заказ принят складом:</b>",
+        OrderStatus.CANCELLED: "❌ <b>Заказ отменен:</b>",
+        OrderStatus.UNDEFINED: "❓ <b>Статус заказа не определен:</b>"
     }
 
 sales_status_messages = {
-        SaleStatus.NEW: "✅ <b>Новый заказ (ID: {}):</b>",
-        SaleStatus.UNDEFINED: "❓ <b>Статус заказа не определен (ID: {}):</b>"
+        SaleStatus.NEW: "💰 <b>Новый выкуп:</b>",
+        SaleStatus.UNDEFINED: "❓ <b>Статус выкупа не определен:</b>"
     }
 
 admins_to_notify = [user for user in get_admins() if user.receive_orders]
@@ -61,7 +61,8 @@ def build_order_data(order: Order) -> str:
         f"Регион: <b>{order.region_name}, {order.oblast_okrug_name}</b>\n"
         f"Со склада: <b>{order.warehouse_name}</b>\n\n"
         f"<i>Дата заказа: <b>{order.date}</b></i>\n"
-        f"<i>Дата изменения информации: <b>{order.last_change_date}</b></i>"
+        f"<i>Обновлено: <b>{order.last_change_date}</b></i>"
+        f"<i>ID заказа: <b>{order.id}</b></i>" if order.id else ""
     )
 
 
@@ -72,5 +73,6 @@ def build_sale_data(sale: Sale) -> str:
         f"Регион: <b>{sale.region_name}, {sale.oblast_okrug_name}</b>\n"
         f"Со склада: <b>{sale.warehouse_name}</b>\n\n"
         f"<i>Дата выкупа: <b>{sale.date}</b></i>\n"
-        f"<i>Дата изменения информации: <b>{sale.last_change_date}</b></i>"
+        f"<i>Обновлено: <b>{sale.last_change_date}</b></i>"
+        f"<i>ID выкупа: <b>{sale.id}</b></i>" if sale.id else ""
     )
