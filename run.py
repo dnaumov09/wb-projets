@@ -9,13 +9,13 @@ from bot.bot import start_bot
 
 from db.models.seller import get_seller
 
-from services.remains_service import load_remains
+from services.sales_service import load_sales
 
 
 def main():
     init_logging(logging.INFO)
 
-    # load_remains()
+    # load_sales()
 
     start_scheduler()
     start_bot()
