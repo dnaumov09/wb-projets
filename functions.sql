@@ -168,10 +168,9 @@ END;
 $$;
 
 
-DROP FUNCTION IF EXISTS get_pipeline_by_period(text, timestamp without time zone);
+DROP FUNCTION IF EXISTS get_pipeline_by_period(text);
 CREATE OR REPLACE FUNCTION get_pipeline_by_period(
-	period_type text,
-	start_date timestamp without time zone)
+	period_type text)
     RETURNS TABLE(
 		period TIMESTAMP,
 	    nm_id INT,
@@ -185,7 +184,6 @@ CREATE OR REPLACE FUNCTION get_pipeline_by_period(
 	    orders_cancelled_sum FLOAT
 	) 
     LANGUAGE 'plpgsql'
-
 AS $$
 BEGIN
     RETURN QUERY EXECUTE format(
@@ -203,17 +201,15 @@ BEGIN
         FROM get_cards_stat_by_period(%L) cs
         LEFT JOIN get_orders_by_period(%L) o ON o.nm_id = cs.nm_id AND o.period = cs.period
         LEFT JOIN get_sales_by_period(%L) s ON s.nm_id = cs.nm_id AND s.period = cs.period
-        LEFT JOIN get_orders_cancelled_by_period(%L) oc ON oc.nm_id = cs.nm_id AND oc.period = cs.period
-        WHERE cs.period = %L',
-        period_type, period_type, period_type, period_type, start_date);
+        LEFT JOIN get_orders_cancelled_by_period(%L) oc ON oc.nm_id = cs.nm_id AND oc.period = cs.period',
+        period_type, period_type, period_type, period_type);
 END;
 $$;
 
 
-DROP FUNCTION IF EXISTS get_pipeline_by_period_ttl(text, timestamp without time zone);
+DROP FUNCTION IF EXISTS get_pipeline_by_period_ttl(text);
 CREATE OR REPLACE FUNCTION get_pipeline_by_period_ttl(
-	period_type text,
-	start_date timestamp without time zone)
+	period_type text)
     RETURNS TABLE(
 		period TIMESTAMP,
     	open_card_count BIGINT,
@@ -240,8 +236,8 @@ BEGIN
             sum(sales_sum) as sales_sum,
             sum(orders_cancelled_count)::BIGINT as orders_cancelled_count,
             sum(orders_cancelled_sum) as orders_cancelled_sum
-        FROM get_pipeline_by_period(%L, %L)
+        FROM get_pipeline_by_period(%L)
 		GROUP BY period',
-        period_type, start_date);
+        period_type);
 END;
 $$;
