@@ -2,12 +2,13 @@ import schedule
 import time
 from threading import Thread
 
-from services.notification_service import notyfy_pipeline
-from services.remains_service import load_remains
-from services.card_stat_service import load_cards_stat
-from services.cards_service import load_cards
-from services.orders_service import load_orders
-from services.sales_service import load_sales
+from services import notification_service
+from services import remains_service
+from services import card_stat_service
+from services import cards_service
+from services import orders_service
+from services import sales_service
+from services import reporting_service
 
 
 def init_scheduler():
@@ -20,14 +21,17 @@ def start_scheduler():
     scheduler_thread = Thread(target=init_scheduler)
     scheduler_thread.start()
 
-    schedule.every().day.at("23:30").do(notyfy_pipeline)
-    schedule.every().day.at("06:00").do(load_remains)
+    schedule.every().day.at("23:30").do(notification_service.notyfy_pipeline)
     
-    schedule.every(1).minutes.do(load_all_data)
+    schedule.every().day.at("06:00").do(remains_service.load_remains)
+    schedule.every().day.at("06:30").do(reporting_service.update_remains_data)
+    schedule.every().day.at("06:30").do(reporting_service.update_pipeline_data)
+    
+    schedule.every(5).minutes.do(load_all_data)
 
 
 def load_all_data():
-    load_cards()
-    load_cards_stat()
-    load_orders()
-    load_sales()
+    cards_service.load_cards()
+    card_stat_service.load_cards_stat()
+    orders_service.load_orders()
+    sales_service.load_sales()

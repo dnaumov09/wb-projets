@@ -17,7 +17,6 @@ def load_remains():
         update_remains_data(seller)
         logging.info("Remains updated")
         reporting_service.update_remains_data(seller)
-        logging.info("Google Sheets report updated")
 
 
 def update_remains_data(seller: Seller) -> list[Remains, WarehouseRemains]:
