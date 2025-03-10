@@ -13,6 +13,7 @@ SERVICE_ACCOUNT_FILE = 'google-credentials.json'
 WB_FOLDER_ID = os.getenv('WB_FOLDER_ID')
 
 STAT_SPREADSHEET_NAME = 'Статистика'
+STAT_DAILY_PIPELINE_SHEET_NAME = 'Воронка (Дни)'
 STAT_DAILY_ORDERS_SHEET_NAME = 'Заказы (Дни)'
 STAT_WEEKLY_ORDERS_SHEET_NAME = 'Заказы (Недели)'
 STAT_MONTHLY_ORDERS_SHEET_NAME = 'Заказы (Месяца)'
@@ -23,6 +24,18 @@ STAT_MONTHLY_SALES_SHEET_NAME = 'Заказы (Месяца)'
 REMAINS_SPREADSHEET_NAME = 'Склады'
 REMAINS_AGGREGATED_REMAINS_SHEET_NAME = 'Остатки (общаяя статистика)'
 REMAINS_REMAINS_ON_WH_SHEET_NAME = 'Остатки (по складам)'
+
+STAT_DAILY_PIPELINE_HEADER = [
+    'Дата',
+    'Количество переходов в карточку товара',
+    'Положили в корзину, шт.',
+    'Заказали товаров, шт.',
+    'Заказали на сумму, руб.',
+    'Выкупили товаров, шт.',
+    'Выкупили на сумму, руб.',
+    'Отказов, шт.',
+    'Отказов на сумму, руб.',
+]
 
 REMAINS_AGGREGATED_REMAINS_HEADER = [
     'Артикул WB',
@@ -147,7 +160,8 @@ def create_stat_spreadsheet(folder_id):
     ).execute()
 
     body = { "requests": [
-        {"updateSheetProperties": { "properties": { "sheetId": 0, "title": STAT_DAILY_ORDERS_SHEET_NAME }, "fields": "title" } },
+        {"updateSheetProperties": { "properties": { "sheetId": 0, "title": STAT_DAILY_PIPELINE_SHEET_NAME }, "fields": "title" } },
+        { "addSheet": { "properties": { "title": STAT_DAILY_ORDERS_SHEET_NAME } } },
         { "addSheet": { "properties": { "title": STAT_DAILY_SALES_SHEET_NAME } } },
     ] }
     sheets_service.spreadsheets().batchUpdate(spreadsheetId=stat_spreadsheet_id, body=body).execute()
@@ -224,3 +238,27 @@ def update_remains_warehouses(seller: Seller, warehouse_remains: list[WarehouseR
     }
     write_data(body, seller.google_drive_remains_spreadsheet_id, f'{REMAINS_REMAINS_ON_WH_SHEET_NAME}!A3')
     write_updated_time(seller.google_drive_remains_spreadsheet_id, REMAINS_REMAINS_ON_WH_SHEET_NAME, 'A1')
+
+
+def update_pipeline(seller: Seller, pipeline: list):
+    sheets_service.spreadsheets().values().clear(spreadsheetId=seller.google_drive_stat_spreadsheet_id, range=STAT_DAILY_PIPELINE_SHEET_NAME).execute()
+
+    values = [STAT_DAILY_PIPELINE_HEADER]
+    for item in pipeline:
+        values.append([
+            item.get('period').strftime("%d.%m.%Y"),
+            item.get('open_card_count'),
+            item.get('add_to_cart_count'),
+            item.get('orders_count'),
+            item.get('orders_sum'),
+            item.get('sales_count'),
+            item.get('sales_sum'),
+            item.get('orders_cancelled_count'),
+            item.get('orders_cancelled_sum')
+        ])
+    
+    body = { 
+        'values': values 
+    }
+    write_data(body, seller.google_drive_stat_spreadsheet_id, f'{STAT_DAILY_PIPELINE_SHEET_NAME}!A3')
+    write_updated_time(seller.google_drive_stat_spreadsheet_id, STAT_DAILY_PIPELINE_SHEET_NAME, 'A1')
