@@ -55,24 +55,22 @@ def notyfy_pipeline():
 
 
 def build_order_data(order: Order) -> str:
-    return (
-        f"Товар: <b>{order.supplier_article}</b>\n"
-        f"Сумма: <b>{order.price_with_disc}</b>\n"
-        f"Регион: <b>{order.region_name}, {order.oblast_okrug_name}</b>\n"
-        f"Со склада: <b>{order.warehouse_name}</b>\n\n"
-        f"<i>Дата заказа: <b>{order.date.strftime('%d.%m.%Y %H:%M:%S')}</b></i>\n"
-        f"<i>Обновлено: <b>{order.last_change_date.strftime('%d.%m.%Y %H:%M:%S')}</b></i>"
-        (f"<i>ID заказа: <b>{order.id}</b></i>" if order.id is not None else "---")
-    )
+    result = f"Товар: <b>{order.supplier_article}</b>\n"
+    result += f"Сумма: <b>{order.price_with_disc}</b>\n"
+    result += f"Регион: <b>{order.region_name}, {order.oblast_okrug_name}</b>\n"
+    result += f"Со склада: <b>{order.warehouse_name}</b>\n\n"
+    result += f"<i>Дата заказа: <b>{order.date.strftime('%d.%m.%Y %H:%M:%S')}</b></i>\n"
+    result += f"<i>Обновлено: <b>{order.last_change_date.strftime('%d.%m.%Y %H:%M:%S')}</b></i>\n"
+    result += f"<i>ID заказа: <b>{order.id if order.id is not None else "---"}</b></i>"
+    return result
 
 
 def build_sale_data(sale: Sale) -> str:
-    return (
-        f"Товар: <b>{sale.supplier_article}</b>\n"
-        f"Сумма: <b>{sale.price_with_disc}</b>\n"
-        f"Регион: <b>{sale.region_name}, {sale.oblast_okrug_name}</b>\n"
-        f"Со склада: <b>{sale.warehouse_name}</b>\n\n"
-        f"<i>Дата выкупа: <b>{sale.date.strftime('%d.%m.%Y %H:%M:%S')}</b></i>\n"
-        f"<i>Обновлено: <b>{sale.last_change_date.strftime('%d.%m.%Y %H:%M:%S')}</b></i>"
-        (f"<i>ID выкупа: <b>{sale.id}</b></i>" if sale.id is not None else "---")
-    )
+    result = f"Товар: <b>{sale.supplier_article}</b>\n"
+    result += f"Сумма: <b>{sale.price_with_disc}</b>\n"
+    result += f"Регион: <b>{sale.region_name}, {sale.oblast_okrug_name}</b>\n"
+    result += f"Со склада: <b>{sale.warehouse_name}</b>\n\n"
+    result += f"<i>Дата выкупа: <b>{sale.date.strftime('%d.%m.%Y %H:%M:%S')}</b></i>\n"
+    result += f"<i>Обновлено: <b>{sale.last_change_date.strftime('%d.%m.%Y %H:%M:%S')}</b></i>\n"
+    result += f"<i>ID выкупа: <b>{sale.id if sale.id is not None else "---"}</b></i>"
+    return result

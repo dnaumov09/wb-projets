@@ -23,7 +23,7 @@ def start_scheduler():
     schedule.every().day.at("23:30").do(notyfy_pipeline)
     schedule.every().day.at("06:00").do(load_remains)
     
-    schedule.every(5).minutes.do(load_all_data)
+    schedule.every(1).minutes.do(load_all_data)
 
 
 def load_all_data():

@@ -68,12 +68,15 @@ def save_update_orders(data, card_map: dict[int, Card]) -> list[Order]:
     for item in data:
         card = card_map.get(item.get("nmId"))
         order_key = (item.get("gNumber"), item.get("srid"))
+        date = datetime.strptime(item.get("date"), '%Y-%m-%dT%H:%M:%S')
+        last_change_date = datetime.strptime(item.get("lastChangeDate"), '%Y-%m-%dT%H:%M:%S')
+        cancel_date = datetime.strptime(item.get("cancelDate"), '%Y-%m-%dT%H:%M:%S')
 
         if order_key in existing_orders:
             # Update existing order
             order = existing_orders[order_key]
-            order.date = item.get("date")
-            order.last_change_date = item.get("lastChangeDate")
+            order.date = date
+            order.last_change_date = last_change_date
             order.warehouse_name = item.get("warehouseName")
             order.warehouseType = item.get("warehouseType")
             order.country_name = item.get("countryName")
@@ -95,7 +98,7 @@ def save_update_orders(data, card_map: dict[int, Card]) -> list[Order]:
             order.finished_price = item.get("finishedPrice")
             order.price_with_disc = item.get("priceWithDisc")
             order.is_cancel = item.get("isCancel")
-            order.cancel_date = item.get("cancelDate")
+            order.cancel_date = cancel_date
             order.order_type = item.get("orderType")
             order.sticker = item.get("sticker")
             order.status = define_existing_order_status(sticker=item.get("sticker"), is_cancel=item.get("isCancel"))
@@ -103,8 +106,8 @@ def save_update_orders(data, card_map: dict[int, Card]) -> list[Order]:
         else:
             # Create new order
             order = Order(
-                date=item.get("date"),
-                last_change_date=item.get("lastChangeDate"),
+                date=date,
+                last_change_date=last_change_date,
                 warehouse_name=item.get("warehouseName"),
                 warehouseType=item.get("warehouseType"),
                 country_name=item.get("countryName"),
@@ -127,7 +130,7 @@ def save_update_orders(data, card_map: dict[int, Card]) -> list[Order]:
                 finished_price=item.get("finishedPrice"),
                 price_with_disc=item.get("priceWithDisc"),
                 is_cancel=item.get("isCancel"),
-                cancel_date=item.get("cancelDate"),
+                cancel_date=cancel_date,
                 order_type=item.get("orderType"),
                 sticker=item.get("sticker"),
                 g_number=item.get("gNumber"),

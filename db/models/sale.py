@@ -66,12 +66,14 @@ def save_update_sales(data, card_map: dict[int, Card]) -> list[Sale]:
     for item in data:
         card = card_map.get(item.get("nmId"))
         sale_key = (item.get("gNumber"), item.get("srid"))
+        date = datetime.strptime(item.get("date"), '%Y-%m-%dT%H:%M:%S')
+        last_change_date = datetime.strptime(item.get("lastChangeDate"), '%Y-%m-%dT%H:%M:%S')
 
         if sale_key in existing_sales:
             # Update existing sale
             sale = existing_sales[sale_key]
-            sale.date = item.get("date")
-            sale.last_change_date = item.get("lastChangeDate")
+            sale.date = date
+            sale.last_change_date = last_change_date
             sale.warehouse_name = item.get("warehouseName")
             sale.warehouseType = item.get("warehouseType")
             sale.country_name = item.get("countryName")
@@ -101,8 +103,8 @@ def save_update_sales(data, card_map: dict[int, Card]) -> list[Sale]:
         else:
             # Create new sale
             sale = Sale(
-                date=item.get("date"),
-                last_change_date=item.get("lastChangeDate"),
+                date=date,
+                last_change_date=last_change_date,
                 warehouse_name=item.get("warehouseName"),
                 warehouseType=item.get("warehouseType"),
                 country_name=item.get("countryName"),
