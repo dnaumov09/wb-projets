@@ -4,24 +4,16 @@ from datetime import datetime, timedelta
 import locale
 
 from aiogram.types import Message
+from db.functions import get_pipeline_statistics, get_date_ranges
 
 router = Router()
 
 locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
-months_nominative = {
-    1: "Январь",
-    2: "Февраль",
-    3: "Март",
-    4: "Апрель",
-    5: "Май",
-    6: "Июнь",
-    7: "Июль",
-    8: "Август",
-    9: "Сентябрь",
-    10: "Октябрь",
-    11: "Ноябрь",
-    12: "Декабрь"
-}
+RU_WEEKDAYS = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
+RU_MONTHS = [
+    "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+    "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
+]
 
 
 @router.message(Command('pipeline'))
@@ -34,49 +26,29 @@ async def cmd_pipeline(message: Message):
 
 
 def build_pipeline_data() -> str:
-    now = datetime.now()
-    # result = build_daily_stat('Сегодня', now, get_today_stat()[0])
-    # result += "\n" + build_daily_stat('Вчера', now - timedelta(days=1), get_yesterday_stat()[0])
-    # result += "\n" + build_weekly_stat(now, get_current_week_stat()[0])
-    # result += "\n" + build_monthly_stat(now, get_current_month_stat()[0])
-    # return result
+    date_ranges = get_date_ranges()
+    pipeline_stats = get_pipeline_statistics(is_aggregated=True)
+    
+    result = ''
+    for period_name, data in pipeline_stats.items():
+        header = format_period_name(period_name, date_ranges)
+        result += f"<b>{header}</b>\n"
+        result += format_stat_data(period_name, data[0]) + '\n'
 
-def build_daily_stat(when, day, stat, is_detailed: bool = False) -> str:
-    day_str = day.strftime("%d.%m - %A")
-    date_part, weekday_name = day_str.split(" - ")
-
-    period_details = f"{weekday_name.capitalize()}, {date_part}"
-    result = f"<b>{when} ({period_details}):</b>\n"
-    result += build_stat_data(stat, is_detailed)
+    
     return result
 
-
-def build_weekly_stat(day, stat, is_detailed: bool = False) -> str:
-    weekday = day.weekday()
-    monday = day - timedelta(days=weekday)
-    sunday = monday + timedelta(days=6)
-
-    result = f"<b>Неделя #{day.isocalendar()[1]} ({monday.strftime('%d.%m')} - {sunday.strftime('%d.%m')}):</b>\n"
-    result += build_stat_data(stat, is_detailed)
-    return result
+#fro detailed
+# for row in data:
+    # format_stat_data(period_name, data)
 
 
-def build_monthly_stat(day, stat, is_detailed: bool = False) -> str:
-    result = f"<b>{months_nominative[day.month]}, {day.year}:</b>\n"
-    result += build_stat_data(stat, is_detailed)
-    return result
-
-
-def build_stat_data(stat, is_detailed: bool = False) -> str:
-    oreders_count = stat['orders_count'] if stat['orders_count'] else 0
-    sales_count = stat['sales_count'] if stat['sales_count'] else 0
+def format_stat_data(period: str, stat) -> str:
+    oreders_count = stat['orders_count']
+    sales_count = stat['sales_count']
     cancel_count = stat['orders_cancelled_count'] if stat['orders_cancelled_count'] else 0
 
     result = ""
-    if is_detailed:
-        result += f"Открытий карточки: <b>{stat['open_card_count'] if stat['open_card_count'] else 0}</b>\n"
-        result += f"Добавлений в корзину: <b>{stat['add_to_cart_count'] if stat['add_to_cart_count'] else 0}</b>\n"
-
     result += f"Заказов: <b>{oreders_count}</b>"
     result += f" ({format(round(stat['orders_sum']), ",d").replace(",", " ")} руб.)\n" if oreders_count > 0 else "\n"
     result += f"Выкупов: <b>{sales_count}</b>"
@@ -84,3 +56,28 @@ def build_stat_data(stat, is_detailed: bool = False) -> str:
     result += f"Отказов: <b>{cancel_count}</b>"
     result += f" ({format(round(stat['orders_cancelled_sum']), ",d").replace(",", " ")} руб.)\n" if cancel_count > 0 else "\n"
     return result
+
+
+def format_period_name(period_key: str, date_ranges: dict) -> str:
+    start_date, end_date = date_ranges[period_key]
+    
+    if period_key == 'today':
+        day_name = RU_WEEKDAYS[start_date.weekday()]
+        return f"Сегодня ({day_name}, {start_date.strftime('%d.%m')})"
+    elif period_key == 'yesterday':
+        day_name = RU_WEEKDAYS[start_date.weekday()]
+        return f"Вчера ({day_name}, {start_date.strftime('%d.%m')})"
+    elif period_key in ['current_week']:
+        week_number = start_date.isocalendar()[1]
+        return f"Текущая неделя - #{week_number} ({start_date.strftime('%d.%m')} - {(end_date - timedelta(days=1)).strftime('%d.%m')})"
+    elif period_key in ['last_week']:
+        week_number = start_date.isocalendar()[1]
+        return f"Прошлая неделя - #{week_number} ({start_date.strftime('%d.%m')} - {(end_date - timedelta(days=1)).strftime('%d.%m')})"
+    elif period_key == 'current_month':
+        month_name = RU_MONTHS[start_date.month - 1]
+        return f"Текущий месяц - {month_name}, {start_date.year}"
+    elif period_key == 'last_month':
+        month_name = RU_MONTHS[start_date.month - 1]
+        return f"Прошлый месяц - {month_name}, {start_date.year}"
+    else:
+        return period_key  # default fallback

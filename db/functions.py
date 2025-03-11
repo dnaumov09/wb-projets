@@ -1,3 +1,7 @@
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
+from typing import List, Dict, Any
+
 from enum import Enum
 from typing import List, Tuple
 
@@ -106,3 +110,65 @@ def get_pipeline_by_period(period: Period, is_aggregated: bool = False):
         ('orders_cancelled_sum', Float),
     ]
     return get_stat_by_period('get_pipeline_by_period', columns, period, is_aggregated)
+
+
+def get_date_ranges():
+    today = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    # Day ranges
+    yesterday = today - timedelta(days=1)
+    
+    # Week ranges (assuming weeks start on Monday)
+    current_week_start = today - timedelta(days=today.weekday())
+    last_week_start = current_week_start - timedelta(weeks=1)
+    last_week_end = current_week_start - timedelta(days=1)
+
+    # Month ranges
+    current_month_start = today.replace(day=1)
+    last_month_start = (current_month_start - relativedelta(months=1)).replace(day=1)
+    last_month_end = current_month_start - timedelta(days=1)
+    
+    return {
+        'today': (today, today + timedelta(days=1)),
+        'yesterday': (yesterday, today),
+        'current_week': (current_week_start, today + timedelta(days=1)),
+        'last_week': (last_week_start, last_week_end + timedelta(days=1)),
+        'current_month': (current_month_start, today + timedelta(days=1)),
+        'last_month': (last_month_start, last_month_end + timedelta(days=1)),
+    }
+
+
+def filter_pipeline_data(
+    data: List[Dict[str, Any]],
+    date_range: Tuple[datetime, datetime]
+) -> List[Dict[str, Any]]:
+    start_date, end_date = date_range
+    return [
+        row for row in data
+        if start_date <= row['period'] < end_date
+    ]
+
+
+def get_pipeline_statistics(is_aggregated: bool = False) -> Dict[str, List[Dict[str, Any]]]:
+    date_ranges = get_date_ranges()
+    
+    # Load raw data from database
+    daily_data = get_pipeline_by_period(Period.DAILY, is_aggregated)
+    weekly_data = get_pipeline_by_period(Period.WEEKLY, is_aggregated)
+    monthly_data = get_pipeline_by_period(Period.MONTHLY, is_aggregated)
+
+    result = {}
+
+    # Day-based ranges
+    result['today'] = filter_pipeline_data(daily_data, date_ranges['today'])
+    result['yesterday'] = filter_pipeline_data(daily_data, date_ranges['yesterday'])
+
+    # Week-based ranges
+    result['current_week'] = filter_pipeline_data(weekly_data, date_ranges['current_week'])
+    result['last_week'] = filter_pipeline_data(weekly_data, date_ranges['last_week'])
+
+    # Month-based ranges
+    result['current_month'] = filter_pipeline_data(monthly_data, date_ranges['current_month'])
+    result['last_month'] = filter_pipeline_data(monthly_data, date_ranges['last_month'])
+
+    return result
