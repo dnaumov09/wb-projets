@@ -4,6 +4,8 @@ from db.base import Base, session
 from db.models.card import Card
 from datetime import datetime
 from enum import Enum
+from db.models.card import get_seller_cards
+from db.models.seller import Seller
 
 
 class OrderStatus(Enum):
@@ -52,7 +54,7 @@ class Order(Base):
     status: Mapped[OrderStatus] = mapped_column(nullable=True)
 
 
-def save_update_orders(data, card_map: dict[int, Card]) -> list[Order]:
+def save_update_orders(data, seller: Seller) -> list[Order]:
     orders_to_insert = []
     orders_to_update = []
 
@@ -65,6 +67,7 @@ def save_update_orders(data, card_map: dict[int, Card]) -> list[Order]:
         ).all()
     }
 
+    card_map = {c.nm_id: c for c in get_seller_cards(seller.id)}
     for item in data:
         card = card_map.get(item.get("nmId"))
         order_key = (item.get("gNumber"), item.get("srid"))

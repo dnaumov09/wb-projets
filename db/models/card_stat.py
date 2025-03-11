@@ -41,7 +41,6 @@ def save_update_card_stat(data, now: datetime, seller: Seller) -> list[CardStat]
     cards_stat_to_update = []
 
     existing_stat = {(cs.nm_id, cs.begin): cs for cs in get_today_cards_stat_by_seller_id(seller.id)}
-
     for item in data:
         nm_id = item.get("nmID")
         for day in item.get('history'):

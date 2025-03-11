@@ -49,6 +49,7 @@ def load_seller_info(seller: Seller):
 @sleep_and_retry
 @limits(calls=100, period=ONE_MINUTE)
 def load_seller_cards(seller: Seller):
+    logging.info(f"Loading cards")
     try:
         payload = {
             "settings": {                      
@@ -62,6 +63,7 @@ def load_seller_cards(seller: Seller):
         }
         response = requests.post(LOAD_SELLER_CARDS_URL, headers=get_headers(seller), json=payload)
         response.raise_for_status()
+        logging.info("Cards received")
         return response.json()
     except requests.RequestException as e:
         logging.debug(f"Failed to fetch seller info: {e}")
@@ -108,72 +110,9 @@ def load_warehouse_remains_report(seller: Seller, task_id: str):
 
 
 @sleep_and_retry
-@limits(calls=1, period=ONE_MINUTE)
-def load_orders(seller: Seller) -> list[Order]:
-    logging.info("Loading orders data")
-    last_updated = datetime.now()
-    params = {
-        "dateFrom": settings.get_orders_last_updated().strftime("%Y-%m-%dT%H:%M:%S"), 
-        "flag": 0
-        }
-    
-    try:
-        response = requests.get(LOAD_ORDERS_URL, headers=get_headers(seller), params=params)
-        response.raise_for_status() 
-        data = response.json()
-    except requests.RequestException as e:
-        logging.debug(f"Failed to fetch orders data:\n{e}")
-        return
-
-    if not data:
-        settings.set_orders_last_updated(last_updated)
-        logging.info("No new orders data")
-        return
-
-    logging.debug("Orders data received")
-    card_map = {c.nm_id: c for c in get_seller_cards(seller.id)}
-    updates = save_update_orders(data, card_map)
-    settings.set_orders_last_updated(last_updated)
-    logging.info(f"Orders data saved")
-    return updates
-
-
-@sleep_and_retry
-@limits(calls=1, period=ONE_MINUTE)
-def load_sales(seller: Seller) -> list[Sale]:
-    logging.info("Loading sales data")
-    last_updated = datetime.now()
-    params = {
-        "dateFrom": settings.get_sales_last_updated().strftime("%Y-%m-%dT%H:%M:%S"), 
-        "flag": 0
-        }
-    
-    try:
-        response = requests.get(LOAD_SALES_URL, headers=get_headers(seller), params=params)
-        response.raise_for_status()
-        data = response.json()
-    except requests.RequestException as e:
-        logging.debug(f"Failed to fetch sales data: {e}")
-        return
-
-    if not data:
-        settings.set_sales_last_updated(last_updated)
-        logging.info("No new sales data")
-        return
-    
-    logging.debug("Sales data received")
-    card_map = {c.nm_id: c for c in get_seller_cards(seller.id)}
-    updates = save_update_sales(data, card_map)
-    settings.set_sales_last_updated(last_updated)
-    logging.info(f"Sales data saved until")
-    return updates
-
-
-@sleep_and_retry
 @limits(calls=3, period=ONE_MINUTE)
-def load_cards_stat(seller: Seller):
-    logging.info("Loading cards stat data")
-    last_updated = datetime.now()
+def load_cards_stat(last_updated: datetime, seller: Seller):
+    logging.info("Loading cards stat")
     begin = datetime.combine(settings.get_cards_stat_last_updated(), time.min)
     card_map = {c.nm_id: c for c in get_seller_cards(seller.id)}
     payload = {
@@ -190,15 +129,65 @@ def load_cards_stat(seller: Seller):
         response.raise_for_status() 
         data = response.json().get('data')
     except requests.RequestException as e:
-        logging.debug(f"Failed to fetch cards stat data: {e}")
+        logging.debug(f"Failed to fetch cards stat: {e}")
         return
     
     if not data:
         settings.set_cards_stat_last_updated(last_updated)
-        logging.info("No new cards stat data")
+        logging.info("No new cards stat")
         return
     
-    logging.debug("Cards stat data received")
-    save_update_card_stat(data, last_updated, seller)
-    settings.set_cards_stat_last_updated(last_updated)
-    logging.info(f"Cards stat data saved")
+    logging.info("Cards stat received")
+    return data
+
+
+@sleep_and_retry
+@limits(calls=1, period=ONE_MINUTE)
+def load_orders(last_updated: datetime, seller: Seller):
+    logging.info("Loading orders")
+    params = {
+        "dateFrom": settings.get_orders_last_updated().strftime("%Y-%m-%dT%H:%M:%S"), 
+        "flag": 0
+        }
+    
+    try:
+        response = requests.get(LOAD_ORDERS_URL, headers=get_headers(seller), params=params)
+        response.raise_for_status() 
+        data = response.json()
+    except requests.RequestException as e:
+        logging.debug(f"Failed to fetch orders:\n{e}")
+        return
+
+    if not data:
+        settings.set_orders_last_updated(last_updated)
+        logging.info("No new orders")
+        return
+
+    logging.debug("Orders received")
+    return data
+
+
+@sleep_and_retry
+@limits(calls=1, period=ONE_MINUTE)
+def load_sales(last_updated: datetime, seller: Seller) -> list[Sale]:
+    logging.info("Loading sales")
+    params = {
+        "dateFrom": settings.get_sales_last_updated().strftime("%Y-%m-%dT%H:%M:%S"), 
+        "flag": 0
+        }
+    
+    try:
+        response = requests.get(LOAD_SALES_URL, headers=get_headers(seller), params=params)
+        response.raise_for_status()
+        data = response.json()
+    except requests.RequestException as e:
+        logging.debug(f"Failed to fetch sales: {e}")
+        return
+
+    if not data:
+        settings.set_sales_last_updated(last_updated)
+        logging.info("No new sales")
+        return
+    
+    logging.debug("Sales received")
+    return data

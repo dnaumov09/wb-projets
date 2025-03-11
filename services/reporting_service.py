@@ -4,7 +4,7 @@ from api import sheets_api
 from db.models.seller import Seller, get_sellers
 from db.models.warehouse_remains import get_warehouse_remains_by_seller_id
 from db.models.remains import get_remains_by_seller_id
-from db.views import get_daily_stat
+from db import functions
 
 
 def update_remains_data(seller: Seller):
@@ -22,6 +22,6 @@ def update_pipeline_data():
     for seller in get_sellers():
         if seller.id == 1:
             logging.info(f"Google Sheets pipeline updating for seller {seller.name}")
-            pipeline = get_daily_stat(False)
+            pipeline = functions.get_pipeline_by_period(functions.Period.DAILY, True)
             sheets_api.update_pipeline(seller, pipeline)
             logging.info(f"Google Sheets pipeline updated")

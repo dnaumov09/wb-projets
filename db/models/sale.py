@@ -5,6 +5,8 @@ from db.models.card import Card
 from db.models.order import Order
 from datetime import datetime
 from enum import Enum
+from db.models.card import get_seller_cards
+from db.models.seller import Seller
 
 
 class SaleStatus(Enum):
@@ -50,7 +52,7 @@ class Sale(Base):
     status: Mapped[SaleStatus] = mapped_column(nullable=True)
 
 
-def save_update_sales(data, card_map: dict[int, Card]) -> list[Sale]:
+def save_update_sales(data, seller: Seller) -> list[Sale]:
     sales_to_insert = []
     sales_to_update = []
 
@@ -63,6 +65,7 @@ def save_update_sales(data, card_map: dict[int, Card]) -> list[Sale]:
         ).all()
     }
 
+    card_map = {c.nm_id: c for c in get_seller_cards(seller.id)}
     for item in data:
         card = card_map.get(item.get("nmId"))
         sale_key = (item.get("gNumber"), item.get("srid"))
