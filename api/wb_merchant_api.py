@@ -40,13 +40,13 @@ def load_seller_info(seller: Seller):
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        logging.debug(f"Failed to fetch seller info: {e}")
+        logging.debug(f"[{seller.trade_mark}] Failed to fetch seller info: {e}")
 
 
 @sleep_and_retry
 @limits(calls=100, period=ONE_MINUTE)
 def load_seller_cards(seller: Seller):
-    logging.info(f"Loading cards for {seller.trade_mark}")
+    logging.info(f"[{seller.trade_mark}] Loading cards...")
     try:
         payload = {
             "settings": {                      
@@ -62,13 +62,13 @@ def load_seller_cards(seller: Seller):
         response.raise_for_status()
         data = response.json()
     except requests.RequestException as e:
-        logging.debug(f"Failed to fetch cards info: {e}")
+        logging.debug(f"[{seller.trade_mark}] Failed to fetch cards info: {e}")
 
     if not data:
-        logging.info("No cards data")
+        logging.info(f"[{seller.trade_mark}] No cards data")
         return
     
-    logging.info("Cards received")
+    logging.info(f"[{seller.trade_mark}] Cards received")
     return data
 
 

@@ -6,6 +6,7 @@ from google.oauth2.service_account import Credentials
 from db.models.seller import Seller
 from db.models.warehouse_remains import WarehouseRemains
 from db.models.remains import Remains
+from db.models.card import Card
 
 SHEETS_ADMINS = ['dnaumov09@gmail.com']
 
@@ -165,8 +166,52 @@ def create_stat_spreadsheet(folder_id):
         { "addSheet": { "properties": { "title": STAT_DAILY_SALES_SHEET_NAME } } },
     ] }
     sheets_service.spreadsheets().batchUpdate(spreadsheetId=stat_spreadsheet_id, body=body).execute()
-    
+
     return stat_spreadsheet_id
+
+
+def update_stat_cards_sheets(stat_spreadsheet_id: str, cards: list[Card]):
+    spreadsheet = sheets_service.spreadsheets().get(spreadsheetId=stat_spreadsheet_id).execute()
+    existing_sheets = spreadsheet.get('sheets', [])
+    
+    card_names = [c.vendor_code for c in cards]
+    existing_sheets_dict = {sheet['properties']['title']: sheet['properties']['sheetId'] for sheet in existing_sheets}
+
+    batch_update_requests = []
+    clear_requests = []
+
+    # Clear sheets that exist in both spreadsheet and names list
+    for sheet_name in card_names:
+        if sheet_name in existing_sheets_dict:
+            clear_requests.append({
+                "range": f"'{sheet_name}'"
+            })
+
+    # Add sheets that are in names list but NOT in spreadsheet
+    for sheet_name in card_names:
+        if sheet_name not in existing_sheets_dict:
+            batch_update_requests.append({
+                'addSheet': {
+                    'properties': {
+                        'title': sheet_name
+                    }
+                }
+            })
+
+    # --- Execute clear requests if any ---
+    if clear_requests:
+        sheets_service.spreadsheets().values().batchClear(
+            spreadsheetId=stat_spreadsheet_id,
+            body={'ranges': [req['range'] for req in clear_requests]}
+        ).execute()
+
+    # --- Execute batch update (delete/add sheets) if any ---
+    if batch_update_requests:
+        sheets_service.spreadsheets().batchUpdate(
+            spreadsheetId=stat_spreadsheet_id,
+            body={'requests': batch_update_requests}
+        ).execute()
+
 
 
 def create_remains_spreadsheet(folder_id):
@@ -262,3 +307,28 @@ def update_pipeline(seller: Seller, pipeline: list):
     }
     write_data(body, seller.google_drive_stat_spreadsheet_id, f'{STAT_DAILY_PIPELINE_SHEET_NAME}!A3')
     write_updated_time(seller.google_drive_stat_spreadsheet_id, STAT_DAILY_PIPELINE_SHEET_NAME, 'A1')
+
+
+def update_card_pipeline(seller: Seller, pipeline: list, card: Card):
+    # sheets_service.spreadsheets().values().clear(spreadsheetId=seller.google_drive_stat_spreadsheet_id, range=card.vendor_code).execute()
+
+    values = [STAT_DAILY_PIPELINE_HEADER]
+    for item in pipeline:
+        values.append([
+            item.get('period').strftime("%d.%m.%Y"),
+            item.get('open_card_count'),
+            item.get('add_to_cart_count'),
+            item.get('orders_count'),
+            item.get('orders_sum'),
+            item.get('sales_count'),
+            item.get('sales_sum'),
+            item.get('orders_cancelled_count'),
+            item.get('orders_cancelled_sum')
+        ])
+    
+    body = { 
+        'values': values 
+    }
+
+    write_data(body, seller.google_drive_stat_spreadsheet_id, f'{card.vendor_code}!A3')
+    write_updated_time(seller.google_drive_stat_spreadsheet_id, card.vendor_code, 'A1')

@@ -13,21 +13,20 @@ from api import wb_merchant_api
 
 def load_remains():
     for seller in get_sellers():
-        logging.info(f"Loading remains for seller {seller.name} ({seller.id})...")
         update_remains_data(seller)
-        logging.info("Remains updated")
         reporting_service.update_remains_data(seller)
 
 
 def update_remains_data(seller: Seller) -> list[Remains, WarehouseRemains]:
-    
+    logging.info(f"[{seller.trade_mark}] Loading remains...")
     task_id = wb_merchant_api.create_warehouse_remains_task(seller)
     
     while wb_merchant_api.check_warehouse_remains_task_status(seller, task_id) != 'done':
-        logging.info(f"Waiting for task ({task_id}) to be done...")
+        logging.info(f"[{seller.trade_mark}] Waiting for task ({task_id}) to be done...")
         time.sleep(1)
     
     data = wb_merchant_api.load_warehouse_remains_report(seller, task_id)
+    logging.info(f"[{seller.trade_mark}] Remains receaved")
 
     warehouse_remains_to_save = []
     seller_cards = {card.nm_id: card for card in get_seller_cards(seller.id)}
@@ -45,11 +44,12 @@ def update_remains_data(seller: Seller) -> list[Remains, WarehouseRemains]:
         warehouses = item.get('warehouses')
         if not warehouses:
             continue
-
+        
         for warehouse in warehouses:
             warehouse_db = check_warehouse(warehouse.get('warehouseName'))
             warehouse_remains = find_or_create_warehouse_remains(warehouse_db, remains, warehouse.get('quantity'))
             warehouse_remains_to_save.append(warehouse_remains)
     
     save_warehouse_remains_list(warehouse_remains_to_save)
+    logging.info(f"[{seller.trade_mark}] Remains saved")
     return remains_list, warehouse_remains_to_save

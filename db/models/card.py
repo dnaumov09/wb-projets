@@ -60,3 +60,4 @@ def save_cards(data, seller: Seller) -> list[Card]:
 
     # Commit once for all operations
     session.commit()
+    return cards_to_insert + cards_to_update
