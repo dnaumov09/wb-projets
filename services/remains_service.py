@@ -13,8 +13,7 @@ from api import wb_merchant_api
 
 def load_remains():
     for seller in get_sellers():
-        update_remains_data(seller)
-        reporting_service.update_remains_data(seller)
+        update_remains_data(seller)  
 
 
 def update_remains_data(seller: Seller) -> list[Remains, WarehouseRemains]:
@@ -52,4 +51,3 @@ def update_remains_data(seller: Seller) -> list[Remains, WarehouseRemains]:
     
     save_warehouse_remains_list(warehouse_remains_to_save)
     logging.info(f"[{seller.trade_mark}] Remains saved")
-    return remains_list, warehouse_remains_to_save

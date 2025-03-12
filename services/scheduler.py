@@ -20,22 +20,23 @@ def init_scheduler():
 def start_scheduler():
     scheduler_thread = Thread(target=init_scheduler)
     scheduler_thread.start()
-
-    schedule.every().day.at("23:30").do(notification_service.notyfy_pipeline)
     
-    schedule.every().day.at("06:00").do(remains_service.load_remains)
-    schedule.every().day.at("06:30").do(reporting_service.update_remains_data)
+    schedule.every().day.at("03:00").do(run_remains_updating)
     
-    schedule.every().day.at("12:00").do(reporting_service.update_pipeline_data)
-    schedule.every().day.at("18:00").do(reporting_service.update_pipeline_data)
     schedule.every().day.at("00:00").do(reporting_service.update_pipeline_data)
 
-    
-    schedule.every(5).minutes.do(load_all_data)
+    schedule.every(5).minutes.do(run_stat_updating)
+
+    schedule.every().day.at("23:59").do(notification_service.notyfy_pipeline)
 
 
-def load_all_data():
+def run_stat_updating():
     cards_service.load_cards()
     card_stat_service.load_cards_stat()
     orders_service.load_orders()
     sales_service.load_sales()
+
+
+def run_remains_updating():
+    remains_service.load_remains()
+    reporting_service.update_remains_data()
