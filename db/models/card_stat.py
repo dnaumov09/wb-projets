@@ -1,7 +1,7 @@
 from sqlalchemy import ForeignKey, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from db.base import Base, session
-from db.models.card import Card
+from db.models.card import Card, get_seller_cards
 from db.models.seller import Seller
 from datetime import datetime, time
 
@@ -26,12 +26,12 @@ class CardStat(Base):
     cancel_sum_rub: Mapped[float] = mapped_column(nullable=False, default=0)
 
 
-def get_today_cards_stat_by_seller_id(seller_id):
-    today_begin = datetime.combine(datetime.now().date(), time.min)
+def get_existing_cards_stat_by_seller_id(seller_id, date: datetime):
+    # today_begin = datetime.combine(datetime.now().date(), time.min)
     return (
         session.query(CardStat)
         .join(CardStat.card)
-        .filter(CardStat.begin == today_begin, Card.seller_id == seller_id)
+        .filter(CardStat.begin == date, Card.seller_id == seller_id)
         .all()
     )
 
@@ -40,7 +40,14 @@ def save_update_card_stat(data, now: datetime, seller: Seller) -> list[CardStat]
     cards_stat_to_insert = []
     cards_stat_to_update = []
 
-    existing_stat = {(cs.nm_id, cs.begin): cs for cs in get_today_cards_stat_by_seller_id(seller.id)}
+    existing_stat = {
+        (stat.nm_id, stat.begin): stat
+        for stat in session.query(CardStat).filter(
+            CardStat.nm_id.in_([item.get("nmID") for item in data]),
+            CardStat.begin.in_([datetime.strptime(h.get('dt'), "%Y-%m-%d") for item in data for h in item.get('history')])
+        ).all()
+    }
+    
     for item in data:
         nm_id = item.get("nmID")
         for day in item.get('history'):
