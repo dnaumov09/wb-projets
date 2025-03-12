@@ -7,9 +7,7 @@ from logging_settings import init_logging
 from services.scheduler import start_scheduler
 from bot.bot import start_bot
 
-from bot.stat_handler import build_pipeline_data
-
-
+from services.cards_service import load_cards
 
 
 def main():

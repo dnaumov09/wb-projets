@@ -64,9 +64,16 @@ def load_seller_cards(seller: Seller):
         response = requests.post(LOAD_SELLER_CARDS_URL, headers=get_headers(seller), json=payload)
         response.raise_for_status()
         logging.info("Cards received")
-        return response.json()
+        data = response.json()
     except requests.RequestException as e:
-        logging.debug(f"Failed to fetch seller info: {e}")
+        logging.debug(f"Failed to fetch cards info: {e}")
+
+    if not data:
+        logging.info("No cards data")
+        return
+    
+    logging.info("Cards received")
+    return data
 
 
 @sleep_and_retry
