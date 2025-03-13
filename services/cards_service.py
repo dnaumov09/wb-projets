@@ -3,7 +3,6 @@ from db.models.seller import get_sellers
 from db.models.card import save_cards
 
 from api import wb_merchant_api
-from api import sheets_api
 from db.models.seller import Seller
 
 

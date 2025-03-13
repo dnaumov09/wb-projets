@@ -9,6 +9,7 @@ from services import cards_service
 from services import orders_service
 from services import sales_service
 from services import reporting_service
+from services import advert_service
 
 
 def init_scheduler():
@@ -28,6 +29,9 @@ def start_scheduler():
     schedule.every(5).minutes.do(run_stat_updating)
 
     schedule.every().day.at("23:59").do(notification_service.notyfy_pipeline)
+
+    schedule.every().day.at("12:00").do(advert_service.load_adverts)
+    schedule.every().day.at("18:00").do(advert_service.load_adverts)
 
 
 def run_stat_updating():

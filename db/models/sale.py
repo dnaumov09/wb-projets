@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, DateTime
+from sqlalchemy import ForeignKey, DateTime, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from db.base import Base, session
 from db.models.card import Card
@@ -15,6 +15,10 @@ class SaleStatus(Enum):
 
 class Sale(Base):
     __tablename__ = 'sales'
+
+    __table_args__ = (
+        Index('idx_sales_date_nmid', 'date', 'nm_id'),  # Composite index
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 

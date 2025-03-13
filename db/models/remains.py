@@ -10,7 +10,7 @@ from db.models.seller import Seller
 class Remains(Base):
     __tablename__ = 'remains'
 
-    nm_id: Mapped[int] = mapped_column(ForeignKey('cards.nm_id'), nullable=True)
+    nm_id: Mapped[int] = mapped_column(ForeignKey('cards.nm_id'), nullable=False)
     card: Mapped[Card] = relationship("Card")
 
     brand: Mapped[str] = mapped_column(nullable=False)

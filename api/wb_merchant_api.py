@@ -11,12 +11,11 @@ from ratelimit import limits, sleep_and_retry
 
 LOAD_SELLER_INFO_URL = 'https://common-api.wildberries.ru/api/v1/seller-info'
 LOAD_SELLER_CARDS_URL = 'https://content-api.wildberries.ru/content/v2/get/cards/list'
-
 LOAD_ORDERS_URL = 'https://statistics-api.wildberries.ru/api/v1/supplier/orders'
-
 LOAD_SALES_URL = 'https://statistics-api.wildberries.ru/api/v1/supplier/sales'
-
 LOAD_CARD_STAT_DAILY_URL = 'https://seller-analytics-api.wildberries.ru/api/v2/nm-report/detail/history'
+LOAD_ADVERTS_COUNT_URL = 'https://advert-api.wildberries.ru/adv/v1/promotion/count'
+LOAD_ADVERTS_INFO_URL = 'https://advert-api.wildberries.ru/adv/v1/promotion/adverts'
 
 CREATE_WAREHOUSE_REMAINS_TASK_URL = 'https://seller-analytics-api.wildberries.ru/api/v1/warehouse_remains?groupByBrand={group_by_brand}&groupBySubject={group_by_subject}&groupBySa={group_by_sa}&groupByNm={group_by_nm}&groupByBarcode={group_by_barcode}&groupBySize={group_by_size}'
 CHECK_WAREHOUSE_REMAINS_TASK_STATUS_URL = 'https://seller-analytics-api.wildberries.ru/api/v1/warehouse_remains/tasks/{task_id}/status'
@@ -214,4 +213,42 @@ def load_sales(last_updated: datetime, seller: Seller) -> Optional[Dict[str, Any
         return None
 
     logging.info(f"[{seller.trade_mark}] Sales received: {len(data)} records")
+    return data
+
+
+@sleep_and_retry
+@limits(calls=5, period=1)
+def load_adverts(seller: Seller):
+    logging.info(f"[{seller.trade_mark}] Loading adverts...")
+
+    try:
+        response = requests.get(
+            LOAD_ADVERTS_COUNT_URL,
+            headers=get_headers(seller),
+            timeout=10
+        )
+        response.raise_for_status()
+        data = response.json()
+
+        advert_ids = {advert['advertId'] for advert_group in data['adverts'] for advert in advert_group['advert_list']}
+
+        payload = sorted(list(advert_ids))
+        response = requests.post(
+            LOAD_ADVERTS_INFO_URL,
+            headers=get_headers(seller),
+            timeout=10,
+            json=payload
+        )
+        response.raise_for_status()
+        data = response.json()
+
+    except requests.RequestException as e:
+        logging.error(f"[{seller.trade_mark}] Failed to adverts count: {e}")
+        return None
+    
+    if not data:
+        logging.info(f"[{seller.trade_mark}] No new adverts")
+        return None
+    
+    logging.info(f"[{seller.trade_mark}] Adverts received: {len(data)} records")
     return data

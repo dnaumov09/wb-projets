@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, DateTime
+from sqlalchemy import ForeignKey, DateTime, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from db.base import Base, session
 from db.models.card import Card, get_seller_cards
@@ -8,6 +8,10 @@ from datetime import datetime, time
 
 class CardStat(Base):
     __tablename__ = 'cards_stat'
+
+    __table_args__ = (
+        Index('idx_cards_stat_begin_nmid', 'begin', 'nm_id'),  # Composite index
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     begin: Mapped[datetime] = mapped_column(DateTime, nullable=False)

@@ -6,7 +6,7 @@ class Seller(Base):
     __tablename__ = 'sellers'
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=False)
-    token: Mapped[str] = mapped_column(nullable=False)
+    token: Mapped[str] = mapped_column(nullable=True)
     sid: Mapped[str] = mapped_column(nullable=True)
     name: Mapped[str] = mapped_column(nullable=True)
     trade_mark: Mapped[str] = mapped_column(nullable=True)
