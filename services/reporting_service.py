@@ -25,16 +25,16 @@ def update_remains_data(seller: Seller):
 def update_pipeline_data():
     for seller in get_sellers():
         if seller.id == 1:
-            logging.info(f"Google Sheets pipeline updating for seller {seller.name}")
+            logging.info(f"[{seller.trade_mark}] Google Sheets pipeline updating...")
             pipeline = functions.get_pipeline_by_period(functions.Period.DAILY, True)
             sheets_api.update_pipeline(seller, pipeline)
-            logging.info(f"Google Sheets pipeline updated")
+            logging.info(f"[{seller.trade_mark}] Google Sheets pipeline updated")
 
 
 def update_pipeline_detailed_data(): 
     for seller in get_sellers():
         if seller.id == 1:
-            logging.info(f"Google Sheets pipeline updating for seller {seller.name}")
+            logging.info(f"[{seller.trade_mark}] Google Sheets pipeline detailed updating...")
             pipeline = functions.get_pipeline_by_period(functions.Period.DAILY, False)
             grouped_pipeline = defaultdict(list)
             cards = get_seller_cards(seller.id)
@@ -47,4 +47,4 @@ def update_pipeline_detailed_data():
             for card, pipeline in grouped_pipeline.items():
                 sheets_api.update_card_pipeline(seller, pipeline, card)
 
-            logging.info(f"Google Sheets pipeline updated")
+            logging.info(f"[{seller.trade_mark}] Google Sheets pipeline detailed updated")

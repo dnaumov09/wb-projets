@@ -16,6 +16,6 @@ def load_sales():
             if data is not None:
                 updates = save_update_sales(data, seller)
                 set_sales_last_updated(now)
-                logging.info(f"Sales saved")
+                logging.info(f"[{seller.trade_mark}] Sales saved")
 
                 notify_updated_sales(updates)

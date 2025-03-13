@@ -16,6 +16,6 @@ def load_orders():
             if data is not None:
                 updates = save_update_orders(data, seller)
                 set_orders_last_updated(now)
-                logging.info(f"Orders saved")
+                logging.info(f"[{seller.trade_mark}] Orders saved")
 
                 notify_updated_orders(updates)

@@ -86,7 +86,7 @@ def create_warehouse_remains_task(seller: Seller):
         ), headers=get_headers(seller))
         return response.json().get('data').get('taskId')
     except requests.RequestException as e:
-        logging.debug(f"Failed to create warehouse remains task: {e}")
+        logging.debug(f"[{seller.trade_mark}] Failed to create warehouse remains task: {e}")
 
 
 @sleep_and_retry
@@ -96,7 +96,7 @@ def check_warehouse_remains_task_status(seller: Seller, task_id: str):
         response = requests.get(CHECK_WAREHOUSE_REMAINS_TASK_STATUS_URL.format(task_id=task_id), headers=get_headers(seller))
         return response.json().get('data').get('status')
     except requests.RequestException as e:
-        logging.debug(f"Failed to check warehouse remains task status: {e}")
+        logging.debug(f"[{seller.trade_mark}] Failed to check warehouse remains task status: {e}")
 
 
 @sleep_and_retry
@@ -106,20 +106,20 @@ def load_warehouse_remains_report(seller: Seller, task_id: str):
         response = requests.get(GET_WAREHOUSE_REMAINS_REPORT_URL.format(task_id=task_id), headers=get_headers(seller))
         return response.json()
     except requests.RequestException as e:
-        logging.debug(f"Failed to load warehouse remains report: {e}")
+        logging.debug(f"[{seller.trade_mark}] Failed to load warehouse remains report: {e}")
 
 
 @sleep_and_retry
 @limits(calls=3, period=ONE_MINUTE)
 def load_cards_stat(last_updated: datetime, seller: Seller) -> Optional[List[Dict[str, Any]]]:
-    logging.info(f"Loading cards stat for {seller.trade_mark}")
+    logging.info(f"[{seller.trade_mark}] Loading cards stat...")
     
     begin_date = datetime.combine(last_updated, time.min).strftime("%Y-%m-%d")
     end_date = datetime.now().strftime("%Y-%m-%d")
 
     seller_cards = get_seller_cards(seller.id)
     if not seller_cards:
-        logging.info("No cards found for seller.")
+        logging.info(f"[{seller.trade_mark}] No cards found for seller.")
         return None
 
     card_map = {card.nm_id: card for card in seller_cards}
@@ -144,21 +144,21 @@ def load_cards_stat(last_updated: datetime, seller: Seller) -> Optional[List[Dic
         response.raise_for_status()
         data = response.json().get('data', [])
     except requests.RequestException as e:
-        logging.error(f"Failed to fetch cards stat: {e}")
+        logging.error(f"[{seller.trade_mark}] Failed to fetch cards stat: {e}")
         return None
 
     if not data:
-        logging.info("No new cards stat")
+        logging.info(f"[{seller.trade_mark}] No new cards stat")
         return None
 
-    logging.info(f"Cards stat received: {len(data)} records")
+    logging.info(f"[{seller.trade_mark}] Cards stat received: {len(data)} records")
     return data
 
 
 @sleep_and_retry
 @limits(calls=1, period=ONE_MINUTE)
 def load_orders(last_updated: datetime, seller: Seller) -> Optional[Dict[str, Any]]:
-    logging.info(f"Loading orders for {seller.trade_mark}")
+    logging.info(f"[{seller.trade_mark}] Loading orders...")
 
     params = {
         "dateFrom": last_updated.strftime("%Y-%m-%dT%H:%M:%S"),
@@ -175,21 +175,21 @@ def load_orders(last_updated: datetime, seller: Seller) -> Optional[Dict[str, An
         response.raise_for_status()
         data = response.json()
     except requests.RequestException as e:
-        logging.error(f"Failed to fetch orders: {e}")
+        logging.error(f"[{seller.trade_mark}] Failed to fetch orders: {e}")
         return None
 
     if not data:
-        logging.info("No new orders")
+        logging.info(f"[{seller.trade_mark}] No new orders")
         return None
 
-    logging.info(f"Orders received: {len(data)} records")
+    logging.info(f"[{seller.trade_mark}] Orders received: {len(data)} records")
     return data
 
 
 @sleep_and_retry
 @limits(calls=1, period=ONE_MINUTE)
 def load_sales(last_updated: datetime, seller: Seller) -> Optional[Dict[str, Any]]:
-    logging.info(f"Loading sales for {seller.trade_mark}")
+    logging.info(f"[{seller.trade_mark}] Loading sales...")
 
     params = {
         "dateFrom": last_updated.strftime("%Y-%m-%dT%H:%M:%S"),
@@ -206,12 +206,12 @@ def load_sales(last_updated: datetime, seller: Seller) -> Optional[Dict[str, Any
         response.raise_for_status()
         data = response.json()
     except requests.RequestException as e:
-        logging.error(f"Failed to fetch sales: {e}")
+        logging.error(f"[{seller.trade_mark}] Failed to fetch sales: {e}")
         return None
 
     if not data:
-        logging.info("No new sales")
+        logging.info(f"[{seller.trade_mark}] No new sales")
         return None
 
-    logging.info(f"Sales received: {len(data)} records")
+    logging.info(f"[{seller.trade_mark}] Sales received: {len(data)} records")
     return data
