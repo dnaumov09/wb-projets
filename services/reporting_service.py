@@ -11,14 +11,15 @@ from db import functions
 
 
 def update_remains_data(seller: Seller):
-    logging.info(f"[{seller.trade_mark}] Google Sheets remains updating...")
-    remains = get_remains_by_seller_id(seller.id)
-    sheets_api.update_remains_aggregated(seller, remains)
+    for seller in get_sellers():
+        logging.info(f"[{seller.trade_mark}] Google Sheets remains updating...")
+        remains = get_remains_by_seller_id(seller.id)
+        sheets_api.update_remains_aggregated(seller, remains)
 
-    warehouse_remains = get_warehouse_remains_by_seller_id(seller.id)
-    sheets_api.update_remains_warehouses(seller, warehouse_remains)
+        warehouse_remains = get_warehouse_remains_by_seller_id(seller.id)
+        sheets_api.update_remains_warehouses(seller, warehouse_remains)
 
-    logging.info(f"[{seller.trade_mark}] Google Sheets remains updated")
+        logging.info(f"[{seller.trade_mark}] Google Sheets remains updated")
 
 
 def update_pipeline_data():

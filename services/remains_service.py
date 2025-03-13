@@ -30,6 +30,7 @@ def update_remains_data(seller: Seller) -> list[Remains, WarehouseRemains]:
     warehouse_remains_to_save = []
     seller_cards = {card.nm_id: card for card in get_seller_cards(seller.id)}
     
+    #TODO говнокод
     remains_list = []
     for item in data:
         nm_id = item.get('nmId')

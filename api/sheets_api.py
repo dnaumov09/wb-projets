@@ -246,8 +246,8 @@ def update_remains_aggregated(seller: Seller, remains: list[Remains]):
             item.card.title,
             item.vendor_code,
             item.barcode,
-            item.volume,
             item.tech_size,
+            item.volume,
             item.in_way_to_client,
             item.in_way_from_client,
             item.quantity_warehouses_full
