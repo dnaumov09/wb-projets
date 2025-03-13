@@ -119,7 +119,7 @@ def save_sales(data, seller: Seller) -> list[Order]:
             existing_sales_output.append(sale)
         else:
             # Collect for bulk insert
-            new_sales.append(Order(**sale_fields))
+            new_sales.append(Sale(**sale_fields))
 
 
     if new_sales:

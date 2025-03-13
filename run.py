@@ -7,7 +7,7 @@ from logging_settings import init_logging
 from services.scheduler import start_scheduler
 from bot.bot import start_bot
 
-from services.orders_service import load_orders
+from services.sales_service import load_sales
 
 
 def main():
@@ -16,10 +16,10 @@ def main():
     # seller_service.check_and_create_sellers()
     # scheduler.run_remains_updating()
 
-    load_orders()
+    # load_sales()
 
-    # start_scheduler()
-    # start_bot()
+    start_scheduler()
+    start_bot()
     
 
 if __name__ == "__main__":
