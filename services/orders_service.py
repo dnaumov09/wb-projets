@@ -9,6 +9,7 @@ from db.models.settings import set_orders_last_updated, get_orders_last_updated
 def load_orders():
     for seller in get_sellers():
         if seller.id == 1:
+            logging.info(f"[{seller.trade_mark}] Loading orders")
             now = datetime.now()
             data = wb_merchant_api.load_orders(get_orders_last_updated(), seller)
             

@@ -1,4 +1,4 @@
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Union, Literal
 
 import requests
 import logging
@@ -8,24 +8,24 @@ from db.models.seller import Seller
 
 from ratelimit import limits, sleep_and_retry
 
-
-LOAD_WAREHOUSES_URL = "https://supplies-api.wildberries.ru/api/v1/warehouses"
-LOAD_SELLER_INFO_URL = 'https://common-api.wildberries.ru/api/v1/seller-info'
-LOAD_SELLER_CARDS_URL = 'https://content-api.wildberries.ru/content/v2/get/cards/list'
-LOAD_ORDERS_URL = 'https://statistics-api.wildberries.ru/api/v1/supplier/orders'
-LOAD_SALES_URL = 'https://statistics-api.wildberries.ru/api/v1/supplier/sales'
-LOAD_CARD_STAT_DAILY_URL = 'https://seller-analytics-api.wildberries.ru/api/v2/nm-report/detail/history'
-LOAD_ADVERTS_COUNT_URL = 'https://advert-api.wildberries.ru/adv/v1/promotion/count'
-LOAD_ADVERTS_INFO_URL = 'https://advert-api.wildberries.ru/adv/v1/promotion/adverts'
-
-CREATE_WAREHOUSE_REMAINS_TASK_URL = 'https://seller-analytics-api.wildberries.ru/api/v1/warehouse_remains?groupByBrand={group_by_brand}&groupBySubject={group_by_subject}&groupBySa={group_by_sa}&groupByNm={group_by_nm}&groupByBarcode={group_by_barcode}&groupBySize={group_by_size}'
-CHECK_WAREHOUSE_REMAINS_TASK_STATUS_URL = 'https://seller-analytics-api.wildberries.ru/api/v1/warehouse_remains/tasks/{task_id}/status'
-GET_WAREHOUSE_REMAINS_REPORT_URL = 'https://seller-analytics-api.wildberries.ru/api/v1/warehouse_remains/tasks/{task_id}/download'
-
-
+from api.wb_merchant_api_config import (
+    LOAD_WAREHOUSES_URL,
+    LOAD_SELLER_INFO_URL,
+    LOAD_SELLER_CARDS_URL,
+    LOAD_ORDERS_URL,
+    LOAD_SALES_URL,
+    LOAD_CARD_STAT_DAILY_URL,
+    LOAD_ADVERTS_COUNT_URL,
+    LOAD_ADVERTS_INFO_URL,
+    CREATE_WAREHOUSE_REMAINS_TASK_URL,
+    CHECK_WAREHOUSE_REMAINS_TASK_STATUS_URL,
+    GET_WAREHOUSE_REMAINS_REPORT_URL
+)
 
 ONE_MINUTE = 60
 
+
+# --- Helpers ---
 
 def get_headers(seller: Seller):
     return {
@@ -34,239 +34,133 @@ def get_headers(seller: Seller):
     }
 
 
-def load_warehouses(seller):
+def format_url(template: str, **kwargs) -> str:
+    return template.format(**kwargs)
+
+
+def api_request(
+    seller: Seller,
+    method: Literal['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    url: str,
+    params: Optional[Dict[str, Any]] = None,
+    json_payload: Optional[Dict[str, Any]] = None,
+    timeout: int = 10,
+    data_key: Optional[str] = None
+) -> Optional[Union[Dict[str, Any], List[Dict[str, Any]]]]:
+    headers = get_headers(seller)
+
     try:
-        response = requests.get(LOAD_WAREHOUSES_URL, headers=get_headers(seller))
+        response = requests.request(
+            method=method,
+            url=url,
+            headers=headers,
+            params=params,
+            json=json_payload,
+            timeout=timeout
+        )
         response.raise_for_status()
-        return response.json()
+        data = response.json()
+        return data.get(data_key) if data_key else data
     except requests.RequestException as e:
-        logging.debug("Failed to fetch warehouses")
+        logging.error(f"[{seller.trade_mark}] API {method} request failed at {url}: {e}")
         return None
+    
+
+# --- API functions ---
+
+def load_warehouses(seller: Seller):
+    return api_request(seller, 'GET', LOAD_WAREHOUSES_URL)
 
 
 def load_seller_info(seller: Seller):
-    try:
-        response = requests.get(LOAD_SELLER_INFO_URL, headers=get_headers(seller))
-        response.raise_for_status()
-        return response.json()
-    except requests.RequestException as e:
-        logging.debug(f"[{seller.trade_mark}] Failed to fetch seller info: {e}")
-        return None
+    return api_request(seller, 'GET', LOAD_SELLER_INFO_URL)
 
 
 @sleep_and_retry
 @limits(calls=100, period=ONE_MINUTE)
 def load_seller_cards(seller: Seller):
-    logging.info(f"[{seller.trade_mark}] Loading cards...")
-    try:
-        payload = {
-            "settings": {                      
-                "cursor": {
-                    "limit": 100
-                },
-                "filter": {
-                    "withPhoto": -1
-                }
-            }
+    payload = {
+        "settings": {
+            "cursor": {"limit": 100},
+            "filter": {"withPhoto": -1}
         }
-        response = requests.post(LOAD_SELLER_CARDS_URL, headers=get_headers(seller), json=payload)
-        response.raise_for_status()
-        data = response.json()
-    except requests.RequestException as e:
-        logging.debug(f"[{seller.trade_mark}] Failed to fetch cards info: {e}")
-        return None
-
-    if not data:
-        logging.info(f"[{seller.trade_mark}] No cards data")
-        return
-    
-    logging.info(f"[{seller.trade_mark}] Cards received")
-    return data
+    }
+    return api_request(seller, 'POST', LOAD_SELLER_CARDS_URL, json_payload=payload)
 
 
 @sleep_and_retry
 @limits(calls=1, period=ONE_MINUTE)
 def create_warehouse_remains_task(seller: Seller):
-    try:
-        response = requests.get(CREATE_WAREHOUSE_REMAINS_TASK_URL.format(
-            group_by_brand=True,
-            group_by_subject=True,
-            group_by_sa=True,
-            group_by_nm=True,
-            group_by_barcode=True,
-            group_by_size=True
-        ), headers=get_headers(seller))
-        return response.json().get('data').get('taskId')
-    except requests.RequestException as e:
-        logging.debug(f"[{seller.trade_mark}] Failed to create warehouse remains task: {e}")
-        return None
+    url = format_url(CREATE_WAREHOUSE_REMAINS_TASK_URL,
+                     group_by_brand=True,
+                     group_by_subject=True,
+                     group_by_sa=True,
+                     group_by_nm=True,
+                     group_by_barcode=True,
+                     group_by_size=True)
+    result = api_request(seller, 'GET', url, data_key='data')
+    return result.get('taskId') if result else None
 
 
 @sleep_and_retry
 @limits(calls=1, period=5)
 def check_warehouse_remains_task_status(seller: Seller, task_id: str):
-    try:
-        response = requests.get(CHECK_WAREHOUSE_REMAINS_TASK_STATUS_URL.format(task_id=task_id), headers=get_headers(seller))
-        if response.json().get('data') is None:
-            logging.error(response.json())
-        return response.json().get('data').get('status')
-    except requests.RequestException as e:
-        logging.debug(f"[{seller.trade_mark}] Failed to check warehouse remains task status: {e}")
-        return None
+    url = format_url(CHECK_WAREHOUSE_REMAINS_TASK_STATUS_URL, task_id=task_id)
+    result = api_request(seller, 'GET', url, data_key='data')
+    return result.get('status') if result else None
 
 
 @sleep_and_retry
 @limits(calls=1, period=ONE_MINUTE)
 def load_warehouse_remains_report(seller: Seller, task_id: str):
-    try:
-        response = requests.get(GET_WAREHOUSE_REMAINS_REPORT_URL.format(task_id=task_id), headers=get_headers(seller))
-        return response.json()
-    except requests.RequestException as e:
-        logging.debug(f"[{seller.trade_mark}] Failed to load warehouse remains report: {e}")
-        return None
+    url = format_url(GET_WAREHOUSE_REMAINS_REPORT_URL, task_id=task_id)
+    return api_request(seller, 'GET', url)
 
 
 @sleep_and_retry
 @limits(calls=3, period=ONE_MINUTE)
-def load_cards_stat(last_updated: datetime, seller: Seller) -> Optional[List[Dict[str, Any]]]:
-    logging.info(f"[{seller.trade_mark}] Loading cards stat...")
-    
+def load_cards_stat(last_updated: datetime, seller: Seller):
     begin_date = datetime.combine(last_updated, time.min).strftime("%Y-%m-%d")
     end_date = datetime.now().strftime("%Y-%m-%d")
 
     seller_cards = get_seller_cards(seller.id)
     if not seller_cards:
-        logging.info(f"[{seller.trade_mark}] No cards found for seller.")
         return None
 
-    card_map = {card.nm_id: card for card in seller_cards}
-    nm_ids = list(card_map.keys())
-
+    nm_ids = [card.nm_id for card in seller_cards]
     payload = {
         "nmIDs": nm_ids,
-        "period": {
-            "begin": begin_date,
-            "end": end_date
-        },
+        "period": {"begin": begin_date, "end": end_date},
         "aggregationLevel": "day"
     }
 
-    try:
-        response = requests.post(
-            LOAD_CARD_STAT_DAILY_URL,
-            headers=get_headers(seller),
-            json=payload,
-            timeout=10
-        )
-        response.raise_for_status()
-        data = response.json().get('data', [])
-    except requests.RequestException as e:
-        logging.error(f"[{seller.trade_mark}] Failed to fetch cards stat: {e}")
-        return None
-
-    if not data:
-        logging.info(f"[{seller.trade_mark}] No new cards stat")
-        return None
-
-    logging.info(f"[{seller.trade_mark}] Cards stat received: {len(data)} records")
-    return data
+    return api_request(seller, 'POST', LOAD_CARD_STAT_DAILY_URL, json_payload=payload, data_key='data')
 
 
 @sleep_and_retry
 @limits(calls=1, period=ONE_MINUTE)
-def load_orders(last_updated: datetime, seller: Seller) -> Optional[Dict[str, Any]]:
-    logging.info(f"[{seller.trade_mark}] Loading orders...")
-
-    params = {
-        "dateFrom": last_updated.strftime("%Y-%m-%dT%H:%M:%S"),
-        "flag": 0
-    }
-
-    try:
-        response = requests.get(
-            LOAD_ORDERS_URL,
-            headers=get_headers(seller),
-            params=params,
-            timeout=10
-        )
-        response.raise_for_status()
-        data = response.json()
-    except requests.RequestException as e:
-        logging.error(f"[{seller.trade_mark}] Failed to fetch orders: {e}")
-        return None
-
-    if not data:
-        logging.info(f"[{seller.trade_mark}] No new orders")
-        return None
-
-    logging.info(f"[{seller.trade_mark}] Orders received: {len(data)} records")
-    return data
+def load_orders(last_updated: datetime, seller: Seller):
+    params = {"dateFrom": last_updated.strftime("%Y-%m-%dT%H:%M:%S"), "flag": 0}
+    return api_request(seller, 'GET', LOAD_ORDERS_URL, params=params)
 
 
 @sleep_and_retry
 @limits(calls=1, period=ONE_MINUTE)
-def load_sales(last_updated: datetime, seller: Seller) -> Optional[Dict[str, Any]]:
-    logging.info(f"[{seller.trade_mark}] Loading sales...")
-
-    params = {
-        "dateFrom": last_updated.strftime("%Y-%m-%dT%H:%M:%S"),
-        "flag": 0
-    }
-
-    try:
-        response = requests.get(
-            LOAD_SALES_URL,
-            headers=get_headers(seller),
-            params=params,
-            timeout=10
-        )
-        response.raise_for_status()
-        data = response.json()
-    except requests.RequestException as e:
-        logging.error(f"[{seller.trade_mark}] Failed to fetch sales: {e}")
-        return None
-
-    if not data:
-        logging.info(f"[{seller.trade_mark}] No new sales")
-        return None
-
-    logging.info(f"[{seller.trade_mark}] Sales received: {len(data)} records")
-    return data
+def load_sales(last_updated: datetime, seller: Seller):
+    params = {"dateFrom": last_updated.strftime("%Y-%m-%dT%H:%M:%S"), "flag": 0}
+    return api_request(seller, 'GET', LOAD_SALES_URL, params=params)
 
 
 @sleep_and_retry
 @limits(calls=5, period=1)
 def load_adverts(seller: Seller):
-    logging.info(f"[{seller.trade_mark}] Loading adverts...")
-
-    try:
-        response = requests.get(
-            LOAD_ADVERTS_COUNT_URL,
-            headers=get_headers(seller),
-            timeout=10
-        )
-        response.raise_for_status()
-        data = response.json()
-
-        advert_ids = {advert['advertId'] for advert_group in data['adverts'] for advert in advert_group['advert_list']}
-
-        payload = sorted(list(advert_ids))
-        response = requests.post(
-            LOAD_ADVERTS_INFO_URL,
-            headers=get_headers(seller),
-            timeout=10,
-            json=payload
-        )
-        response.raise_for_status()
-        data = response.json()
-
-    except requests.RequestException as e:
-        logging.error(f"[{seller.trade_mark}] Failed to adverts count: {e}")
+    count_response = api_request(seller, 'GET', LOAD_ADVERTS_COUNT_URL)
+    if not count_response or 'adverts' not in count_response:
         return None
-    
-    if not data:
-        logging.info(f"[{seller.trade_mark}] No new adverts")
+
+    advert_ids = {advert['advertId'] for group in count_response['adverts'] for advert in group['advert_list']}
+    if not advert_ids:
         return None
-    
-    logging.info(f"[{seller.trade_mark}] Adverts received: {len(data)} records")
-    return data
+
+    detail_response = api_request(seller, 'POST', LOAD_ADVERTS_INFO_URL, json_payload=list(advert_ids))
+    return detail_response

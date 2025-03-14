@@ -8,6 +8,7 @@ from db.models.settings import set_cards_stat_last_updated, get_cards_stat_last_
 def load_cards_stat():
     for seller in get_sellers():
         if seller.id == 1:
+            logging.info(f"[{seller.trade_mark}] Loading cards stat")
             now = datetime.now()
             data = wb_merchant_api.load_cards_stat(get_cards_stat_last_updated(), seller)
             
@@ -15,3 +16,4 @@ def load_cards_stat():
                 save_card_stat(data, now, seller)
                 set_cards_stat_last_updated(now)
                 logging.info(f"[{seller.trade_mark}] Cards stat saved")
+                

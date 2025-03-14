@@ -10,6 +10,7 @@ def load_sales():
     
     for seller in get_sellers():
         if seller.id == 1:
+            logging.info(f"[{seller.trade_mark}] Loading sales")
             now = datetime.now()
             data = wb_merchant_api.load_sales(get_sales_last_updated(), seller)
 

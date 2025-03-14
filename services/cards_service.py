@@ -12,6 +12,7 @@ def load_cards():
 
 
 def load_seller_cards(seller: Seller):
+    logging.info(f"[{seller.trade_mark}] Loading cards")
     updates = wb_merchant_api.load_seller_cards(seller)
     if updates is not None:
         cards = save_cards(updates, seller)

@@ -37,7 +37,7 @@ def save_warehouse_remains(data, db_warehouses: list[Warehouse], db_remains: lis
     for item in data:
         warehouses = item.get('warehouses')
         for wh in warehouses:
-            remains = next((r for r in db_remains if r.barcode == item.get('barcode')), None)
+            remains = next((r for r in db_remains if r.barcode == item.get('barcode')))
             warehouse = check_warehouse(wh.get('warehouseName'))
             q = wh.get('quantity')
             wr = WarehouseRemains(warehouse_id=warehouse.id, warehouse=warehouse, remains_id=remains.barcode, remains=remains, quantity=q)
