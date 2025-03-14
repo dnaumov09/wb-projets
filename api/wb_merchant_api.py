@@ -22,8 +22,6 @@ from api.wb_merchant_api_config import (
     GET_WAREHOUSE_REMAINS_REPORT_URL
 )
 
-ONE_MINUTE = 60
-
 
 # --- Helpers ---
 
@@ -77,7 +75,7 @@ def load_seller_info(seller: Seller):
 
 
 @sleep_and_retry
-@limits(calls=100, period=ONE_MINUTE)
+@limits(calls=100, period=60)
 def load_seller_cards(seller: Seller):
     payload = {
         "settings": {
@@ -89,7 +87,7 @@ def load_seller_cards(seller: Seller):
 
 
 @sleep_and_retry
-@limits(calls=1, period=ONE_MINUTE)
+@limits(calls=1, period=60)
 def create_warehouse_remains_task(seller: Seller):
     url = format_url(CREATE_WAREHOUSE_REMAINS_TASK_URL,
                      group_by_brand=True,
@@ -111,14 +109,14 @@ def check_warehouse_remains_task_status(seller: Seller, task_id: str):
 
 
 @sleep_and_retry
-@limits(calls=1, period=ONE_MINUTE)
+@limits(calls=1, period=60)
 def load_warehouse_remains_report(seller: Seller, task_id: str):
     url = format_url(GET_WAREHOUSE_REMAINS_REPORT_URL, task_id=task_id)
     return api_request(seller, 'GET', url)
 
 
 @sleep_and_retry
-@limits(calls=3, period=ONE_MINUTE)
+@limits(calls=3, period=60)
 def load_cards_stat(last_updated: datetime, seller: Seller):
     begin_date = datetime.combine(last_updated, time.min).strftime("%Y-%m-%d")
     end_date = datetime.now().strftime("%Y-%m-%d")
@@ -138,14 +136,14 @@ def load_cards_stat(last_updated: datetime, seller: Seller):
 
 
 @sleep_and_retry
-@limits(calls=1, period=ONE_MINUTE)
+@limits(calls=1, period=60)
 def load_orders(last_updated: datetime, seller: Seller):
     params = {"dateFrom": last_updated.strftime("%Y-%m-%dT%H:%M:%S"), "flag": 0}
     return api_request(seller, 'GET', LOAD_ORDERS_URL, params=params)
 
 
 @sleep_and_retry
-@limits(calls=1, period=ONE_MINUTE)
+@limits(calls=1, period=60)
 def load_sales(last_updated: datetime, seller: Seller):
     params = {"dateFrom": last_updated.strftime("%Y-%m-%dT%H:%M:%S"), "flag": 0}
     return api_request(seller, 'GET', LOAD_SALES_URL, params=params)
