@@ -12,7 +12,7 @@ from bot.stat_handler import build_pipeline_data
 order_status_messages = {
         OrderStatus.NEW: "📩 <b>Поступил новый заказ</b>",
         # OrderStatus.ACCEPTED_TO_WH: "📦 <b>Заказ принят складом</b>",
-        OrderStatus.CANCELLED: "☹️ <b>Клиент отменил заказ</b>",
+        OrderStatus.CANCELLED: "➖ <b>Клиент отменил заказ</b>",
         OrderStatus.UNDEFINED: "❓ <b>Статус заказа не определен</b>"
     }
 
@@ -32,7 +32,7 @@ def notify_updated_orders(orders: list[Order]):
             text = order_status_messages[order.status].format(order.id) + "\n\n" + build_order_data(order)
 
             for user in admins_to_notify:
-                send_message(chat_id=user.tg_chat_id, text=text)
+                send_message(chat_id=user.tg_chat_id, text=text, disable_notifications=True)
 
 
 def notify_updated_sales(sales: list[Sale]):

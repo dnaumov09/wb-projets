@@ -41,6 +41,7 @@ def load_warehouses(seller):
         return response.json()
     except requests.RequestException as e:
         logging.debug("Failed to fetch warehouses")
+        return None
 
 
 def load_seller_info(seller: Seller):
@@ -50,6 +51,7 @@ def load_seller_info(seller: Seller):
         return response.json()
     except requests.RequestException as e:
         logging.debug(f"[{seller.trade_mark}] Failed to fetch seller info: {e}")
+        return None
 
 
 @sleep_and_retry
@@ -72,6 +74,7 @@ def load_seller_cards(seller: Seller):
         data = response.json()
     except requests.RequestException as e:
         logging.debug(f"[{seller.trade_mark}] Failed to fetch cards info: {e}")
+        return None
 
     if not data:
         logging.info(f"[{seller.trade_mark}] No cards data")
@@ -96,6 +99,7 @@ def create_warehouse_remains_task(seller: Seller):
         return response.json().get('data').get('taskId')
     except requests.RequestException as e:
         logging.debug(f"[{seller.trade_mark}] Failed to create warehouse remains task: {e}")
+        return None
 
 
 @sleep_and_retry
@@ -108,6 +112,7 @@ def check_warehouse_remains_task_status(seller: Seller, task_id: str):
         return response.json().get('data').get('status')
     except requests.RequestException as e:
         logging.debug(f"[{seller.trade_mark}] Failed to check warehouse remains task status: {e}")
+        return None
 
 
 @sleep_and_retry
@@ -118,6 +123,7 @@ def load_warehouse_remains_report(seller: Seller, task_id: str):
         return response.json()
     except requests.RequestException as e:
         logging.debug(f"[{seller.trade_mark}] Failed to load warehouse remains report: {e}")
+        return None
 
 
 @sleep_and_retry

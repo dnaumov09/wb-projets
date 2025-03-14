@@ -11,6 +11,8 @@ from services.remains_service import load_remains
 from services.reporting_service import update_remains_data
 from services import scheduler
 from services import remains_service
+from services import cards_service
+from db.models import seller
 
 
 def main():
@@ -24,6 +26,9 @@ def main():
     # load_cards()
     # load_remains()
     # update_remains_data()
+
+    # cards_service.load_seller_cards(seller.get_seller(1))
+
 
     start_scheduler()
     start_bot()

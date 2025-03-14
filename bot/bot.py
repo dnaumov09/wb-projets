@@ -42,8 +42,8 @@ def start_bot():
     loop.run_forever()
 
 
-def send_message(chat_id: int, text: str):
-    asyncio.run_coroutine_threadsafe(bot.send_message(chat_id=chat_id, text=text), loop)
+def send_message(chat_id: int, text: str, disable_notifications: bool = False):
+    asyncio.run_coroutine_threadsafe(bot.send_message(chat_id=chat_id, text=text, disable_notification=disable_notifications), loop)
 
 
 @dp.message(CommandStart())
