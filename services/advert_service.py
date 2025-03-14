@@ -8,5 +8,5 @@ def load_adverts():
         if seller.id == 1:
             logging.info(f"[{seller.trade_mark}] Loading adverts")
             data = wb_merchant_api.load_adverts(seller)
-            if data is not None:
+            if data:
                 save_adverts(data, seller)

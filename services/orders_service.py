@@ -13,7 +13,7 @@ def load_orders():
             now = datetime.now()
             data = wb_merchant_api.load_orders(get_orders_last_updated(), seller)
             
-            if data is not None:
+            if data:
                 updates = save_orders(data, seller)
                 set_orders_last_updated(now)
                 logging.info(f"[{seller.trade_mark}] Orders saved")

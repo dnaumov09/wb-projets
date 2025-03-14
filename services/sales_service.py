@@ -14,7 +14,7 @@ def load_sales():
             now = datetime.now()
             data = wb_merchant_api.load_sales(get_sales_last_updated(), seller)
 
-            if data is not None:
+            if data:
                 updates = save_sales(data, seller)
                 set_sales_last_updated(now)
                 logging.info(f"[{seller.trade_mark}] Sales saved")

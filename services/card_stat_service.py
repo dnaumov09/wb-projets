@@ -12,7 +12,7 @@ def load_cards_stat():
             now = datetime.now()
             data = wb_merchant_api.load_cards_stat(get_cards_stat_last_updated(), seller)
             
-            if data is not None:
+            if data:
                 save_card_stat(data, now, seller)
                 set_cards_stat_last_updated(now)
                 logging.info(f"[{seller.trade_mark}] Cards stat saved")

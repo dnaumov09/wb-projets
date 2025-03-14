@@ -13,8 +13,8 @@ def load_cards():
 
 def load_seller_cards(seller: Seller):
     logging.info(f"[{seller.trade_mark}] Loading cards")
-    updates = wb_merchant_api.load_seller_cards(seller)
-    if updates is not None:
-        cards = save_cards(updates, seller)
+    data = wb_merchant_api.load_seller_cards(seller)
+    if data:
+        cards = save_cards(data, seller)
         # sheets_api.update_stat_cards_sheets(seller.google_drive_stat_spreadsheet_id, cards)
         logging.info(f"[{seller.trade_mark}] Cards saved")
