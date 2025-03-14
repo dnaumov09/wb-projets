@@ -73,6 +73,7 @@ def save_sales(data, seller: Seller) -> list[Order]:
     card_map = {c.nm_id: c for c in get_seller_cards(seller.id)}
 
     new_sales = []
+    existing_sales_output = []
     for item in data:
         sale_key = (item.get("gNumber"), item.get("srid"))
         is_existing = sale_key in existing_sales
@@ -110,7 +111,6 @@ def save_sales(data, seller: Seller) -> list[Order]:
             "status": define_existing_sale_status(),
         }
 
-        existing_sales_output = []
         if is_existing:
             # Update existing advert
             sale = existing_sales[sale_key]

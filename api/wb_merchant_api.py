@@ -9,6 +9,7 @@ from db.models.seller import Seller
 from ratelimit import limits, sleep_and_retry
 
 
+LOAD_WAREHOUSES_URL = "https://supplies-api.wildberries.ru/api/v1/warehouses"
 LOAD_SELLER_INFO_URL = 'https://common-api.wildberries.ru/api/v1/seller-info'
 LOAD_SELLER_CARDS_URL = 'https://content-api.wildberries.ru/content/v2/get/cards/list'
 LOAD_ORDERS_URL = 'https://statistics-api.wildberries.ru/api/v1/supplier/orders'
@@ -31,6 +32,15 @@ def get_headers(seller: Seller):
         "Authorization": f"Bearer {seller.token}",
         "Content-Type": "application/json"
     }
+
+
+def load_warehouses(seller):
+    try:
+        response = requests.get(LOAD_WAREHOUSES_URL, headers=get_headers(seller))
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        logging.debug("Failed to fetch warehouses")
 
 
 def load_seller_info(seller: Seller):
@@ -93,6 +103,8 @@ def create_warehouse_remains_task(seller: Seller):
 def check_warehouse_remains_task_status(seller: Seller, task_id: str):
     try:
         response = requests.get(CHECK_WAREHOUSE_REMAINS_TASK_STATUS_URL.format(task_id=task_id), headers=get_headers(seller))
+        if response.json().get('data') is None:
+            logging.error(response.json())
         return response.json().get('data').get('status')
     except requests.RequestException as e:
         logging.debug(f"[{seller.trade_mark}] Failed to check warehouse remains task status: {e}")

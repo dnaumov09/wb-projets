@@ -1,14 +1,23 @@
 import time
 import logging
 
-from db.models.seller import Seller, get_sellers
+from db.models.seller import Seller, get_sellers, get_seller
 from db.models.card import get_seller_cards
-from db.models.warehouse import check_warehouse
-from db.models.remains import Remains, save_or_update_remains
-from db.models.warehouse_remains import WarehouseRemains, save_warehouse_remains_list, find_or_create_warehouse_remains
-from services import reporting_service
+from db.models.warehouse import get_warehouses
+from db.models.remains import Remains, save_remains
+from db.models.warehouse_remains import WarehouseRemains, save_warehouse_remains, save_warehouse_remains_list, find_or_create_warehouse_remains
 
 from api import wb_merchant_api
+
+
+warehouses = get_warehouses()
+
+
+def load_warehouses():
+    logging.info(f"Loading warehouses...")
+    data = wb_merchant_api.load_warehouses(get_seller(1))
+    # save_warehouses(data)
+    logging.info(f"Warehouses saved")
 
 
 def load_remains():
@@ -19,36 +28,36 @@ def load_remains():
 def update_remains_data(seller: Seller) -> list[Remains, WarehouseRemains]:
     logging.info(f"[{seller.trade_mark}] Loading remains...")
     task_id = wb_merchant_api.create_warehouse_remains_task(seller)
+    logging.info(f"[{seller.trade_mark}] Report task created")
     
     while wb_merchant_api.check_warehouse_remains_task_status(seller, task_id) != 'done':
         logging.info(f"[{seller.trade_mark}] Waiting for task ({task_id}) to be done...")
         time.sleep(1)
     
+    logging.info(f"[{seller.trade_mark}] Receiving remains data...")
     data = wb_merchant_api.load_warehouse_remains_report(seller, task_id)
     logging.info(f"[{seller.trade_mark}] Remains receaved")
 
-    warehouse_remains_to_save = []
-    seller_cards = {card.nm_id: card for card in get_seller_cards(seller.id)}
+    remains = save_remains(data, seller)
+    warehouse_remains = save_warehouse_remains(data, warehouses, remains)
     
     #TODO говнокод
-    remains_list = []
-    for item in data:
-        nm_id = item.get('nmId')
-        if nm_id not in seller_cards:
-            continue
+    # for item in data:
+    #     nm_id = item.get('nmId')
+    #     if nm_id not in seller_cards:
+    #         continue
 
-        card = seller_cards[nm_id]
-        remains = save_or_update_remains(card, item)
-        remains_list.append(remains)
+    #     card = seller_cards[nm_id]
+    #     remains = save_remains(card, item)
        
-        warehouses = item.get('warehouses')
-        if not warehouses:
-            continue
+    #     warehouses = item.get('warehouses')
+    #     if not warehouses:
+    #         continue
         
-        for warehouse in warehouses:
-            warehouse_db = check_warehouse(warehouse.get('warehouseName'))
-            warehouse_remains = find_or_create_warehouse_remains(warehouse_db, remains, warehouse.get('quantity'))
-            warehouse_remains_to_save.append(warehouse_remains)
+    #     for warehouse in warehouses:
+    #         warehouse_db = check_warehouse(warehouse.get('warehouseName'))
+    #         warehouse_remains = find_or_create_warehouse_remains(warehouse_db, remains, warehouse.get('quantity'))
+    #         warehouse_remains_to_save.append(warehouse_remains)
     
-    save_warehouse_remains_list(warehouse_remains_to_save)
+    # save_warehouse_remains_list(warehouse_remains_to_save)
     logging.info(f"[{seller.trade_mark}] Remains saved")

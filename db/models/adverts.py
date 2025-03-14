@@ -57,12 +57,13 @@ def parse_datetime(dt_str: str) -> datetime:
 
 
 def save_adverts(data, seller: Seller) -> list[Advert]:
-    incoming_advert_ids = {ad['advertId'] for ad in data}
     # Fetch all existing advert IDs from the database
     existing_adverts_list = session.scalars(select(Advert).filter(Advert.seller_id == seller.id)).all()
     existing_adverts = {adv.advert_id: adv for adv in existing_adverts_list}
-    existing_advert_ids = set(existing_adverts.keys())
+    
     # List of adverts that exist in DB but not in incoming data -> to archive
+    existing_advert_ids = set(existing_adverts.keys())
+    incoming_advert_ids = {ad['advertId'] for ad in data}
     adverts_to_archive = list(existing_advert_ids - incoming_advert_ids)
 
     new_adverts = []

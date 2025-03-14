@@ -10,7 +10,7 @@ from db.models.card import get_seller_cards
 from db import functions
 
 
-def update_remains_data(seller: Seller):
+def update_remains_data():
     for seller in get_sellers():
         logging.info(f"[{seller.trade_mark}] Google Sheets remains updating...")
         remains = get_remains_by_seller_id(seller.id)

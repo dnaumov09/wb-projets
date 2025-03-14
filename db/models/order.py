@@ -78,13 +78,14 @@ def save_orders(data, seller: Seller) -> list[Order]:
             Order.srid.in_([item.get("srid") for item in data])
         )).all()
     existing_orders = {(order.g_number, order.srid): order for order in existing_orders_list}
-    card_map = {c.nm_id: c for c in get_seller_cards(seller.id)}
+    # card_map = {c.nm_id: c for c in get_seller_cards(seller.id)}
 
     new_orders = []
+    existing_orders_output = []
     for item in data:
         order_key = (item.get("gNumber"), item.get("srid"))
         is_existing = order_key in existing_orders
-        card = card_map.get(item.get("nmId"))
+        # card = card_map.get(item.get("nmId"))
 
         order_fields = {
             "date": datetime.strptime(item.get("date"), '%Y-%m-%dT%H:%M:%S'),
@@ -95,7 +96,7 @@ def save_orders(data, seller: Seller) -> list[Order]:
             "oblast_okrug_name": item.get("oblastOkrugName"),
             "region_name": item.get("regionName"),
             "supplier_article": item.get("supplierArticle"),
-            "nm_id": card.nm_id,
+            "nm_id": item.get("nmId"), #card.nm_id
             "barcode": item.get("barcode"),
             "category": item.get("category"),
             "subject": item.get("subject"),
@@ -118,7 +119,6 @@ def save_orders(data, seller: Seller) -> list[Order]:
             "status": define_existing_order_status(sticker=item.get("sticker"), is_cancel=item.get("isCancel"))
         }
 
-        existing_orders_output = []
         if is_existing:
             # Update existing advert
             order = existing_orders[order_key]
