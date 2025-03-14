@@ -15,5 +15,5 @@ def load_cards_stat():
             if data:
                 save_card_stat(data, now, seller)
                 set_cards_stat_last_updated(now)
-                logging.info(f"[{seller.trade_mark}] Cards stat saved")
+                logging.info(f"[{seller.trade_mark}] Cards stat saved {len(data)}")
                 

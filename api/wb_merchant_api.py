@@ -5,6 +5,7 @@ import logging
 from datetime import datetime, time
 from db.models.card import get_seller_cards
 from db.models.seller import Seller
+from db.models.adverts import Advert
 
 from ratelimit import limits, sleep_and_retry
 
@@ -17,6 +18,7 @@ from api.wb_merchant_api_config import (
     LOAD_CARD_STAT_DAILY_URL,
     LOAD_ADVERTS_COUNT_URL,
     LOAD_ADVERTS_INFO_URL,
+    LOAD_ADVERTS_STAT_URL,
     CREATE_WAREHOUSE_REMAINS_TASK_URL,
     CHECK_WAREHOUSE_REMAINS_TASK_STATUS_URL,
     GET_WAREHOUSE_REMAINS_REPORT_URL
@@ -131,7 +133,6 @@ def load_cards_stat(last_updated: datetime, seller: Seller):
         "period": {"begin": begin_date, "end": end_date},
         "aggregationLevel": "day"
     }
-
     return api_request(seller, 'POST', LOAD_CARD_STAT_DAILY_URL, json_payload=payload, data_key='data')
 
 
@@ -162,3 +163,16 @@ def load_adverts(seller: Seller):
 
     detail_response = api_request(seller, 'POST', LOAD_ADVERTS_INFO_URL, json_payload=list(advert_ids))
     return detail_response
+
+
+@sleep_and_retry
+@limits(calls=5, period=1)
+def load_adverts_stat(seller: Seller, adverts: list[Advert]):
+    end_date = datetime.now().strftime("%Y-%m-%d")
+    payload = []
+    for advert in adverts:
+        payload.append({
+            'id': advert.advert_id,
+            'dates': [advert.stat_last_updated.strftime("%Y-%m-%d"), end_date]
+        })
+    detail_response = api_request(seller, 'POST', LOAD_ADVERTS_STAT_URL, json_payload=list(advert_ids))

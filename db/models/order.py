@@ -4,7 +4,6 @@ from db.base import Base, session
 from db.models.card import Card
 from datetime import datetime
 from enum import Enum
-from db.models.card import get_seller_cards
 from db.models.seller import Seller
 
 
@@ -78,7 +77,6 @@ def save_orders(data, seller: Seller) -> list[Order]:
             Order.srid.in_([item.get("srid") for item in data])
         )).all()
     existing_orders = {(order.g_number, order.srid): order for order in existing_orders_list}
-    # card_map = {c.nm_id: c for c in get_seller_cards(seller.id)}
 
     new_orders = []
     existing_orders_output = []
@@ -96,7 +94,7 @@ def save_orders(data, seller: Seller) -> list[Order]:
             "oblast_okrug_name": item.get("oblastOkrugName"),
             "region_name": item.get("regionName"),
             "supplier_article": item.get("supplierArticle"),
-            "nm_id": item.get("nmId"), #card.nm_id
+            "nm_id": item.get("nmId"),
             "barcode": item.get("barcode"),
             "category": item.get("category"),
             "subject": item.get("subject"),

@@ -24,6 +24,7 @@ def get_card_by_nm_id(nm_id) -> Card:
     return session.query(Card).filter(Card.nm_id == nm_id).first()
 
 
+#TODO UPDATE IT!!!!!!
 def save_cards(data, seller: Seller) -> list[Card]:
     cards_to_insert = []
     cards_to_update = []

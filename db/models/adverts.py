@@ -36,6 +36,7 @@ class Advert(Base):
     # last_change_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
 
     seller_id: Mapped[int] = mapped_column(ForeignKey('sellers.id'), nullable=False)
+    
     id: Mapped[Seller] = relationship("Seller")
 
     create_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
@@ -50,10 +51,15 @@ class Advert(Base):
     status: Mapped[Status] = mapped_column(PgEnum(Status, native_enum=False), nullable=False)
     payment_type: Mapped[PaymentType] = mapped_column(PgEnum(PaymentType, native_enum=False), nullable=False)
 
+    stat_last_updated: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+
 
 def parse_datetime(dt_str: str) -> datetime:
-    """Safely parse ISO 8601 datetime string."""
     return datetime.fromisoformat(dt_str.replace('Z', '+00:00')) if dt_str else None
+
+
+def get_adverts_by_seller_id(seller: Seller):
+    return session.query(Advert).filter(Advert.seller_id == seller.id).all()
 
 
 def save_adverts(data, seller: Seller) -> list[Advert]:

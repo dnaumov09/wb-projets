@@ -1,6 +1,6 @@
 from sqlalchemy import ForeignKey, select
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.schema import PrimaryKeyConstraint
+
 
 from db.base import Base, session
 from db.models.card import Card, get_seller_cards

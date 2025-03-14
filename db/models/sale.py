@@ -5,7 +5,6 @@ from db.models.card import Card
 from db.models.order import Order
 from datetime import datetime
 from enum import Enum
-from db.models.card import get_seller_cards
 from db.models.seller import Seller
 
 
@@ -70,14 +69,12 @@ def save_sales(data, seller: Seller) -> list[Order]:
             Sale.srid.in_([item.get("srid") for item in data])
         )).all()
     existing_sales = {(sale.g_number, sale.srid): sale for sale in existing_sales_list}
-    card_map = {c.nm_id: c for c in get_seller_cards(seller.id)}
 
     new_sales = []
     existing_sales_output = []
     for item in data:
         sale_key = (item.get("gNumber"), item.get("srid"))
         is_existing = sale_key in existing_sales
-        card = card_map.get(item.get("nmId"))
 
         sale_fields = {
             "date": datetime.strptime(item.get("date"), '%Y-%m-%dT%H:%M:%S'),
@@ -88,7 +85,7 @@ def save_sales(data, seller: Seller) -> list[Order]:
             "oblast_okrug_name": item.get("oblastOkrugName"),
             "region_name": item.get("regionName"),
             "supplier_article": item.get("supplierArticle"),
-            "nm_id": card.nm_id,
+            "nm_id": item.get("nmId"),
             "barcode": item.get("barcode"),
             "category": item.get("category"),
             "subject": item.get("subject"),
