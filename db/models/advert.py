@@ -33,11 +33,9 @@ class Advert(Base):
     __tablename__ = 'adverts'
 
     advert_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=False)
-    # last_change_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
 
     seller_id: Mapped[int] = mapped_column(ForeignKey('sellers.id'), nullable=False)
-    
-    id: Mapped[Seller] = relationship("Seller")
+    seller: Mapped[Seller] = relationship("Seller")
 
     create_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     start_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
@@ -50,8 +48,6 @@ class Advert(Base):
     advert_type: Mapped[AdvertType] = mapped_column(PgEnum(AdvertType, native_enum=False), nullable=False)
     status: Mapped[Status] = mapped_column(PgEnum(Status, native_enum=False), nullable=False)
     payment_type: Mapped[PaymentType] = mapped_column(PgEnum(PaymentType, native_enum=False), nullable=False)
-
-    stat_last_updated: Mapped[datetime] = mapped_column(DateTime, nullable=True)
 
 
 def parse_datetime(dt_str: str) -> datetime:

@@ -5,7 +5,7 @@ import logging
 from datetime import datetime, time
 from db.models.card import get_seller_cards
 from db.models.seller import Seller
-from db.models.adverts import Advert
+from db.models.advert import Advert
 
 from ratelimit import limits, sleep_and_retry
 
@@ -167,12 +167,16 @@ def load_adverts(seller: Seller):
 
 @sleep_and_retry
 @limits(calls=5, period=1)
-def load_adverts_stat(seller: Seller, adverts: list[Advert]):
+def load_adverts_stat(seller: Seller, adverts: list[Advert], last_updated: datetime):
     end_date = datetime.now().strftime("%Y-%m-%d")
     payload = []
     for advert in adverts:
         payload.append({
-            'id': advert.advert_id,
-            'dates': [advert.stat_last_updated.strftime("%Y-%m-%d"), end_date]
+            "id": advert.advert_id,
+            "interval": {
+                "begin": last_updated.strftime("%Y-%m-%d"), 
+                "end": end_date
+            }
         })
-    detail_response = api_request(seller, 'POST', LOAD_ADVERTS_STAT_URL, json_payload=list(advert_ids))
+    detail_response = api_request(seller, 'POST', LOAD_ADVERTS_STAT_URL, json_payload=payload)
+    return detail_response

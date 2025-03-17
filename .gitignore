@@ -1,3 +1,4 @@
+.DS_Store
 .env
 __pycache__
 .vscode
@@ -9,4 +10,3 @@ deploy.sh
 alembic
 alembic.ini
 google-credentials.json
-.DS_Store

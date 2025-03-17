@@ -15,6 +15,7 @@ class Settings(Base):
     orders_last_updated: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     sales_last_updated: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     cards_stat_last_updated: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    adverts_stat_last_updated: Mapped[datetime] = mapped_column(DateTime, nullable=False)
 
     def __init__(self, last_updated):  
         self.last_updated = last_updated
@@ -53,3 +54,13 @@ def set_cards_stat_last_updated(last_updated):
 def get_cards_stat_last_updated():
     settings = session.query(Settings).filter(Settings.id == SETTINGS_ID).first()
     return settings.cards_stat_last_updated
+
+
+def set_adverts_stat_last_updated(last_updated):
+    session.query(Settings).filter(Settings.id == SETTINGS_ID).update({Settings.adverts_stat_last_updated: last_updated})
+    session.commit()
+
+
+def get_adverts_stat_last_updated():
+    settings = session.query(Settings).filter(Settings.id == SETTINGS_ID).first()
+    return settings.adverts_stat_last_updated

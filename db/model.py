@@ -10,4 +10,5 @@ from db.models.settings import Settings
 from db.models.warehouse import Warehouse
 from db.models.remains import Remains
 from db.models.warehouse_remains import WarehouseRemains
-from db.models.adverts import Advert
+from db.models.advert import Advert
+from db.models.adverts_stat import AdvertsStat
