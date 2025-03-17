@@ -17,9 +17,6 @@ class Settings(Base):
     cards_stat_last_updated: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     adverts_stat_last_updated: Mapped[datetime] = mapped_column(DateTime, nullable=False)
 
-    def __init__(self, last_updated):  
-        self.last_updated = last_updated
-
 
 def get_orders_last_updated():
     settings = session.query(Settings).filter(Settings.id == SETTINGS_ID).first()

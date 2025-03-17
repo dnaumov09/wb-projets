@@ -1,3 +1,4 @@
+import logging
 import schedule
 import time
 from datetime import datetime
@@ -78,10 +79,12 @@ def run_every_5minutes_task():
 
 def run_stat_updating():
     """Update various statistics including cards, orders, and sales."""
+    logging.info('scheduler.run_stat_updating() - started')
     cards_service.load_cards()
     card_stat_service.load_cards_stat()
     orders_service.load_orders()
     sales_service.load_sales()
+    logging.info('scheduler.run_stat_updating() - done')
 
 
 def run_remains_updating():
