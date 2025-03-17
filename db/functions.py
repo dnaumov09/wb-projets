@@ -131,7 +131,7 @@ def get_date_ranges():
     return {
         'today': (today, today + timedelta(days=1)),
         'yesterday': (yesterday, today),
-        'current_week': (current_week_start, today + timedelta(days=1)),
+        'current_week': (current_week_start, today + timedelta(days=1)), #OR #'current_week': (current_week_start, current_week_start + timedelta(days=7)),
         'last_week': (last_week_start, last_week_end + timedelta(days=1)),
         'current_month': (current_month_start, today + timedelta(days=1)),
         'last_month': (last_month_start, last_month_end + timedelta(days=1)),
