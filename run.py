@@ -13,7 +13,7 @@ from services import advert_service
 def main():
     init_logging(logging.INFO)
     
-    # advert_service.load_adverts()
+    advert_service.load_adverts()
     advert_service.load_adveerts_stat()
 
     # start_scheduler()

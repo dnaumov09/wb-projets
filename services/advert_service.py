@@ -12,7 +12,8 @@ def load_adverts():
             logging.info(f"[{seller.trade_mark}] Loading adverts")
             data = wb_merchant_api.load_adverts(seller)
             if data:
-                save_adverts(data, seller)
+                adverts = save_adverts(data, seller)
+                logging.info(f"[{seller.trade_mark}] Adverts saved ({len(adverts)})")
 
 
 #https://dev.wildberries.ru/openapi/analytics#tag/Statistika-po-prodvizheniyu/paths/~1adv~1v2~1fullstats/post

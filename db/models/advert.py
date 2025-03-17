@@ -69,6 +69,7 @@ def save_adverts(data, seller: Seller) -> list[Advert]:
     adverts_to_archive = list(existing_advert_ids - incoming_advert_ids)
 
     new_adverts = []
+    existing_adverts_output = []
     for advert_data in data:
         advert_id = advert_data['advertId']
         is_existing = advert_id in existing_adverts
@@ -93,6 +94,7 @@ def save_adverts(data, seller: Seller) -> list[Advert]:
             advert = existing_adverts[advert_id]
             for field, value in advert_fields.items():
                 setattr(advert, field, value)
+            existing_adverts_output.append(advert)
         else:
             # Collect for bulk insert
             new_adverts.append(Advert(**advert_fields))
@@ -106,3 +108,5 @@ def save_adverts(data, seller: Seller) -> list[Advert]:
     if adverts_to_archive:
         logging.info(f"[{seller.trade_mark}] Adverts to archive (missing in incoming data):")
         logging.info(f"{adverts_to_archive}")
+
+    return new_adverts + existing_adverts_output
