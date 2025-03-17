@@ -46,10 +46,6 @@ def _schedule_jobs():
     for time_point in ["00:00", "09:00", "12:00", "15:00", "18:00", "21:00"]:
         schedule.every().day.at(time_point).do(reporting_service.update_pipeline_data)
 
-    # Multiple times a day for adverts stat updating
-    for time_point in ["00:00", "09:00", "12:00", "15:00", "18:00", "21:00"]:
-        schedule.every().day.at(time_point).do(run_adverts_stat_updating)
-
 
 def run_precise_minute_tasks():
     """
@@ -75,6 +71,7 @@ def run_every_minute_task():
 def run_every_5minutes_task():
     """Task that runs every 5 minutes at 00 seconds."""
     run_stat_updating()
+    run_adverts_stat_updating()
     
 
 def run_stat_updating():
@@ -95,5 +92,7 @@ def run_remains_updating():
 
 def run_adverts_stat_updating():
     """Update adverts and their statistics."""
+    logging.info('scheduler.run_adverts_stat_updating() - started')
     advert_service.load_adverts()
     advert_service.load_adveerts_stat()
+    logging.info('scheduler.run_adverts_stat_updating() - done')
