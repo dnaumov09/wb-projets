@@ -198,6 +198,7 @@ BEGIN
             sum(price_with_disc),
             avg(price_with_disc)
         FROM sales
+        WHERE price_with_disc >= 0
         GROUP BY period, nm_id
         ORDER BY period, nm_id',
         period_type

@@ -11,6 +11,7 @@ from db.models.seller import Seller
 class SaleStatus(Enum):
     UNDEFINED = -1
     NEW = 0
+    RETURN = 1
 
 class Sale(Base):
     __tablename__ = 'sales'
@@ -55,11 +56,11 @@ class Sale(Base):
     status: Mapped[SaleStatus] = mapped_column(nullable=True)
 
 
-def define_existing_sale_status(obj: Sale = None) -> SaleStatus:
-    if obj is not None:
-        return SaleStatus.UNDEFINED 
-    else:
+def define_existing_sale_status(price_with_disc: float) -> SaleStatus:
+    if price_with_disc >= 0:
         return SaleStatus.NEW
+    else:
+        return SaleStatus.RETURN
     
 
 def save_sales(data, seller: Seller) -> list[Order]:

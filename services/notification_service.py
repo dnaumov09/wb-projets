@@ -17,8 +17,9 @@ order_status_messages = {
     }
 
 sales_status_messages = {
+        SaleStatus.UNDEFINED: "❓ <b>Статус выкупа не определен</b>",
         SaleStatus.NEW: "✅ <b>Клиент выкупил товар</b>",
-        SaleStatus.UNDEFINED: "❓ <b>Статус выкупа не определен</b>"
+        SaleStatus.RETURN: "❌ <b>Клиент вернул заказ</b>"
     }
 
 admins_to_notify = [user for user in get_admins() if user.receive_orders]
