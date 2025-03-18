@@ -3,7 +3,7 @@ from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, D
 
 from db.base import Base, session
 
-# https://dev.wildberries.ru/openapi/financial-reports-and-accounting# tag/Finansovye-otchyoty/paths/~1api~1v5~1supplier~1reportDetailByPeriod/get
+# https://dev.wildberries.ru/openapi/financial-reports-and-accounting#tag/Finansovye-otchyoty/paths/~1api~1v5~1supplier~1reportDetailByPeriod/get
 class Realization(Base):
     __tablename__ = 'realizations'
     
