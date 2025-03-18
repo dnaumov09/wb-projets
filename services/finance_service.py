@@ -10,5 +10,7 @@ def load_finances():
         if seller.id == 1:
             date_to = datetime.now()
             data = wb_merchant_api.load_fincancial_report(get_finances_last_updated(), date_to, seller)
+            if not data:
+                continue
             save_realizations(data)
             set_finances_last_updated(date_to)
