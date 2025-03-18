@@ -38,7 +38,7 @@ def _schedule_jobs():
     """Set up all scheduled jobs."""
     
     # Daily jobs # поменять на понедельники
-    schedule.every().day.at("01:00").do(finance_service.load_finances())
+    schedule.every().day.at("01:00").do(finance_service.load_finances)
     
     # Daily jobs
     schedule.every().day.at("03:00").do(run_remains_updating)
