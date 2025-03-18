@@ -76,7 +76,7 @@ def save_sales(data, seller: Seller) -> list[Order]:
     for item in data:
         sale_key = (item.get("gNumber"), item.get("srid"))
         is_existing = sale_key in existing_sales
-
+        price_with_disc = item.get("priceWithDisc")
         sale_fields = {
             "date": datetime.strptime(item.get("date"), '%Y-%m-%dT%H:%M:%S'),
             "last_change_date": datetime.strptime(item.get("lastChangeDate"), '%Y-%m-%dT%H:%M:%S'),
@@ -100,13 +100,13 @@ def save_sales(data, seller: Seller) -> list[Order]:
             "spp": item.get("spp"),
             "for_pay": item.get("forPay"),
             "finished_price": item.get("finishedPrice"),
-            "price_with_disc": item.get("priceWithDisc"),
+            "price_with_disc": price_with_disc,
             "order_type": item.get("orderType"),
             "sticker": item.get("sticker"),
             "g_number": item.get("gNumber"),
             "sale_id": item.get("saleID"),
             "srid": item.get("srid"),
-            "status": define_existing_sale_status(),
+            "status": define_existing_sale_status(price_with_disc),
         }
 
         if is_existing:

@@ -17,9 +17,9 @@ FEEDBACKS_SHEET_QUESTIONS = 'Вопросы'
 FEEDBACKS_SHEET_QUESTIONSANSWERS = 'Вопросы/Ответы'
 
 
-credentials = None #Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
-sheets_service = None #build('sheets', 'v4', credentials=credentials)
-drive_service = None #build('drive', 'v3', credentials=credentials)
+credentials = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+sheets_service = build('sheets', 'v4', credentials=credentials)
+drive_service = build('drive', 'v3', credentials=credentials)
 
 
 def create_spreadsheet(item: Item) -> str:
