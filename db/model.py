@@ -12,3 +12,4 @@ from db.models.remains import Remains
 from db.models.warehouse_remains import WarehouseRemains
 from db.models.advert import Advert
 from db.models.adverts_stat import AdvertsStat
+from db.models.realization import Realization

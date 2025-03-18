@@ -18,10 +18,11 @@ class Settings(Base):
     # seller: Mapped[Seller] = relationship("Seller")
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=False, default=0)
-    orders_last_updated: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    sales_last_updated: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    cards_stat_last_updated: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    adverts_stat_last_updated: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    orders_last_updated: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    sales_last_updated: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    cards_stat_last_updated: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    adverts_stat_last_updated: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    finances_last_updated: Mapped[datetime] = mapped_column(DateTime, nullable=True)
 
 #     load_cards_stat: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 #     load_orders: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
@@ -81,3 +82,13 @@ def set_adverts_stat_last_updated(last_updated):
 def get_adverts_stat_last_updated():
     settings = session.query(Settings).filter(Settings.id == SETTINGS_ID).first()
     return settings.adverts_stat_last_updated
+
+
+def set_finances_last_updated(last_updated):
+    session.query(Settings).filter(Settings.id == SETTINGS_ID).update({Settings.finances_last_updated: last_updated})
+    session.commit()
+
+
+def get_finances_last_updated():
+    settings = session.query(Settings).filter(Settings.id == SETTINGS_ID).first()
+    return settings.finances_last_updated

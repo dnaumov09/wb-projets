@@ -12,7 +12,8 @@ from services import (
     orders_service,
     sales_service,
     reporting_service,
-    advert_service
+    advert_service,
+    finance_service
 )
 
 
@@ -36,6 +37,7 @@ def start_scheduler():
 def _schedule_jobs():
     """Set up all scheduled jobs."""
     # Daily jobs
+    schedule.every().day.at("01:00").do(finance_service.load_finances())
     schedule.every().day.at("03:00").do(run_remains_updating)
     schedule.every().day.at("23:59").do(notification_service.notyfy_pipeline)
 

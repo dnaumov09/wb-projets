@@ -19,9 +19,10 @@ from api.wb_merchant_api_config import (
     LOAD_ADVERTS_COUNT_URL,
     LOAD_ADVERTS_INFO_URL,
     LOAD_ADVERTS_STAT_URL,
+    LOAD_FINANCIAL_REPORT_URL,
     CREATE_WAREHOUSE_REMAINS_TASK_URL,
     CHECK_WAREHOUSE_REMAINS_TASK_STATUS_URL,
-    GET_WAREHOUSE_REMAINS_REPORT_URL
+    GET_WAREHOUSE_REMAINS_REPORT_URL,
 )
 
 
@@ -134,6 +135,16 @@ def load_cards_stat(last_updated: datetime, seller: Seller):
         "aggregationLevel": "day"
     }
     return api_request(seller, 'POST', LOAD_CARD_STAT_DAILY_URL, json_payload=payload, data_key='data')
+
+
+@sleep_and_retry
+@limits(calls=1, period=60)
+def load_fincancial_report(date_from: datetime, date_to: datetime, seller: Seller):
+    url = format_url(LOAD_FINANCIAL_REPORT_URL, 
+                     date_from=date_from.strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                     date_to=date_to.strftime("%Y-%m-%dT%H:%M:%S.%f")
+                     )
+    return api_request(seller, 'GET', url)
 
 
 @sleep_and_retry
