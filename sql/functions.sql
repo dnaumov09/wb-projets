@@ -253,3 +253,83 @@ BEGIN
     );
 END;
 $$;
+
+
+CREATE OR REPLACE VIEW financial_report
+AS SELECT realizationreport_id, -- ID отчета
+    date_from, -- От
+    date_to, -- До
+    create_dt, -- Дата создания отчета
+    doc_type_name, -- Тип документа ("Продажа", "Возврат", " ")
+    sum(retail_price) AS retail_price, -- Цена розничная
+    sum(retail_amount) AS retail_amount, -- Вайлдберриз реализовал Товар (Пр)
+    avg(sale_percent) AS sale_percent, -- Согласованная скидка, %
+    sum(ppvz_for_pay) AS ppvz_for_pay, -- К перечислению за товар
+    sum(delivery_rub) AS delivery_rub, -- Стоимость логистики
+    sum(penalty) AS penalty, -- Общая сумма штрафов
+    sum(additional_payment) AS additional_payment, -- Доплаты
+    sum(storage_fee) AS storage_fee, -- Стоимость хранения
+    sum(acceptance) AS acceptance, -- Стоимость платной приемки
+    sum(deduction) AS deduction, -- Прочие удержания/выплаты
+        CASE
+            WHEN doc_type_name = 'Возврат'
+            THEN sum(ppvz_for_pay) - sum(delivery_rub) - sum(penalty) - sum(additional_payment) - sum(storage_fee) - sum(acceptance) - sum(deduction) - sum(retail_amount) * 2
+            ELSE sum(ppvz_for_pay) - sum(delivery_rub) - sum(penalty) - sum(additional_payment) - sum(storage_fee) - sum(acceptance) - sum(deduction)
+        END AS ttl_for_pay -- Итого к оплате,
+    sum(retail_price) * 0.07 AS vat7, -- Налог, 7% от розничной цены
+        CASE
+            WHEN doc_type_name = 'Возврат'
+            THEN sum(ppvz_for_pay) - sum(delivery_rub) - sum(penalty) - sum(additional_payment) - sum(storage_fee) - sum(acceptance) - sum(deduction) - sum(retail_price) * 0.07 - sum(retail_amount) * 2
+            ELSE sum(ppvz_for_pay) - sum(delivery_rub) - sum(penalty) - sum(additional_payment) - sum(storage_fee) - sum(acceptance) - sum(deduction) - sum(retail_price) * 0.07
+        END AS after_vat7  -- Прибыль после налогов, 7%
+   FROM realizations r
+  GROUP BY realizationreport_id, create_dt, date_from, date_to, doc_type_name
+  ORDER BY create_dt DESC;
+
+
+DROP FUNCTION get_financial_report_by_period(text);
+CREATE OR REPLACE FUNCTION get_financial_report_by_period(
+    period_type text
+)
+RETURNS TABLE (
+    date_from TIMESTAMP,
+    date_to TIMESTAMP,
+    retail_price double precision,
+    retail_amount double precision,
+    sale_percent double precision,
+    ppvz_for_pay double precision,
+    delivery_rub double precision,
+    penalty double precision,
+    storage_fee double precision,
+    acceptance double precision,
+    deduction double precision,
+    ttl_for_pay double precision,
+    vat7 double precision,
+    after_vat7 double precision
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+	RETURN QUERY EXECUTE format(
+		'select 
+			min(fr.date_from) as date_from,
+			max(fr.date_to) as date_to,
+			sum(fr.retail_price) as retail_price,
+			sum(fr.retail_amount) as retail_amount,
+			sum(fr.ppvz_for_pay) as ppvz_for_pay,
+			sum(fr.delivery_rub) as delivery_rub,
+			sum(fr.penalty) as penalty,
+			sum(fr.additional_payment) as additional_payment,
+			sum(fr.storage_fee) as storage_fee,
+			sum(fr.acceptance) as acceptance,
+			sum(fr.deduction) as deduction,
+			sum(fr.ttl_for_pay) as ttl_for_pay,
+			sum(fr.vat7) as vat7,
+			sum(fr.after_vat7) as after_vat7
+		from financial_report fr
+		group by 
+			date_trunc(%L, fr.date_from)
+		order by
+			date_from', period_type);
+END
+$$;
