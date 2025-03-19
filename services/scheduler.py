@@ -38,7 +38,7 @@ def _schedule_jobs():
     """Set up all scheduled jobs."""
     
     # Daily jobs # поменять на понедельники
-    schedule.every().day.at("01:00").do(finance_service.load_finances)
+    schedule.every().monday.at("05:00").do(run_finances_updating)
     
     # Daily jobs
     schedule.every().day.at("03:00").do(run_remains_updating)
@@ -61,16 +61,11 @@ def run_precise_minute_tasks():
     now = datetime.now()
 
     # Run every minute task
-    run_every_minute_task()
+    # run_every_minute_task()
 
     # Run every 5 minutes task if aligned
     if now.minute % 5 == 0:
         run_every_5minutes_task()
-
-
-def run_every_minute_task():
-    """Task that runs every minute at 00 seconds."""
-    pass
 
 
 def run_every_5minutes_task():
@@ -101,3 +96,11 @@ def run_adverts_stat_updating():
     advert_service.load_adverts()
     advert_service.load_adveerts_stat()
     logging.info('scheduler.run_adverts_stat_updating() - done')
+
+
+def run_finances_updating():
+    """Update finances and related reports."""
+    logging.info('scheduler.run_finances_updating() - started')
+    finance_service.load_finances()
+    logging.info('scheduler.run_finances_updating() - done')
+
