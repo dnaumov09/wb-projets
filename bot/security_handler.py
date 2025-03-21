@@ -4,7 +4,7 @@ from aiogram import BaseMiddleware
 from aiogram.dispatcher.flags import get_flag
 from aiogram.types import Message, TelegramObject
 
-from db.models.user import get_user
+from db.model.user import get_user
 
 
 class AuthorizationMiddleware(BaseMiddleware):

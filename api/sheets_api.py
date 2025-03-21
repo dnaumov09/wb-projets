@@ -3,10 +3,10 @@ from datetime import datetime
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
 
-from db.models.seller import Seller
-from db.models.warehouse_remains import WarehouseRemains
-from db.models.remains import Remains
-from db.models.card import Card
+from db.model.seller import Seller
+from db.model.warehouse_remains import WarehouseRemains
+from db.model.remains import Remains
+from db.model.card import Card
 
 SHEETS_ADMINS = ['dnaumov09@gmail.com']
 

@@ -404,7 +404,8 @@ select
     sum(storage_fee) as storage_fee, -- Хранение
     sum(delivery_rub) as delivery_rub, -- Логистика
     sum(acceptance) as acceptance, -- Платная приемка
-    sum(deduction) as deduction -- Прочие удержания/выплаты
+    sum(deduction) as deduction, -- Прочие удержания/выплаты
+    r.rr_dt -- Дата операции
 from realizations r
 group by r.nm_id, r.doc_type_name, r.supplier_oper_name, r.realizationreport_id
 order by r.nm_id;
@@ -445,5 +446,33 @@ begin
         GROUP BY nm_id
         ORDER BY nm_id'
     USING report_ids;
+end
+$$;
+
+
+DROP FUNCTION public.get_financial_report_by_dates(timestamp, timestamp);
+CREATE OR REPLACE FUNCTION public.get_financial_report_by_dates(date_from timestamp, date_to timestamp)
+ RETURNS TABLE(nm_id integer, quantity double precision, retail_amount double precision, ppvz_for_pay double precision, penalty double precision, additional_payment double precision, delivery_rub double precision, storage_fee double precision, acceptance double precision, deduction double precision)
+ LANGUAGE plpgsql
+AS $$
+begin
+	RETURN QUERY 
+    EXECUTE '
+        SELECT 
+            nm_id,
+            SUM(quantity)::double precision AS quantity,
+            SUM(retail_amount)::double precision AS retail_amount,
+            SUM(ppvz_for_pay)::double precision AS ppvz_for_pay,
+            SUM(penalty)::double precision AS penalty,
+            SUM(additional_payment)::double precision AS additional_payment,
+            SUM(delivery_rub)::double precision AS delivery_rub,
+            SUM(storage_fee)::double precision AS storage_fee,
+            SUM(acceptance)::double precision AS acceptance,
+            SUM(deduction)::double precision AS deduction
+        FROM financial_report_detailed
+        WHERE rr_dt >= $1 and rr_dt <= $2
+        GROUP BY nm_id
+        ORDER BY nm_id'
+    USING date_from, date_to;
 end
 $$;

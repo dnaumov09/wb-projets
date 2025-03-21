@@ -1,7 +1,8 @@
 import logging
-from db.models.seller import get_sellers_without_sid, update_seller_data
+
 from api import wb_merchant_api, sheets_api
 from services import cards_service
+from db.model.seller import get_sellers_without_sid, update_seller_data
 
 
 def check_and_create_sellers():

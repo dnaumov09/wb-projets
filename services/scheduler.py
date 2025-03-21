@@ -4,8 +4,8 @@ import time
 from datetime import datetime
 from threading import Thread
 
+from bot import notification_service
 from services import (
-    notification_service,
     remains_service,
     card_stat_service,
     cards_service,
@@ -45,14 +45,14 @@ def _schedule_jobs():
     schedule.every().day.at("23:59").do(notification_service.notyfy_pipeline)
 
     # Every minute at 00 seconds - checking inside the function to align tasks
-    schedule.every().minute.at(":00").do(run_precise_minute_tasks)
+    schedule.every().minute.at(":00").do(_run_precise_minute_tasks)
 
     # Multiple times a day for adverts stat updating
     for time_point in ["00:00", "09:00", "12:00", "15:00", "18:00", "21:00"]:
         schedule.every().day.at(time_point).do(reporting_service.update_pipeline_data)
 
 
-def run_precise_minute_tasks():
+def _run_precise_minute_tasks():
     """
     Runs tasks aligned to exact 00 seconds every minute:
     - Every minute task
@@ -65,10 +65,10 @@ def run_precise_minute_tasks():
 
     # Run every 5 minutes task if aligned
     if now.minute % 5 == 0:
-        run_every_5minutes_task()
+        _run_every_5minutes_task()
 
 
-def run_every_5minutes_task():
+def _run_every_5minutes_task():
     """Task that runs every 5 minutes at 00 seconds."""
     run_stat_updating()
     run_adverts_stat_updating()

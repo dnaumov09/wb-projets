@@ -1,8 +1,8 @@
 from sqlalchemy import ForeignKey, DateTime, Index, select
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from db.base import Base, session
-from db.models.card import Card
-from db.models.seller import Seller
+from db.model.card import Card
+from db.model.seller import Seller
 from datetime import datetime, time
 
 

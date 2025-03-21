@@ -10,3 +10,4 @@ deploy.sh
 alembic
 alembic.ini
 google-credentials.json
+.DN

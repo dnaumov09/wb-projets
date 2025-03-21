@@ -2,7 +2,7 @@ import logging
 from sqlalchemy import ForeignKey, DateTime, select, Enum as PgEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from db.base import Base, session
-from db.models.seller import Seller
+from db.model.seller import Seller
 from enum import Enum
 from datetime import datetime
 

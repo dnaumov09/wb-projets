@@ -1,11 +1,11 @@
 import time
 import logging
 
-from db.models.seller import Seller, get_sellers
-from db.models.warehouse import get_warehouses
-from db.models.remains import Remains, save_remains
-from db.models.warehouse_remains import WarehouseRemains, save_warehouse_remains
-from db.models.settings import get_seller_settings, save_settings
+from db.model.seller import Seller, get_sellers
+from db.model.warehouse import get_warehouses
+from db.model.remains import Remains, save_remains
+from db.model.warehouse_remains import WarehouseRemains, save_warehouse_remains
+from db.model.settings import get_seller_settings, save_settings
 
 from api import wb_merchant_api
 

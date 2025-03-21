@@ -5,7 +5,7 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from db.base import Base, session
 
-from db.models.seller import Seller
+from db.model.seller import Seller
 
 
 SETTINGS_ID = 1

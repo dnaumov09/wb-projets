@@ -4,10 +4,10 @@ from db.base import Base, session
 from sqlalchemy.schema import PrimaryKeyConstraint
 
 
-from db.models.warehouse import Warehouse, check_warehouse
-from db.models.remains import Remains
-from db.models.seller import Seller
-from db.models.card import Card
+from db.model.warehouse import Warehouse, check_warehouse
+from db.model.remains import Remains
+from db.model.seller import Seller
+from db.model.card import Card
 
 class WarehouseRemains(Base):
     __tablename__ = 'warehouse_remains'

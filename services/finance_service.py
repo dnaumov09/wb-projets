@@ -1,10 +1,10 @@
 import logging
 from datetime import datetime
-from db.models.seller import get_sellers
+from db.model.seller import get_sellers
 from api import wb_merchant_api
-from db.models.settings import get_seller_settings, save_settings
+from db.model.settings import get_seller_settings, save_settings
 
-from db.models.realization import save_realizations
+from db.model.realization import save_realizations
 
 def load_finances():
     for seller in get_sellers():
@@ -18,4 +18,4 @@ def load_finances():
             realizations = save_realizations(data, seller)
             settings.finances_last_updated = date_to
             save_settings(settings)
-            logging.info(f"[{seller.trade_mark}] Financial report saved (rows: {len(realizations)})")
+            logging.info(f"[{seller.trade_mark}] Financial report saved (rows: {len(realizations[0] + realizations[1])})")

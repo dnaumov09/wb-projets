@@ -1,11 +1,9 @@
-from datetime import datetime
-from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, DateTime, Text, BigInteger, select
-from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, Column, Integer, String, Float, Boolean, DateTime, Text, BigInteger, select
+from sqlalchemy.orm import relationship
 
 from db.base import Base, session
-from db.models.seller import Seller
+from db.model.seller import Seller
+from util import convert_date, save_records, camel_to_snake
 
 # https://dev.wildberries.ru/openapi/financial-reports-and-accounting#tag/Finansovye-otchyoty/paths/~1api~1v5~1supplier~1reportDetailByPeriod/get
 class Realization(Base):
@@ -91,6 +89,8 @@ class Realization(Base):
 
 
 def save_realizations(data, seller: Seller):
+    data = {camel_to_snake(k): v for k, v in data.items()}
+    
     date_keys = [
         'date_from', 'date_to', 'create_dt', 'fix_tariff_date_from', 
         'fix_tariff_date_to', 'order_dt', 'sale_dt', 'rr_dt'
@@ -100,30 +100,36 @@ def save_realizations(data, seller: Seller):
         for key in date_keys:
             if key in item and item[key]:
                 fmt = "%Y-%m-%dT%H:%M:%SZ" if "T" in item[key] else "%Y-%m-%d"
-                item[key] = datetime.strptime(item[key], fmt)
+                item[key] = convert_date(item[key], fmt)
             else:
                 item[key] = None
         item['seller_id'] = seller.id
 
-    existing_realizations_list = session.scalars(select(Realization).filter(
-            Realization.rrd_id.in_([item.get("rrd_id") for item in data])
-        )).all()
-    existing_realizations = {r.rrd_id: r for r in existing_realizations_list}
+    return save_records(
+        session=session,
+        model=Realization,
+        data=data,
+        key_fields=['rrd_id'])
 
-    new_realizations = []
-    existing_realizations_output = []  
-    for item in data:
-        is_existing = item['rrd_id'] in existing_realizations
-        if is_existing:
-            realization = existing_realizations[item['rrd_id']]
-            for key, value in item.items():
-                setattr(realization, key, value)
-            existing_realizations_output.append(realization)
-        else:
-            new_realizations.append(Realization(**item))
+    # existing_realizations_list = session.scalars(select(Realization).filter(
+    #         Realization.rrd_id.in_([item.get("rrd_id") for item in data])
+    #     )).all()
+    # existing_realizations = {r.rrd_id: r for r in existing_realizations_list}
 
-    if new_realizations:
-        session.bulk_save_objects(new_realizations)
+    # new_realizations = []
+    # existing_realizations_output = []  
+    # for item in data:
+    #     is_existing = item['rrd_id'] in existing_realizations
+    #     if is_existing:
+    #         realization = existing_realizations[item['rrd_id']]
+    #         for key, value in item.items():
+    #             setattr(realization, key, value)
+    #         existing_realizations_output.append(realization)
+    #     else:
+    #         new_realizations.append(Realization(**item))
 
-    session.commit()
-    return new_realizations + existing_realizations_output
+    # if new_realizations:
+    #     session.bulk_save_objects(new_realizations)
+
+    # session.commit()
+    # return new_realizations + existing_realizations_output

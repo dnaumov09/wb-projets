@@ -1,20 +1,27 @@
 from dotenv import load_dotenv
 load_dotenv()
 
-import logging
-from logging_settings import init_logging
-
-from services.scheduler import start_scheduler
-from bot.bot import start_bot
-
+import logging_settings
 from services import scheduler
+from bot import bot
 
 def main():
-    init_logging(logging.INFO)
+    scheduler.start_scheduler()
+    bot.start_bot()
 
-    start_scheduler()
-    start_bot()
+
+def run_tests():
+    from services import sales_service
+    sales_service.load_sales()
+    # scheduler.run_stat_updating()
+    # scheduler.run_adverts_stat_updating()
+    # scheduler.run_remains_updating()
+    # scheduler.run_finances_updating()
+    pass
     
 
 if __name__ == "__main__":
+    logging_settings.init_logging(logging_settings.logging.INFO)
+    run_tests()
     main()
+    

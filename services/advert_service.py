@@ -1,10 +1,10 @@
 import logging
 from datetime import datetime
 from api import wb_merchant_api
-from db.models.seller import get_sellers
-from db.models.advert import save_adverts, get_adverts_by_seller_id
-from db.models.adverts_stat import save_adverts_stat
-from db.models.settings import get_seller_settings, save_settings
+from db.model.seller import get_sellers
+from db.model.advert import save_adverts, get_adverts_by_seller_id
+from db.model.adverts_stat import save_adverts_stat
+from db.model.settings import get_seller_settings, save_settings
 
 def load_adverts():
     for seller in get_sellers():

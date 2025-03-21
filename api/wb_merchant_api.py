@@ -3,9 +3,9 @@ from typing import Optional, Dict, Any, List, Union, Literal
 import requests
 import logging
 from datetime import datetime, time
-from db.models.card import get_seller_cards
-from db.models.seller import Seller
-from db.models.advert import Advert
+from db.model.card import Card
+from db.model.seller import Seller
+from db.model.advert import Advert
 
 from ratelimit import limits, sleep_and_retry
 
@@ -120,13 +120,9 @@ def load_warehouse_remains_report(seller: Seller, task_id: str):
 
 @sleep_and_retry
 @limits(calls=3, period=60)
-def load_cards_stat(last_updated: datetime, seller: Seller):
+def load_cards_stat(last_updated: datetime, seller: Seller, seller_cards: list[Card]):
     begin_date = datetime.combine(last_updated, time.min).strftime("%Y-%m-%d")
     end_date = datetime.now().strftime("%Y-%m-%d")
-
-    seller_cards = get_seller_cards(seller.id)
-    if not seller_cards:
-        return None
 
     nm_ids = [card.nm_id for card in seller_cards]
     payload = {

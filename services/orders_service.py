@@ -1,10 +1,11 @@
 import logging
 from datetime import datetime
 from api import wb_merchant_api
-from db.models.seller import get_sellers
-from services.notification_service import notify_updated_orders
-from db.models.order import save_orders
-from db.models.settings import get_seller_settings, save_settings
+
+from bot.notification_service import notify_updated_orders
+from db.model.seller import get_sellers
+from db.model.order import save_orders
+from db.model.settings import get_seller_settings, save_settings
 
 def load_orders():
     for seller in get_sellers():
@@ -20,4 +21,4 @@ def load_orders():
                 save_settings(settings)
                 logging.info(f"[{seller.trade_mark}] Orders saved {len(data)}")
 
-                notify_updated_orders(updates)
+                notify_updated_orders(updates[0] + updates[1])

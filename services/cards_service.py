@@ -1,9 +1,7 @@
 import logging
-from db.models.seller import get_sellers
-from db.models.card import save_cards
-
 from api import wb_merchant_api
-from db.models.seller import Seller
+from db.model.seller import Seller, get_sellers
+from db.model.card import save_cards
 
 
 def load_cards():
