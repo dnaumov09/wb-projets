@@ -11,8 +11,8 @@ def main():
 
 
 def run_tests():
-    from services import sales_service
-    sales_service.load_sales()
+    from services import cards_service
+    cards_service.load_cards()
     # scheduler.run_stat_updating()
     # scheduler.run_adverts_stat_updating()
     # scheduler.run_remains_updating()

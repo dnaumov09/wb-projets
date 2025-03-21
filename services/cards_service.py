@@ -15,4 +15,4 @@ def load_seller_cards(seller: Seller):
     if data:
         cards = save_cards(data, seller)
         # sheets_api.update_stat_cards_sheets(seller.google_drive_stat_spreadsheet_id, cards)
-        logging.info(f"[{seller.trade_mark}] Cards saved {len(data)}")
+        logging.info(f"[{seller.trade_mark}] Cards saved {len(cards[0] + cards[1])}")
