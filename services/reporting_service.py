@@ -6,24 +6,27 @@ from api import sheets_api
 from db.models.seller import Seller, get_sellers
 from db.models.warehouse_remains import get_warehouse_remains_by_seller_id
 from db.models.remains import get_remains_by_seller_id
-from db.models.card import get_seller_cards
+from db.models.settings import get_seller_settings
 from db import functions
 
 
 def update_remains_data():
     for seller in get_sellers():
-        logging.info(f"[{seller.trade_mark}] Google Sheets remains updating...")
-        remains = get_remains_by_seller_id(seller.id)
-        sheets_api.update_remains_aggregated(seller, remains)
+        settings = get_seller_settings(seller)
+        if settings.load_remains:
+            logging.info(f"[{seller.trade_mark}] Google Sheets remains updating...")
+            remains = get_remains_by_seller_id(seller.id)
+            sheets_api.update_remains_aggregated(seller, remains)
 
-        warehouse_remains = get_warehouse_remains_by_seller_id(seller.id)
-        sheets_api.update_remains_warehouses(seller, warehouse_remains)
-        logging.info(f"[{seller.trade_mark}] Google Sheets remains updated")
+            warehouse_remains = get_warehouse_remains_by_seller_id(seller.id)
+            sheets_api.update_remains_warehouses(seller, warehouse_remains)
+            logging.info(f"[{seller.trade_mark}] Google Sheets remains updated")
 
 
 def update_pipeline_data():
     for seller in get_sellers():
-        if seller.id == 1:
+        settings = get_seller_settings(seller)
+        if settings.update_pipeline_data:
             logging.info(f"[{seller.trade_mark}] Google Sheets pipeline updating...")
             pipeline = functions.get_pipeline_by_period(functions.Period.DAILY, True)
             sheets_api.update_pipeline(seller, pipeline)

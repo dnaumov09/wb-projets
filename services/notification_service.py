@@ -10,10 +10,10 @@ from bot.stat_handler import build_pipeline_data
 
 
 order_status_messages = {
-        OrderStatus.NEW: "📩 <b>Поступил новый заказ</b>",
+        # OrderStatus.NEW: "📩 <b>Поступил новый заказ</b>",
         # OrderStatus.ACCEPTED_TO_WH: "📦 <b>Заказ принят складом</b>",
-        OrderStatus.CANCELLED: "➖ <b>Клиент отменил заказ</b>",
-        OrderStatus.UNDEFINED: "❓ <b>Статус заказа не определен</b>"
+        # OrderStatus.CANCELLED: "➖ <b>Клиент отменил заказ</b>",
+        # OrderStatus.UNDEFINED: "❓ <b>Статус заказа не определен</b>"
     }
 
 sales_status_messages = {

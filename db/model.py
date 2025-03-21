@@ -6,7 +6,7 @@ from db.models.order import Order
 from db.models.sale import Sale
 from db.models.card_stat import CardStat
 from db.models.user import User
-from db.models.settings import Settings
+from db.models.settings import SellerSettings
 from db.models.warehouse import Warehouse
 from db.models.remains import Remains
 from db.models.warehouse_remains import WarehouseRemains

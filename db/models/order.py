@@ -83,7 +83,6 @@ def save_orders(data, seller: Seller) -> list[Order]:
     for item in data:
         order_key = (item.get("gNumber"), item.get("srid"))
         is_existing = order_key in existing_orders
-        # card = card_map.get(item.get("nmId"))
 
         order_fields = {
             "date": datetime.strptime(item.get("date"), '%Y-%m-%dT%H:%M:%S'),

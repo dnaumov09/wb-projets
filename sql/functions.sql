@@ -255,59 +255,61 @@ END;
 $$;
 
 
-CREATE OR REPLACE VIEW financial_report
-AS SELECT realizationreport_id, -- ID отчета
+DROP VIEW IF EXISTS financial_report;
+CREATE OR REPLACE VIEW financial_report AS
+SELECT realizationreport_id, -- ID отчета
     date_from, -- От
     date_to, -- До
     create_dt, -- Дата создания отчета
-    doc_type_name, -- Тип документа ("Продажа", "Возврат", " ")
-    sum(retail_price) AS retail_price, -- Цена розничная
-    sum(retail_amount) AS retail_amount, -- Вайлдберриз реализовал Товар (Пр)
+    doc_type_name, --Тип документа
+    CASE
+    	WHEN doc_type_name = 'Продажа' THEN sum(retail_price)
+        ELSE -sum(retail_price)
+    END AS retail_price, -- Цена розничная
+	CASE
+    	WHEN doc_type_name = 'Продажа' THEN sum(retail_amount)
+        ELSE -sum(retail_amount)
+    END AS retail_amount, -- Вайлдберриз реализовал Товар (Пр)
     avg(sale_percent) AS sale_percent, -- Согласованная скидка, %
-    sum(ppvz_for_pay) AS ppvz_for_pay, -- К перечислению за товар
-    sum(delivery_rub) AS delivery_rub, -- Стоимость логистики
+    CASE
+    	WHEN doc_type_name = 'Продажа' THEN sum(ppvz_for_pay)
+        ELSE -sum(ppvz_for_pay)
+    END AS ppvz_for_pay, -- К перечислению продавцу за реализованный товар
+    
+    sum(delivery_rub) AS delivery_rub, -- Услуги по доставке товара покупателю
     sum(penalty) AS penalty, -- Общая сумма штрафов
     sum(additional_payment) AS additional_payment, -- Доплаты
     sum(storage_fee) AS storage_fee, -- Стоимость хранения
-    sum(acceptance) AS acceptance, -- Стоимость платной приемки
+    sum(acceptance) AS acceptance, -- Стоимость платной приёмки
     sum(deduction) AS deduction, -- Прочие удержания/выплаты
-        CASE
-            WHEN doc_type_name = 'Возврат'
-            THEN sum(ppvz_for_pay) - sum(delivery_rub) - sum(penalty) - sum(additional_payment) - sum(storage_fee) - sum(acceptance) - sum(deduction) - sum(retail_amount) * 2
-            ELSE sum(ppvz_for_pay) - sum(delivery_rub) - sum(penalty) - sum(additional_payment) - sum(storage_fee) - sum(acceptance) - sum(deduction)
-        END AS ttl_for_pay -- Итого к оплате,
-    sum(retail_price) * 0.07 AS vat7, -- Налог, 7% от розничной цены
-        CASE
-            WHEN doc_type_name = 'Возврат'
-            THEN sum(ppvz_for_pay) - sum(delivery_rub) - sum(penalty) - sum(additional_payment) - sum(storage_fee) - sum(acceptance) - sum(deduction) - sum(retail_price) * 0.07 - sum(retail_amount) * 2
-            ELSE sum(ppvz_for_pay) - sum(delivery_rub) - sum(penalty) - sum(additional_payment) - sum(storage_fee) - sum(acceptance) - sum(deduction) - sum(retail_price) * 0.07
-        END AS after_vat7  -- Прибыль после налогов, 7%
+    CASE
+    	WHEN doc_type_name = 'Продажа' THEN 
+			sum(ppvz_for_pay) - sum(delivery_rub) - sum(penalty) - sum(additional_payment) - sum(storage_fee) - sum(acceptance) - sum(deduction)
+		ELSE 
+			-sum(ppvz_for_pay) - sum(delivery_rub) - sum(penalty) - sum(additional_payment) - sum(storage_fee) - sum(acceptance) - sum(deduction)
+    END AS ttl_for_pay -- Итоговая сумма выплаты
    FROM realizations r
   GROUP BY realizationreport_id, create_dt, date_from, date_to, doc_type_name
   ORDER BY create_dt DESC;
 
 
 DROP FUNCTION get_financial_report_by_period(text);
-CREATE OR REPLACE FUNCTION get_financial_report_by_period(
-    period_type text
-)
-RETURNS TABLE (
-    date_from TIMESTAMP,
-    date_to TIMESTAMP,
-    retail_price double precision,
-    retail_amount double precision,
-    sale_percent double precision,
-    ppvz_for_pay double precision,
-    delivery_rub double precision,
-    penalty double precision,
-    storage_fee double precision,
-    acceptance double precision,
-    deduction double precision,
-    ttl_for_pay double precision,
-    vat7 double precision,
-    after_vat7 double precision
-)
-LANGUAGE plpgsql
+CREATE OR REPLACE FUNCTION get_financial_report_by_period(period_type text)
+ RETURNS TABLE(
+ 	date_from timestamp without time zone, -- От
+ 	date_to timestamp without time zone, -- До
+ 	retail_price double precision, -- Цена розничная
+ 	retail_amount double precision, -- Вайлдберриз реализовал Товар (Пр)
+ 	sale_percent double precision, -- Согласованная скидка, %
+ 	ppvz_for_pay double precision, -- К перечислению продавцу за реализованный товар
+ 	delivery_rub double precision, -- Услуги по доставке товара покупателю
+ 	penalty double precision, -- Общая сумма штрафов
+ 	additional_payment double precision,-- Доплаты
+ 	storage_fee double precision, -- Стоимость хранения
+ 	acceptance double precision, -- Стоимость платной приёмки
+ 	deduction double precision, -- Прочие удержания/выплаты
+ 	ttl_for_pay double precision) -- Итоговая сумма выплаты
+ LANGUAGE plpgsql
 AS $$
 BEGIN
 	RETURN QUERY EXECUTE format(
@@ -316,6 +318,7 @@ BEGIN
 			max(fr.date_to) as date_to,
 			sum(fr.retail_price) as retail_price,
 			sum(fr.retail_amount) as retail_amount,
+			sum(fr.sale_percent) as sale_percent,
 			sum(fr.ppvz_for_pay) as ppvz_for_pay,
 			sum(fr.delivery_rub) as delivery_rub,
 			sum(fr.penalty) as penalty,
@@ -323,13 +326,124 @@ BEGIN
 			sum(fr.storage_fee) as storage_fee,
 			sum(fr.acceptance) as acceptance,
 			sum(fr.deduction) as deduction,
-			sum(fr.ttl_for_pay) as ttl_for_pay,
-			sum(fr.vat7) as vat7,
-			sum(fr.after_vat7) as after_vat7
+			sum(fr.ttl_for_pay) as ttl_for_pay
 		from financial_report fr
 		group by 
 			date_trunc(%L, fr.date_from)
 		order by
 			date_from', period_type);
 END
+$$;
+
+
+drop view if exists financial_report_detailed;
+create or replace view financial_report_detailed as
+select 
+	r.realizationreport_id,
+    r.nm_id,
+	r.doc_type_name,
+	r.supplier_oper_name,
+	case
+		when r.doc_type_name = 'Продажа' and (
+        	r.supplier_oper_name = 'Продажа'
+       	)
+       	then sum(r.quantity)
+       	when r.doc_type_name = 'Продажа' and (
+        	r.supplier_oper_name = 'Авансовая оплата за товар без движения'
+        	or r.supplier_oper_name = 'Корректная продажа'
+        	or r.supplier_oper_name = 'Частичная компенсация брака'
+       	)
+       	then 1
+        when r.doc_type_name = 'Возврат' and (
+			r.supplier_oper_name = 'Корректный возврат' 
+        	or r.supplier_oper_name = 'Возврат' 
+        	or r.supplier_oper_name = 'Авансовая оплата за товар без движения'
+        	or r.supplier_oper_name = 'Сторно продаж'
+        	or r.supplier_oper_name = 'Компенсация подменного товара'
+        )
+        then -sum(r.quantity)
+        when r.doc_type_name = '' and (
+        	r.supplier_oper_name = 'Возмещение издержек по перевозке/по складским операциям с товаром'
+        )
+        then 0
+        when r.doc_type_name = '' and (
+        	r.supplier_oper_name = 'Штрафы'
+        	or r.supplier_oper_name = 'Логистика'
+        	or r.supplier_oper_name = 'Логистика сторно'
+        )
+        then 0
+        when r.doc_type_name = '' and (
+        	r.supplier_oper_name = 'Сторно возвратов'
+        )
+        then 1
+    end as quantity, --Количество
+    case
+    	when r.doc_type_name = 'Возврат' and (
+			r.supplier_oper_name = 'Корректный возврат' 
+        	or r.supplier_oper_name = 'Возврат' 
+        	or r.supplier_oper_name = 'Авансовая оплата за товар без движения'
+        	or r.supplier_oper_name = 'Сторно продаж'
+        	or r.supplier_oper_name = 'Компенсация подменного товара'
+        )
+        then -sum(r.retail_amount)
+        else sum(r.retail_amount)
+    end as retail_amount, -- Вайлдберриз реализовал Товар (Пр)
+    case
+    	when r.doc_type_name = 'Возврат' and (
+			r.supplier_oper_name = 'Корректный возврат' 
+        	or r.supplier_oper_name = 'Возврат' 
+        	or r.supplier_oper_name = 'Авансовая оплата за товар без движения'
+        	or r.supplier_oper_name = 'Сторно продаж'
+        	or r.supplier_oper_name = 'Компенсация подменного товара'
+        )
+        then -sum(r.ppvz_for_pay)
+        else sum(r.ppvz_for_pay)
+    end as ppvz_for_pay, -- К перечислению продавцу за реализованный товар
+    sum(r.penalty) as penalty, -- Общая сумма штрафов
+    sum(r.additional_payment) as additional_payment, -- Доплаты,
+    sum(storage_fee) as storage_fee, -- Хранение
+    sum(delivery_rub) as delivery_rub, -- Логистика
+    sum(acceptance) as acceptance, -- Платная приемка
+    sum(deduction) as deduction -- Прочие удержания/выплаты
+from realizations r
+group by r.nm_id, r.doc_type_name, r.supplier_oper_name, r.realizationreport_id
+order by r.nm_id;
+
+
+DROP FUNCTION get_financial_report_by_report_ids(report_ids int4[]);
+CREATE OR REPLACE FUNCTION get_financial_report_by_report_ids(report_ids int4[])
+ RETURNS TABLE(
+ 	nm_id int4,
+ 	quantity double precision,
+ 	retail_amount double precision,
+ 	ppvz_for_pay double precision,
+ 	penalty double precision,
+ 	additional_payment double precision,
+ 	delivery_rub double precision,
+ 	storage_fee double precision,
+ 	acceptance double precision,
+ 	deduction double precision
+ )
+ LANGUAGE plpgsql
+AS $$
+begin
+	RETURN QUERY 
+    EXECUTE '
+        SELECT 
+            nm_id,
+            SUM(quantity)::double precision AS quantity,
+            SUM(retail_amount)::double precision AS retail_amount,
+            SUM(ppvz_for_pay)::double precision AS ppvz_for_pay,
+            SUM(penalty)::double precision AS penalty,
+            SUM(additional_payment)::double precision AS additional_payment,
+            SUM(delivery_rub)::double precision AS delivery_rub,
+            SUM(storage_fee)::double precision AS storage_fee,
+            SUM(acceptance)::double precision AS acceptance,
+            SUM(deduction)::double precision AS deduction
+        FROM financial_report_detailed
+        WHERE realizationreport_id = ANY($1)
+        GROUP BY nm_id
+        ORDER BY nm_id'
+    USING report_ids;
+end
 $$;

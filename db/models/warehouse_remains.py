@@ -45,6 +45,8 @@ def save_warehouse_remains(data, db_warehouses: list[Warehouse], db_remains: lis
 
     session.bulk_save_objects(wr_to_save)
     session.commit()
+    
+    return wr_to_save
 
 def find_or_create_warehouse_remains(warehouse: Warehouse, remains: Remains, quantity: int) -> WarehouseRemains:
     warehouse_remains = session.query(WarehouseRemains).filter(WarehouseRemains.warehouse_id == warehouse.id, WarehouseRemains.remains_id == remains.barcode).first()

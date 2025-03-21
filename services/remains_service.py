@@ -1,10 +1,11 @@
 import time
 import logging
 
-from db.models.seller import Seller, get_sellers, get_seller
+from db.models.seller import Seller, get_sellers
 from db.models.warehouse import get_warehouses
 from db.models.remains import Remains, save_remains
-from db.models.warehouse_remains import WarehouseRemains, save_warehouse_remains, save_warehouse_remains_list, find_or_create_warehouse_remains
+from db.models.warehouse_remains import WarehouseRemains, save_warehouse_remains
+from db.models.settings import get_seller_settings, save_settings
 
 from api import wb_merchant_api
 
@@ -14,7 +15,9 @@ warehouses = get_warehouses()
 
 def load_remains():
     for seller in get_sellers():
-        update_remains_data(seller)  
+        settings = get_seller_settings(seller)
+        if settings.load_remains:
+            update_remains_data(seller)  
 
 
 def update_remains_data(seller: Seller) -> list[Remains, WarehouseRemains]:
@@ -33,4 +36,4 @@ def update_remains_data(seller: Seller) -> list[Remains, WarehouseRemains]:
 
     remains = save_remains(data, seller)
     warehouse_remains = save_warehouse_remains(data, warehouses, remains)
-    logging.info(f"[{seller.trade_mark}] Remains saved {len(data)}")
+    logging.info(f"[{seller.trade_mark}] Remains saved {len(warehouse_remains)}")

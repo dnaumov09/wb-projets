@@ -7,6 +7,7 @@ from logging_settings import init_logging
 from services.scheduler import start_scheduler
 from bot.bot import start_bot
 
+from services import scheduler
 
 def main():
     init_logging(logging.INFO)
