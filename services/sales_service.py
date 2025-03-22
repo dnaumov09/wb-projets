@@ -8,7 +8,6 @@ from db.model.sale import save_sales
 from db.model.seller import get_sellers
 
 def load_sales():
-    
     for seller in get_sellers():
         settings = get_seller_settings(seller)
         if settings.load_sales:

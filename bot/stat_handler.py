@@ -33,8 +33,7 @@ def build_pipeline_data() -> str:
     for period_name, data in pipeline_stats.items():
         header = format_period_name(period_name, date_ranges)
         result += f"<b>{header}</b>\n"
-        result += format_stat_data(period_name, data[0]) + '\n'
-
+        result += (format_stat_data(period_name, data[0]) if data else '---\n') + '\n'
     
     return result
 

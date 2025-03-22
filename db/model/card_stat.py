@@ -76,3 +76,4 @@ def save_card_stat(data, now: datetime, seller: Seller) -> list[CardStat]:
         session.bulk_save_objects(new_stat)
 
     session.commit()
+    return new_stat + existing_stat_output

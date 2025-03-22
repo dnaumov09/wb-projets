@@ -27,7 +27,7 @@ class Sale(Base):
     date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     last_change_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     warehouse_name: Mapped[str] = mapped_column(nullable=False)
-    warehouseType: Mapped[str] = mapped_column(nullable=False)
+    warehouse_type: Mapped[str] = mapped_column(nullable=False)
     country_name: Mapped[str] = mapped_column(nullable=False)
     oblast_okrug_name: Mapped[str] = mapped_column(nullable=False)
     region_name: Mapped[str] = mapped_column(nullable=False)
@@ -47,6 +47,7 @@ class Sale(Base):
     total_price: Mapped[float] = mapped_column(nullable=False) #Цена без скидок
     discount_percent: Mapped[float] = mapped_column(nullable=False) #Скидка продавца
     spp: Mapped[float] = mapped_column(nullable=False) #Скидка WB
+    payment_sale_amount: Mapped[float] = mapped_column(nullable=True) #Оплачено с WB Кошелька
     for_pay: Mapped[float] = mapped_column(nullable=False) #Сумма к оплате
     finished_price: Mapped[float] = mapped_column(nullable=False) #Оплачено с WB Кошелька
     price_with_disc: Mapped[float] = mapped_column(nullable=False) #К перечислению продавцу

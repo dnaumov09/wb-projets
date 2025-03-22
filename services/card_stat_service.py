@@ -18,8 +18,8 @@ def load_cards_stat():
             
             data = wb_merchant_api.load_cards_stat(settings.cards_stat_last_updated if settings.cards_stat_last_updated else now, seller, seller_cards)
             if data:
-                save_card_stat(data, now, seller)
+                saved_cards_stat = save_card_stat(data, now, seller)
                 settings.cards_stat_last_updated = now
                 save_settings(settings)
-                logging.info(f"[{seller.trade_mark}] Cards stat saved {len(data)}")
+                logging.info(f"[{seller.trade_mark}] Cards stat saved {len(saved_cards_stat)}")
                 
