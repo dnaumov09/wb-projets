@@ -7,7 +7,7 @@ from datetime import datetime
 from enum import Enum
 from db.model.seller import Seller
 
-from util import camel_to_snake, convert_date, save_records
+from db.util import camel_to_snake, convert_date, save_records
 
 
 class SaleStatus(Enum):
@@ -83,66 +83,3 @@ def save_sales(data, seller: Seller) -> list[Order]:
         model=Sale,
         data=updated_data,
         key_fields=['g_number', 'srid'])
-    
-
-    # # Fetch existing sales (g_number, srid) in bulk
-    # existing_sales_list = session.scalars(select(Sale).filter(
-    #         Sale.g_number.in_([item.get("gNumber") for item in data]),
-    #         Sale.srid.in_([item.get("srid") for item in data])
-    #     )).all()
-    # existing_sales = {(sale.g_number, sale.srid): sale for sale in existing_sales_list}
-
-    # new_sales = []
-    # existing_sales_output = []
-    # for item in data:
-    #     sale_key = (item.get("gNumber"), item.get("srid"))
-    #     is_existing = sale_key in existing_sales
-    #     price_with_disc = item.get("priceWithDisc")
-    #     sale_fields = {
-    #         "date": datetime.strptime(item.get("date"), '%Y-%m-%dT%H:%M:%S'),
-    #         "last_change_date": datetime.strptime(item.get("lastChangeDate"), '%Y-%m-%dT%H:%M:%S'),
-    #         "warehouse_name": item.get("warehouseName"),
-    #         "warehouseType": item.get("warehouseType"),
-    #         "country_name": item.get("countryName"),
-    #         "oblast_okrug_name": item.get("oblastOkrugName"),
-    #         "region_name": item.get("regionName"),
-    #         "supplier_article": item.get("supplierArticle"),
-    #         "nm_id": item.get("nmId"),
-    #         "barcode": item.get("barcode"),
-    #         "category": item.get("category"),
-    #         "subject": item.get("subject"),
-    #         "brand": item.get("brand"),
-    #         "tech_size": item.get("techSize"),
-    #         "income_id": item.get("incomeID"),
-    #         "is_supply": item.get("isSupply"),
-    #         "is_realization": item.get("isRealization"),
-    #         "total_price": item.get("totalPrice"),
-    #         "discount_percent": item.get("discountPercent"),
-    #         "spp": item.get("spp"),
-    #         "for_pay": item.get("forPay"),
-    #         "finished_price": item.get("finishedPrice"),
-    #         "price_with_disc": price_with_disc,
-    #         "order_type": item.get("orderType"),
-    #         "sticker": item.get("sticker"),
-    #         "g_number": item.get("gNumber"),
-    #         "sale_id": item.get("saleID"),
-    #         "srid": item.get("srid"),
-    #         "status": define_existing_sale_status(price_with_disc),
-    #     }
-
-    #     if is_existing:
-    #         # Update existing advert
-    #         sale = existing_sales[sale_key]
-    #         for field, value in sale_fields.items():
-    #             setattr(sale, field, value)
-    #         existing_sales_output.append(sale)
-    #     else:
-    #         # Collect for bulk insert
-    #         new_sales.append(Sale(**sale_fields))
-
-
-    # if new_sales:
-    #     session.bulk_save_objects(new_sales)
-
-    # session.commit()
-    # return new_sales + existing_sales_output

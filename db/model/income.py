@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship
 from db.base import Base, session
 
 from db.model.seller import Seller
-from util import camel_to_snake, convert_date, get_existing_records, save_records
+from db.util import camel_to_snake, convert_date, get_existing_records, save_records
 
 
 class Income(Base):

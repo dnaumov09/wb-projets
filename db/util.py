@@ -64,5 +64,6 @@ def camel_to_snake(name: str) -> str:
     name = re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', name)
     return name.lower()
 
+
 def convert_date(text, format) -> datetime:
     return datetime.strptime(text, format)

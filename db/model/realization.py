@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 
 from db.base import Base, session
 from db.model.seller import Seller
-from util import convert_date, save_records, camel_to_snake
+from db.util import convert_date, save_records, camel_to_snake
 
 # https://dev.wildberries.ru/openapi/financial-reports-and-accounting#tag/Finansovye-otchyoty/paths/~1api~1v5~1supplier~1reportDetailByPeriod/get
 class Realization(Base):
@@ -110,26 +110,3 @@ def save_realizations(data, seller: Seller):
         model=Realization,
         data=data,
         key_fields=['rrd_id'])
-
-    # existing_realizations_list = session.scalars(select(Realization).filter(
-    #         Realization.rrd_id.in_([item.get("rrd_id") for item in data])
-    #     )).all()
-    # existing_realizations = {r.rrd_id: r for r in existing_realizations_list}
-
-    # new_realizations = []
-    # existing_realizations_output = []  
-    # for item in data:
-    #     is_existing = item['rrd_id'] in existing_realizations
-    #     if is_existing:
-    #         realization = existing_realizations[item['rrd_id']]
-    #         for key, value in item.items():
-    #             setattr(realization, key, value)
-    #         existing_realizations_output.append(realization)
-    #     else:
-    #         new_realizations.append(Realization(**item))
-
-    # if new_realizations:
-    #     session.bulk_save_objects(new_realizations)
-
-    # session.commit()
-    # return new_realizations + existing_realizations_output

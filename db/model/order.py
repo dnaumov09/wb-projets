@@ -5,7 +5,7 @@ from db.model.card import Card
 from datetime import datetime
 from enum import Enum
 from db.model.seller import Seller
-from util import convert_date, save_records, camel_to_snake
+from db.util import convert_date, save_records, camel_to_snake
 
 
 class OrderStatus(Enum):
@@ -88,66 +88,3 @@ def save_orders(data, seller: Seller) -> list[Order]:
         model=Order,
         data=updated_data,
         key_fields=['g_number', 'srid'])
-
-    # # Fetch existing orders (g_number, srid) in bulk
-    # existing_orders_list = session.scalars(select(Order).filter(
-    #         Order.g_number.in_([item.get("gNumber") for item in data]),
-    #         Order.srid.in_([item.get("srid") for item in data])
-    #     )).all()
-    # existing_orders = {(order.g_number, order.srid): order for order in existing_orders_list}
-
-    # new_orders = []
-    # existing_orders_output = []
-    # for item in data:
-    #     order_key = (item.get("gNumber"), item.get("srid"))
-    #     is_existing = order_key in existing_orders
-
-    #     order_fields = {
-    #         "date": datetime.strptime(item.get("date"), '%Y-%m-%dT%H:%M:%S'),
-    #         "last_change_date": datetime.strptime(item.get("lastChangeDate"), '%Y-%m-%dT%H:%M:%S'),
-    #         "warehouse_name": item.get("warehouseName"),
-    #         "warehouseType": item.get("warehouseType"),
-    #         "country_name": item.get("countryName"),
-    #         "oblast_okrug_name": item.get("oblastOkrugName"),
-    #         "region_name": item.get("regionName"),
-    #         "supplier_article": item.get("supplierArticle"),
-    #         "nm_id": item.get("nmId"),
-    #         "barcode": item.get("barcode"),
-    #         "category": item.get("category"),
-    #         "subject": item.get("subject"),
-    #         "brand": item.get("brand"),
-    #         "tech_size": item.get("techSize"),
-    #         "income_id": item.get("incomeID"),
-    #         "is_supply": item.get("isSupply"),
-    #         "is_realization": item.get("isRealization"),
-    #         "total_price": item.get("totalPrice"),
-    #         "discount_percent": item.get("discountPercent"),
-    #         "spp": item.get("spp"),
-    #         "finished_price": item.get("finishedPrice"),
-    #         "price_with_disc": item.get("priceWithDisc"),
-    #         "is_cancel": item.get("isCancel"),
-    #         "cancel_date": datetime.strptime(item.get("cancelDate"), '%Y-%m-%dT%H:%M:%S'),
-    #         "order_type": item.get("orderType"),
-    #         "sticker": item.get("sticker"),
-    #         "g_number": item.get("gNumber"),
-    #         "srid": item.get("srid"),
-    #         "status": define_existing_order_status(sticker=item.get("sticker"), is_cancel=item.get("isCancel"))
-    #     }
-
-    #     if is_existing:
-    #         # Update existing advert
-    #         order = existing_orders[order_key]
-    #         for field, value in order_fields.items():
-    #             setattr(order, field, value)
-    #         existing_orders_output.append(order)
-    #     else:
-    #         # Collect for bulk insert
-    #         new_orders.append(Order(**order_fields))
-
-
-    # if new_orders:
-    #     session.bulk_save_objects(new_orders)
-
-    # session.commit()
-    # return new_orders + existing_orders_output
-
