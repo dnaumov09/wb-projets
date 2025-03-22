@@ -21,14 +21,6 @@ def check_warehouse(name):
     
     return wh
 
-# def save_warehouses(data):
-#     whs = []
-#     for item in data:
-#         whs.append(Warehouse(id=item.get('ID'), name=item.get('name')))
-    
-#     session.bulk_save_objects(whs)
-#     session.commit()
-
 
 def get_warehouses():
     return session.query(Warehouse).all()
