@@ -5,6 +5,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from db.base import Base, session
 from db.model.card import Card, get_seller_cards
 from db.model.seller import Seller
+from db.util import save_records, camel_to_snake
 
 
 class Remains(Base):
@@ -24,62 +25,69 @@ class Remains(Base):
     quantity_warehouses_full: Mapped[int] = mapped_column(nullable=False)
 
 
-def save_remains(data, seller: Seller) -> list[Remains]:
-    # Fetch existing orders (barcode) in bulk
-    existing_remains_list = session.scalars(select(Remains).filter(
-        Remains.barcode.in_([item.get("barcode") for item in data])
-    )).all()
-    existing_remains = {remains.barcode: remains for remains in existing_remains_list}
+def save_remains(data) -> list[Remains]:
+    result = save_records(
+        session=session,
+        model=Remains,
+        data=data,
+        key_fields=['barcode'])
+    return result[0] + result[1]
 
-    incoming_remains_barcodes = {item.get('barcode') for item in data}
-    existing_remains_barcodes = set(existing_remains.keys())
-    remains_to_delete = list(existing_remains_barcodes - incoming_remains_barcodes)
+    # # Fetch existing orders (barcode) in bulk
+    # existing_remains_list = session.scalars(select(Remains).filter(
+    #     Remains.barcode.in_([item.get("barcode") for item in data])
+    # )).all()
+    # existing_remains = {remains.barcode: remains for remains in existing_remains_list}
 
-    card_map = {c.nm_id: c for c in get_seller_cards(seller.id)}
+    # incoming_remains_barcodes = {item.get('barcode') for item in data}
+    # existing_remains_barcodes = set(existing_remains.keys())
+    # remains_to_delete = list(existing_remains_barcodes - incoming_remains_barcodes)
 
-    new_remains = []
-    existing_remains_output = []
-    for item in data:
-        remains_key = item.get("barcode")
-        if not remains_key: #коробка barcode None
-            continue
+    # card_map = {c.nm_id: c for c in get_seller_cards(seller.id)}
 
-        if item.get('nmId') not in card_map:
-            continue
+    # new_remains = []
+    # existing_remains_output = []
+    # for item in data:
+    #     remains_key = item.get("barcode")
+    #     if not remains_key: #коробка barcode None
+    #         continue
 
-        remains_fields = {
-            "nm_id": item.get('nmId'),
-            "brand": item.get('brand'), 
-            "subject_name": item.get('subjectName'), 
-            "vendor_code": item.get('vendorCode'),
-            "barcode": item.get('barcode'),
-            "tech_size": item.get('techSize'),
-            "volume": item.get('volume'),
-            "in_way_to_client": item.get('inWayToClient'),
-            "in_way_from_client": item.get('inWayFromClient'),
-            "quantity_warehouses_full": item.get('quantityWarehousesFull')
-        }
+    #     if item.get('nmId') not in card_map:
+    #         continue
 
-        if remains_key in existing_remains:
-            # Update existing advert
-            remians = existing_remains[remains_key]
-            for field, value in remains_fields.items():
-                setattr(remians, field, value)
-            existing_remains_output.append(remians)
-        else:
-            # Collect for bulk insert
-            new_remains.append(Remains(**remains_fields))
+    #     remains_fields = {
+    #         "nm_id": item.get('nmId'),
+    #         "brand": item.get('brand'), 
+    #         "subject_name": item.get('subjectName'), 
+    #         "vendor_code": item.get('vendorCode'),
+    #         "barcode": item.get('barcode'),
+    #         "tech_size": item.get('techSize'),
+    #         "volume": item.get('volume'),
+    #         "in_way_to_client": item.get('inWayToClient'),
+    #         "in_way_from_client": item.get('inWayFromClient'),
+    #         "quantity_warehouses_full": item.get('quantityWarehousesFull')
+    #     }
+
+    #     if remains_key in existing_remains:
+    #         # Update existing advert
+    #         remians = existing_remains[remains_key]
+    #         for field, value in remains_fields.items():
+    #             setattr(remians, field, value)
+    #         existing_remains_output.append(remians)
+    #     else:
+    #         # Collect for bulk insert
+    #         new_remains.append(Remains(**remains_fields))
 
 
-    if new_remains:
-        session.bulk_save_objects(new_remains)
+    # if new_remains:
+    #     session.bulk_save_objects(new_remains)
 
-    if remains_to_delete:
-        for remains in remains_to_delete:
-            session.delete(remains)
+    # if remains_to_delete:
+    #     for remains in remains_to_delete:
+    #         session.delete(remains)
 
-    session.commit()
-    return new_remains + existing_remains_output
+    # session.commit()
+    # return new_remains + existing_remains_output
 
 
 def get_remains_by_seller_id(seller_id: int) -> list[Remains]:

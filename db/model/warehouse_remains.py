@@ -8,6 +8,7 @@ from db.model.warehouse import Warehouse, check_warehouse
 from db.model.remains import Remains
 from db.model.seller import Seller
 from db.model.card import Card
+from db.util import camel_to_snake, save_records
 
 class WarehouseRemains(Base):
     __tablename__ = 'warehouse_remains'
@@ -24,44 +25,37 @@ class WarehouseRemains(Base):
 
     quantity: Mapped[int] = mapped_column(nullable=True)
 
-    def __init__(self, warehouse_id: int, warehouse: Warehouse, remains_id: int, remains: Remains, quantity: int):
-        self.warehouse_id = warehouse_id
-        self.warehouse = warehouse
-        self.remains_id = remains_id
-        self.remains = remains
-        self.quantity = quantity
+    # def __init__(self, warehouse_id: int, warehouse: Warehouse, remains_id: int, remains: Remains, quantity: int):
+    #     self.warehouse_id = warehouse_id
+    #     self.warehouse = warehouse
+    #     self.remains_id = remains_id
+    #     self.remains = remains
+    #     self.quantity = quantity
 
 
-def save_warehouse_remains(data, db_warehouses: list[Warehouse], db_remains: list[Remains]):
-    wr_to_save = []
-    for item in data:
-        warehouses = item.get('warehouses')
-        for wh in warehouses:
-            remains = next((r for r in db_remains if r.barcode == item.get('barcode')))
-            warehouse = check_warehouse(wh.get('warehouseName'))
-            q = wh.get('quantity')
-            wr = WarehouseRemains(warehouse_id=warehouse.id, warehouse=warehouse, remains_id=remains.barcode, remains=remains, quantity=q)
-            wr_to_save.append(wr)
+def save_warehouse_remains(data):
+    result = save_records(
+        session=session, 
+        model=WarehouseRemains, 
+        data=data, 
+        key_fields=['warehouse_id', 'remains_id'])
+    return result[0] + result[1]
 
-    session.bulk_save_objects(wr_to_save)
-    session.commit()
+
+    # wr_to_save = []
+    # for item in data:
+    #     warehouses = item.get('warehouses')
+    #     for wh in warehouses:
+    #         remains = next((r for r in db_remains if r.barcode == item.get('barcode')))
+    #         warehouse = check_warehouse(wh.get('warehouseName'))
+    #         q = wh.get('quantity')
+    #         wr = WarehouseRemains(warehouse_id=warehouse.id, warehouse=warehouse, remains_id=remains.barcode, remains=remains, quantity=q)
+    #         wr_to_save.append(wr)
+
+    # session.bulk_save_objects(wr_to_save)
+    # session.commit()
     
-    return wr_to_save
-
-def find_or_create_warehouse_remains(warehouse: Warehouse, remains: Remains, quantity: int) -> WarehouseRemains:
-    warehouse_remains = session.query(WarehouseRemains).filter(WarehouseRemains.warehouse_id == warehouse.id, WarehouseRemains.remains_id == remains.barcode).first()
-   
-    if warehouse_remains:
-        warehouse_remains.quantity = quantity
-    if not warehouse_remains:
-        warehouse_remains = WarehouseRemains(warehouse.id, warehouse, remains.barcode, remains, quantity)
-    
-    return warehouse_remains
-
-
-def save_warehouse_remains_list(warehouse_remains_list: list[WarehouseRemains]):
-    session.bulk_save_objects(warehouse_remains_list)
-    session.commit()
+    # return wr_to_save
     
 
 def get_warehouse_remains_by_seller_id(seller_id: int):

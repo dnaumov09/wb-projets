@@ -1,10 +1,10 @@
 import re
 from datetime import datetime
-from sqlalchemy import select
+from sqlalchemy import select, or_, and_
 from sqlalchemy.orm import Session
 
 
-def get_existing_records(session: Session, model, data: list[dict], match_fields: list[str]):
+def _get_existing_records(session: Session, model, data: list[dict], match_fields: list[str]):
     # Build a set of unique tuples for filtering
     key_tuples = set(tuple(item.get(field) for field in match_fields) for item in data)
 
@@ -16,8 +16,6 @@ def get_existing_records(session: Session, model, data: list[dict], match_fields
         tuple(getattr(model, field) == value for field, value in zip(match_fields, key_tuple)) 
         for key_tuple in key_tuples
     ]
-    
-    from sqlalchemy import or_, and_
 
     stmt = select(model).where(or_(*[and_(*f) for f in filters]))
     existing_list = session.scalars(stmt).all()
@@ -30,7 +28,7 @@ def get_existing_records(session: Session, model, data: list[dict], match_fields
 
 
 def save_records(session: Session, model, data: list[dict], key_fields: list[str]):
-    existing_records = get_existing_records(
+    existing_records = _get_existing_records(
         session=session,
         model=model,
         data=data,

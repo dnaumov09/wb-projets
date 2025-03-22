@@ -11,11 +11,12 @@ def main():
 
 
 def run_tests():
-    # from services import scheduler
+    # from services import cards_service
+    from services import scheduler
     # cards_service.load_cards()
     # scheduler.run_stat_updating()
     # scheduler.run_adverts_stat_updating()
-    # scheduler.run_remains_updating()
+    scheduler.run_remains_updating()
     # scheduler.run_finances_updating()
     pass
     
