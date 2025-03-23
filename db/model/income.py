@@ -1,16 +1,22 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, select
 from sqlalchemy.orm import relationship
+from sqlalchemy.schema import PrimaryKeyConstraint
 
 from db.base import Base, session
 
 from db.model.seller import Seller
-from db.util import camel_to_snake, convert_date, get_existing_records, save_records
+from db.model.card import get_seller_cards
+from db.util import camel_to_snake, convert_date, save_records
 
 
 class Income(Base):
     __tablename__ = 'incomes'
 
-    income_id = Column(Integer, primary_key=True, index=True)
+    __table_args__ = (
+        PrimaryKeyConstraint('income_id', 'nm_id'),
+    )
+
+    income_id = Column(Integer)
     number = Column(String)
     date = Column(DateTime)
     last_change_date = Column(DateTime)
@@ -32,15 +38,26 @@ class Income(Base):
 
 
 def save_incomes(data, seller: Seller):
-    data = {camel_to_snake(k): v for k, v in data.items()}
+    data = [
+        {camel_to_snake(k): v for k, v in item.items()}
+        for item in data
+    ]
 
-    for field in ['date', 'last_change_date', 'date_close']:
-        if field in data and isinstance(data[field], str):
-            data[field] = convert_date(data[field], '%Y-%m-%dT%H:%M:%S')
-        data['sellet_id'] = seller.id
+    seller_nm_ids = [r.nm_id for r in get_seller_cards(seller.id)]
+
+    incomes_to_save = []
+    for item in data:
+        if item['nm_id'] not in seller_nm_ids:
+            continue
+
+        for field in ['date', 'last_change_date', 'date_close']:
+            if field in item and isinstance(item[field], str):
+                item[field] = convert_date(item[field], '%Y-%m-%dT%H:%M:%S')
+        item['seller_id'] = seller.id
+        incomes_to_save.append(item)
 
     return save_records(
         session=session,
         model=Income,
-        data=data,
+        data=incomes_to_save,
         key_fields=['income_id'])

@@ -34,6 +34,9 @@ class SellerSettings(Base):
 
     load_remains: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
+    load_imcomes: Mapped[bool] = mapped_column(Boolean, nullable=True, default=False)
+    incomes_last_updated: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+
     update_pipeline_data: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
 

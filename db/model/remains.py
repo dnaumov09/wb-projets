@@ -3,7 +3,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
 from db.base import Base, session
-from db.model.card import Card, get_seller_cards
+from db.model.card import Card
 from db.model.seller import Seller
 from db.util import save_records, camel_to_snake
 

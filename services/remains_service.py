@@ -3,7 +3,8 @@ import logging
 
 from db.model.seller import Seller, get_sellers
 from db.model.warehouse import get_warehouses
-from db.model.remains import Remains, save_remains, get_remains_by_seller_id
+from db.model.remains import Remains, save_remains
+from db.model.card import get_seller_cards
 from db.model.warehouse_remains import WarehouseRemains, save_warehouse_remains
 from db.model.settings import get_seller_settings
 from db.model.warehouse import check_warehouse
@@ -41,7 +42,7 @@ def update_remains_data(seller: Seller) -> list[Remains, WarehouseRemains]:
         for item in data
     ]
 
-    remains_nm_ids = [r.nm_id for r in get_remains_by_seller_id(seller.id)]
+    seller_nm_ids = [r.nm_id for r in get_seller_cards(seller.id)]
     remains_keys = [
         "nm_id", "brand", "subject_name", "vendor_code", "barcode",
         "tech_size", "volume", "in_way_to_client", "in_way_from_client", "quantity_warehouses_full"
@@ -50,7 +51,7 @@ def update_remains_data(seller: Seller) -> list[Remains, WarehouseRemains]:
     remains = []
     warehouse_remains = []
     for r in data:
-        if r.get("nm_id") not in remains_nm_ids:
+        if r.get("nm_id") not in seller_nm_ids:
             continue
 
         remains.append({key: r.get(key) for key in remains_keys})

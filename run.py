@@ -12,7 +12,8 @@ def main():
 
 def run_tests():
 
-    from services import card_stat_service
+    from services import incomes_services
+    incomes_services.load_incomes()
     # from services import scheduler
     # card_stat_service.load_cards_stat()
     # scheduler.run_stat_updating()

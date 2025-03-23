@@ -23,6 +23,7 @@ from api.wb_merchant_api_config import (
     CREATE_WAREHOUSE_REMAINS_TASK_URL,
     CHECK_WAREHOUSE_REMAINS_TASK_STATUS_URL,
     GET_WAREHOUSE_REMAINS_REPORT_URL,
+    LOAD_INCOMES_URL
 )
 
 
@@ -87,6 +88,14 @@ def load_seller_cards(seller: Seller):
         }
     }
     return api_request(seller, 'POST', LOAD_SELLER_CARDS_URL, json_payload=payload)
+
+
+@sleep_and_retry
+@limits(calls=1, period=60)
+def load_incomes(last_updated: datetime, seller: Seller):
+    url = format_url(LOAD_INCOMES_URL,
+                     date_from=last_updated.strftime("%Y-%m-%d"))
+    return api_request(seller, 'GET', url)
 
 
 @sleep_and_retry
