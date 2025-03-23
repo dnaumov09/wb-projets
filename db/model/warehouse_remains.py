@@ -25,13 +25,6 @@ class WarehouseRemains(Base):
 
     quantity: Mapped[int] = mapped_column(nullable=True)
 
-    # def __init__(self, warehouse_id: int, warehouse: Warehouse, remains_id: int, remains: Remains, quantity: int):
-    #     self.warehouse_id = warehouse_id
-    #     self.warehouse = warehouse
-    #     self.remains_id = remains_id
-    #     self.remains = remains
-    #     self.quantity = quantity
-
 
 def save_warehouse_remains(data):
     result = save_records(
@@ -41,22 +34,6 @@ def save_warehouse_remains(data):
         key_fields=['warehouse_id', 'remains_id'])
     return result[0] + result[1]
 
-
-    # wr_to_save = []
-    # for item in data:
-    #     warehouses = item.get('warehouses')
-    #     for wh in warehouses:
-    #         remains = next((r for r in db_remains if r.barcode == item.get('barcode')))
-    #         warehouse = check_warehouse(wh.get('warehouseName'))
-    #         q = wh.get('quantity')
-    #         wr = WarehouseRemains(warehouse_id=warehouse.id, warehouse=warehouse, remains_id=remains.barcode, remains=remains, quantity=q)
-    #         wr_to_save.append(wr)
-
-    # session.bulk_save_objects(wr_to_save)
-    # session.commit()
-    
-    # return wr_to_save
-    
 
 def get_warehouse_remains_by_seller_id(seller_id: int):
     return (
