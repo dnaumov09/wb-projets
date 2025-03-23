@@ -13,7 +13,8 @@ from services import (
     sales_service,
     reporting_service,
     advert_service,
-    finance_service
+    finance_service,
+    incomes_services
 )
 
 
@@ -41,6 +42,7 @@ def _schedule_jobs():
     schedule.every().monday.at("05:00").do(run_finances_updating)
     
     # Daily jobs
+    schedule.every().day.at("03:00").do(_run_daily_task)
     schedule.every().day.at("03:00").do(run_remains_updating)
     schedule.every().day.at("23:59").do(notification_service.notyfy_pipeline)
 
@@ -72,6 +74,12 @@ def _run_every_5minutes_task():
     """Task that runs every 5 minutes at 00 seconds."""
     run_stat_updating()
     run_adverts_stat_updating()
+
+
+def _run_daily_task():
+    """Task that runs every 5 minutes at 00 seconds."""
+    run_remains_updating()
+    run_incomes_updating()
     
 
 def run_stat_updating():
@@ -88,6 +96,11 @@ def run_remains_updating():
     """Update remains data and related reports."""
     remains_service.load_remains()
     reporting_service.update_remains_data()
+
+
+def run_incomes_updating():
+    """Update incomes data and related reports."""
+    incomes_services.load_incomes()
 
 
 def run_adverts_stat_updating():
