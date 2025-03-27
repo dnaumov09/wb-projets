@@ -16,6 +16,13 @@ from api import wb_merchant_api
 warehouses = get_warehouses()
 
 
+NOT_WAREHOUSES = {
+    'В пути до получателей': 'in_way_to_client',
+    'В пути возвраты на склад WB': 'in_way_from_client',
+    'Всего находится на складах': 'quantity_warehouses_full'
+}
+
+
 def load_remains():
     for seller in get_sellers():
         settings = get_seller_settings(seller)
@@ -43,26 +50,28 @@ def update_remains_data(seller: Seller) -> list[Remains, WarehouseRemains]:
     ]
 
     seller_nm_ids = [r.nm_id for r in get_seller_cards(seller.id)]
-    remains_keys = [
-        "nm_id", "brand", "subject_name", "vendor_code", "barcode",
-        "tech_size", "volume", "in_way_to_client", "in_way_from_client", "quantity_warehouses_full"
-    ]
+    remains_keys = [ "nm_id", "brand", "subject_name", "vendor_code", "barcode", "tech_size", "volume" ]
 
     remains = []
     warehouse_remains = []
     for r in data:
         if r.get("nm_id") not in seller_nm_ids:
             continue
-
-        remains.append({key: r.get(key) for key in remains_keys})
+        remains_item = {key: r.get(key) for key in remains_keys}
+        remains.append(remains_item)
         for wh in r.get('warehouses'):
-            warehouse_remains.append(
-                {
-                    'remains_id': r.get('barcode'),
-                    'warehouse_id': check_warehouse(wh.get('warehouseName')).id,
-                    'quantity': wh.get('quantity')
-                }
-            )
+            wh_name = wh.get('warehouseName')
+            if wh_name in NOT_WAREHOUSES:
+                key = NOT_WAREHOUSES[wh_name]
+                remains_item[key] = remains_item.get(key, 0) + wh.get('quantity')
+            else:
+                warehouse_remains.append(
+                    {
+                        'remains_id': r.get('barcode'),
+                        'warehouse_id': check_warehouse(wh_name).id,
+                        'quantity': wh.get('quantity')
+                    }
+                )
         
 
     remains = save_remains(remains)
