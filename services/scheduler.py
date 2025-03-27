@@ -39,7 +39,7 @@ def _schedule_jobs():
     """Set up all scheduled jobs."""
     
     # Daily jobs # поменять на понедельники
-    schedule.every().monday.at("05:00").do(run_finances_updating)
+    schedule.every().monday.at("08:00").do(run_finances_updating)
     
     # Daily jobs
     schedule.every().day.at("03:00").do(_run_daily_task)

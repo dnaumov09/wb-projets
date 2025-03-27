@@ -89,7 +89,10 @@ class Realization(Base):
 
 
 def save_realizations(data, seller: Seller):
-    data = {camel_to_snake(k): v for k, v in data.items()}
+    data = [
+        {camel_to_snake(k): v for k, v in item.items()}
+        for item in data
+    ]
     
     date_keys = [
         'date_from', 'date_to', 'create_dt', 'fix_tariff_date_from', 
