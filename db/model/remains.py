@@ -20,9 +20,9 @@ class Remains(Base):
     barcode: Mapped[str] = mapped_column(nullable=False, primary_key=True)
     tech_size: Mapped[str] = mapped_column(nullable=False)
     volume: Mapped[float] = mapped_column(nullable=False)
-    in_way_to_client: Mapped[int] = mapped_column(nullable=False)
-    in_way_from_client: Mapped[int] = mapped_column(nullable=False)
-    quantity_warehouses_full: Mapped[int] = mapped_column(nullable=False)
+    in_way_to_client: Mapped[int] = mapped_column(nullable=True)
+    in_way_from_client: Mapped[int] = mapped_column(nullable=True)
+    quantity_warehouses_full: Mapped[int] = mapped_column(nullable=True)
 
 
 def save_remains(data) -> list[Remains]:
