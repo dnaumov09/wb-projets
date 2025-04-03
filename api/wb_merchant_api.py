@@ -6,6 +6,7 @@ from datetime import datetime, time
 from db.model.card import Card
 from db.model.seller import Seller
 from db.model.advert import Advert
+from bot.notification_service import notify_error
 
 from ratelimit import limits, sleep_and_retry
 
@@ -65,6 +66,7 @@ def api_request(
         return data.get(data_key) if data_key else data
     except requests.RequestException as e:
         logging.error(f"[{seller.trade_mark}] API {method} request failed at {url}: {e}")
+        notify_error(seller, e)
         return None
     
 

@@ -3,6 +3,7 @@ from bot.bot import send_message
 from db.model.order import Order, OrderStatus
 from db.model.sale import Sale, SaleStatus
 from db.model.user import get_admins
+from db.model.seller import Seller
 
 from bot.stat_handler import build_pipeline_data
 
@@ -85,3 +86,11 @@ def build_sale_data(sale: Sale) -> str:
     # result += "\n"
     # result += f"<i>ID выкупа: <b>{sale.id if sale.id is not None else "---"}</b></i>"
     return result
+
+
+def notify_error(seller: Seller, e: Exception):
+    send_message(chat_id=102421129, text=(
+        f'‼️ <b>Exception ({seller.trade_mark}):</b>'
+        '\n\n'
+        f'{e}'
+    ))
