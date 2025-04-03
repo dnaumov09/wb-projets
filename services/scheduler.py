@@ -42,16 +42,15 @@ def _schedule_jobs():
     schedule.every().monday.at("08:00").do(run_finances_updating)
     
     # Daily jobs
-    schedule.every().day.at("03:00").do(_run_daily_task)
-    schedule.every().day.at("03:00").do(run_remains_updating)
     schedule.every().day.at("23:59").do(notification_service.notyfy_pipeline)
+    schedule.every().day.at("03:00").do(_run_daily_task)
 
     # Every minute at 00 seconds - checking inside the function to align tasks
     schedule.every().minute.at(":00").do(_run_precise_minute_tasks)
 
     # Multiple times a day for adverts stat updating
-    for time_point in ["00:00", "09:00", "12:00", "15:00", "18:00", "21:00"]:
-        schedule.every().day.at(time_point).do(reporting_service.update_pipeline_data)
+    # for time_point in ["00:00", "09:00", "12:00", "15:00", "18:00", "21:00"]:
+        # schedule.every().day.at(time_point).do()
 
 
 def _run_precise_minute_tasks():
@@ -80,6 +79,7 @@ def _run_daily_task():
     """Task that runs every 5 minutes at 00 seconds."""
     run_remains_updating()
     run_incomes_updating()
+    reporting_service.update_pipeline_data()
     
 
 def run_stat_updating():

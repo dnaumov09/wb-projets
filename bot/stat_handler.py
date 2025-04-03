@@ -1,6 +1,6 @@
 from aiogram import Router
 from aiogram.filters import Command
-from datetime import datetime, timedelta
+from datetime import timedelta
 import locale
 
 from aiogram.types import Message

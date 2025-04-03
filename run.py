@@ -11,6 +11,8 @@ def main():
 
 
 def run_tests():
+    # from services import remains_service
+    # remains_service.load_remains()
 
     # from services import remains_service
     # remains_service.load_remains()

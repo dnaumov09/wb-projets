@@ -1,9 +1,8 @@
 import logging
-from collections import defaultdict
 
 from api import sheets_api
 
-from db.model.seller import Seller, get_sellers
+from db.model.seller import get_sellers
 from db.model.warehouse_remains import get_warehouse_remains_by_seller_id
 from db.model.remains import get_remains_by_seller_id
 from db.model.settings import get_seller_settings

@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, DateTime, Index, select
+from sqlalchemy import ForeignKey, DateTime, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from db.base import Base, session
 from db.model.card import Card

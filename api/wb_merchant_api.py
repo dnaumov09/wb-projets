@@ -79,7 +79,7 @@ def load_seller_info(seller: Seller):
 
 
 @sleep_and_retry
-@limits(calls=100, period=60)
+@limits(calls=100, period=61)
 def load_seller_cards(seller: Seller):
     payload = {
         "settings": {
@@ -91,7 +91,7 @@ def load_seller_cards(seller: Seller):
 
 
 @sleep_and_retry
-@limits(calls=1, period=60)
+@limits(calls=1, period=61)
 def load_incomes(last_updated: datetime, seller: Seller):
     url = format_url(LOAD_INCOMES_URL,
                      date_from=last_updated.strftime("%Y-%m-%d"))
@@ -99,7 +99,7 @@ def load_incomes(last_updated: datetime, seller: Seller):
 
 
 @sleep_and_retry
-@limits(calls=1, period=60)
+@limits(calls=1, period=61)
 def create_warehouse_remains_task(seller: Seller):
     url = format_url(CREATE_WAREHOUSE_REMAINS_TASK_URL,
                      group_by_brand=True,
@@ -121,14 +121,14 @@ def check_warehouse_remains_task_status(seller: Seller, task_id: str):
 
 
 @sleep_and_retry
-@limits(calls=1, period=60)
+@limits(calls=1, period=61)
 def load_warehouse_remains_report(seller: Seller, task_id: str):
     url = format_url(GET_WAREHOUSE_REMAINS_REPORT_URL, task_id=task_id)
     return api_request(seller, 'GET', url)
 
 
 @sleep_and_retry
-@limits(calls=3, period=60)
+@limits(calls=3, period=61)
 def load_cards_stat(last_updated: datetime, seller: Seller, seller_cards: list[Card]):
     begin_date = datetime.combine(last_updated, time.min).strftime("%Y-%m-%d")
     end_date = datetime.now().strftime("%Y-%m-%d")
@@ -143,7 +143,7 @@ def load_cards_stat(last_updated: datetime, seller: Seller, seller_cards: list[C
 
 
 @sleep_and_retry
-@limits(calls=1, period=60)
+@limits(calls=1, period=61)
 def load_fincancial_report(date_from: datetime, date_to: datetime, seller: Seller):
     url = format_url(LOAD_FINANCIAL_REPORT_URL, 
                      date_from=date_from.strftime("%Y-%m-%dT%H:%M:%S.%f"),
@@ -153,14 +153,14 @@ def load_fincancial_report(date_from: datetime, date_to: datetime, seller: Selle
 
 
 @sleep_and_retry
-@limits(calls=1, period=60)
+@limits(calls=1, period=61)
 def load_orders(last_updated: datetime, seller: Seller):
     params = {"dateFrom": last_updated.strftime("%Y-%m-%dT%H:%M:%S"), "flag": 0}
     return api_request(seller, 'GET', LOAD_ORDERS_URL, params=params)
 
 
 @sleep_and_retry
-@limits(calls=1, period=60)
+@limits(calls=1, period=61)
 def load_sales(last_updated: datetime, seller: Seller):
     params = {"dateFrom": last_updated.strftime("%Y-%m-%dT%H:%M:%S"), "flag": 0}
     return api_request(seller, 'GET', LOAD_SALES_URL, params=params)

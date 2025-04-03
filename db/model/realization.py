@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, Column, Integer, String, Float, Boolean, DateTime, Text, BigInteger, select
+from sqlalchemy import ForeignKey, Column, Integer, String, Float, Boolean, DateTime, Text, BigInteger
 from sqlalchemy.orm import relationship
 
 from db.base import Base, session
