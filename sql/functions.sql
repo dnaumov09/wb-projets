@@ -155,10 +155,8 @@ $$;
 
 DROP FUNCTION IF EXISTS get_sales_by_period(text);
 
-CREATE OR REPLACE FUNCTION get_sales_by_period(
-    period_type text
-)
-RETURNS TABLE (
+CREATE OR REPLACE FUNCTION get_sales_by_period(period_type text)
+ RETURNS TABLE(
     period timestamp without time zone, 
     nm_id integer, 
     count bigint, 
@@ -171,9 +169,8 @@ RETURNS TABLE (
     finished_price double precision, 
     avg_finished_price double precision, 
     price_with_disc double precision, 
-    avg_price_with_disc double precision
-)
-LANGUAGE plpgsql
+    avg_price_with_disc double precision)
+ LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Validate period_type
@@ -187,18 +184,103 @@ BEGIN
             date_trunc(%L, date) AS period,
             nm_id,
             count(id),
-            sum(total_price),
-            avg(total_price),
+			SUM(
+                CASE WHEN total_price < 0 THEN
+                    -total_price
+                ELSE
+                    total_price
+                END
+            ) AS total_price,
+            AVG(
+                CASE WHEN total_price < 0 THEN
+                    -total_price
+                ELSE
+                    total_price
+                END
+            ) AS avg_total_price,
             avg(discount_percent),
             avg(spp),
-            sum(for_pay),
-            avg(for_pay),
-            sum(finished_price),
-            avg(finished_price),
-            sum(price_with_disc),
-            avg(price_with_disc)
+			SUM(
+                CASE WHEN for_pay < 0 THEN
+                    -for_pay
+                ELSE
+                    for_pay
+                END
+            ) AS for_pay,
+            AVG(
+                CASE WHEN for_pay < 0 THEN
+                    -for_pay
+                ELSE
+                    for_pay
+                END
+            ) AS avg_for_pay,
+			SUM(
+                CASE WHEN finished_price < 0 THEN
+                    -finished_price
+                ELSE
+                    finished_price
+                END
+            ) AS finished_price,
+            AVG(
+                CASE WHEN finished_price < 0 THEN
+                    -finished_price
+                ELSE
+                    finished_price
+                END
+            ) AS avg_finished_price,
+			SUM(
+                CASE WHEN price_with_disc < 0 THEN
+                    -price_with_disc
+                ELSE
+                    price_with_disc
+                END
+            ) AS price_with_disc,
+            AVG(
+                CASE WHEN price_with_disc < 0 THEN
+                    -price_with_disc
+                ELSE
+                    price_with_disc
+                END
+            ) AS avg_price_with_disc
         FROM sales
-        WHERE price_with_disc >= 0
+        GROUP BY period, nm_id
+        ORDER BY period, nm_id',
+        period_type
+    );
+END;
+$$;
+
+
+DROP FUNCTION get_sales_returned_by_period(text);
+
+CREATE OR REPLACE FUNCTION get_sales_returned_by_period(period_type text)
+ RETURNS TABLE(period timestamp without time zone, nm_id integer, count bigint, total_price double precision, avg_total_price double precision, avg_discount_percent double precision, avg_spp double precision, for_pay double precision, avg_for_pay double precision, finished_price double precision, avg_finished_price double precision, price_with_disc double precision, avg_price_with_disc double precision)
+ LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Validate period_type
+    IF period_type NOT IN ('day', 'week', 'month') THEN
+        RAISE EXCEPTION 'Invalid period_type: %, allowed values are day, week, month', period_type;
+    END IF;
+
+    -- Execute aggregation query
+    RETURN QUERY EXECUTE format(
+        'SELECT 
+            date_trunc(%L, date) AS period,
+            nm_id,
+            count(id),
+            -sum(total_price),
+            -avg(total_price),
+            avg(discount_percent),
+            avg(spp),
+            -sum(for_pay),
+            -avg(for_pay),
+            -sum(finished_price),
+            -avg(finished_price),
+            -sum(price_with_disc),
+            -avg(price_with_disc)
+        FROM sales
+        WHERE price_with_disc < 0
         GROUP BY period, nm_id
         ORDER BY period, nm_id',
         period_type
@@ -209,22 +291,22 @@ $$;
 
 DROP FUNCTION IF EXISTS get_pipeline_by_period(text);
 
-CREATE OR REPLACE FUNCTION get_pipeline_by_period(
-    period_type text
-)
-RETURNS TABLE (
-    period TIMESTAMP,
-    nm_id INT,
-    open_card_count BIGINT,
-    add_to_cart_count BIGINT,
-    orders_count BIGINT,
-    orders_sum DOUBLE PRECISION,
-    sales_count BIGINT,
-    sales_sum DOUBLE PRECISION,
-    orders_cancelled_count BIGINT,
-    orders_cancelled_sum DOUBLE PRECISION
-)
-LANGUAGE plpgsql
+CREATE OR REPLACE FUNCTION public.get_pipeline_by_period(period_type text)
+ RETURNS TABLE(
+ 	period timestamp without time zone, 
+ 	nm_id integer, 
+ 	open_card_count bigint, 
+ 	add_to_cart_count bigint, 
+ 	orders_count bigint, 
+ 	orders_sum double precision, 
+ 	sales_count bigint, 
+ 	sales_sum double precision, 
+ 	orders_cancelled_count bigint, 
+ 	orders_cancelled_sum double precision, 
+ 	sales_returned_count bigint, 
+ 	sales_returned_sum double precision
+ )
+ LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Validate period_type
@@ -244,15 +326,20 @@ BEGIN
             COALESCE(s.count, 0) as sales_count,
             COALESCE(s.price_with_disc, 0) as sales_sum,
             COALESCE(oc.count, 0) as orders_cancelled_count,
-            COALESCE(oc.price_with_disc, 0) as orders_cancelled_sum
+            COALESCE(oc.price_with_disc, 0) as orders_cancelled_sum,
+            COALESCE(sr.count, 0) as sales_returned_count,
+			COALESCE(sr.price_with_disc, 0) as sales_returned_sum
         FROM get_cards_stat_by_period(%L) cs
         LEFT JOIN get_orders_by_period(%L) o ON o.nm_id = cs.nm_id AND o.period = cs.period
         LEFT JOIN get_sales_by_period(%L) s ON s.nm_id = cs.nm_id AND s.period = cs.period
-        LEFT JOIN get_orders_cancelled_by_period(%L) oc ON oc.nm_id = cs.nm_id AND oc.period = cs.period',
-        period_type, period_type, period_type, period_type
+        LEFT JOIN get_orders_cancelled_by_period(%L) oc ON oc.nm_id = cs.nm_id AND oc.period = cs.period
+		LEFT JOIN get_sales_returned_by_period(%L) sr ON sr.nm_id = cs.nm_id AND sr.period = cs.period
+		ORDER BY period, nm_id',
+        period_type, period_type, period_type, period_type, period_type, period_type
     );
 END;
-$$;
+$$
+;
 
 
 DROP VIEW IF EXISTS financial_report;

@@ -108,6 +108,8 @@ def get_pipeline_by_period(period: Period, is_aggregated: bool = False):
         ('sales_sum', Float),
         ('orders_cancelled_count', Integer),
         ('orders_cancelled_sum', Float),
+        ('sales_returned_count', Integer),
+        ('sales_returned_sum', Float),
     ]
     return get_stat_by_period('get_pipeline_by_period', columns, period, is_aggregated)
 

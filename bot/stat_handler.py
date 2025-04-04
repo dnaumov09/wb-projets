@@ -46,6 +46,7 @@ def format_stat_data(period: str, stat) -> str:
     oreders_count = stat['orders_count']
     sales_count = stat['sales_count']
     cancel_count = stat['orders_cancelled_count'] if stat['orders_cancelled_count'] else 0
+    return_count = stat['sales_returned_count'] if stat['sales_returned_count'] else 0
 
     result = ""
     result += f"Заказов: <b>{oreders_count}</b>"
@@ -54,6 +55,8 @@ def format_stat_data(period: str, stat) -> str:
     result += f" ({format(round(stat['sales_sum']), ",d").replace(",", " ")} руб.)\n" if sales_count > 0 else "\n"
     result += f"Отказов: <b>{cancel_count}</b>"
     result += f" ({format(round(stat['orders_cancelled_sum']), ",d").replace(",", " ")} руб.)\n" if cancel_count > 0 else "\n"
+    result += f"Возвратов: <b>{return_count}</b>"
+    result += f" ({format(round(stat['sales_returned_sum']), ",d").replace(",", " ")} руб.)\n" if return_count > 0 else "\n"
     return result
 
 

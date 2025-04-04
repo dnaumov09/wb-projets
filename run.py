@@ -11,19 +11,6 @@ def main():
 
 
 def run_tests():
-    # from services import remains_service
-    # remains_service.load_remains()
-
-    # from services import remains_service
-    # remains_service.load_remains()
-    # from services import finance_service
-    # finance_service.load_finances()
-    # from services import scheduler
-    # card_stat_service.load_cards_stat()
-    # scheduler.run_stat_updating()
-    # scheduler.run_adverts_stat_updating()
-    # scheduler.run_remains_updating()
-    # scheduler.run_finances_updating()
     pass
     
 
