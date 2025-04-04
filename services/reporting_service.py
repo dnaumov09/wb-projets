@@ -27,7 +27,7 @@ def update_pipeline_data():
         settings = get_seller_settings(seller)
         if settings.update_pipeline_data:
             logging.info(f"[{seller.trade_mark}] Google Sheets pipeline updating...")
-            pipeline = functions.get_pipeline_by_period(functions.Period.DAILY, True)
+            pipeline = functions.get_pipeline_by_period(period=functions.Period.DAILY, is_aggregated=False)
             sheets_api.update_pipeline(seller, pipeline)
             logging.info(f"[{seller.trade_mark}] Google Sheets pipeline updated")
 

@@ -289,56 +289,69 @@ END;
 $$;
 
 
-DROP FUNCTION IF EXISTS get_pipeline_by_period(text);
+DROP FUNCTION public.get_pipeline_by_period(text);
 
 CREATE OR REPLACE FUNCTION public.get_pipeline_by_period(period_type text)
- RETURNS TABLE(
- 	period timestamp without time zone, 
- 	nm_id integer, 
- 	open_card_count bigint, 
- 	add_to_cart_count bigint, 
- 	orders_count bigint, 
- 	orders_sum double precision, 
- 	sales_count bigint, 
- 	sales_sum double precision, 
- 	orders_cancelled_count bigint, 
- 	orders_cancelled_sum double precision, 
- 	sales_returned_count bigint, 
- 	sales_returned_sum double precision
- )
+ RETURNS TABLE(period timestamp without time zone, nm_id integer, vendor_code varchar, open_card_count bigint, add_to_cart_count bigint, orders_count bigint, orders_sum double precision, sales_count bigint, sales_sum double precision, orders_cancelled_count bigint, orders_cancelled_sum double precision, sales_returned_count bigint, sales_returned_sum double precision)
  LANGUAGE plpgsql
-AS $$
+AS $function$
 BEGIN
-    -- Validate period_type
     IF period_type NOT IN ('day', 'week', 'month') THEN
-        RAISE EXCEPTION 'Invalid period_type: %, allowed values are day, week, month', period_type;
+        RAISE EXCEPTION 'Invalid period_type: %, allowed values: day, week, month', period_type;
     END IF;
 
-    -- Main query with COALESCE to handle NULLS
     RETURN QUERY EXECUTE format(
-        'SELECT 
-            cs.period,
-            cs.nm_id,
-            cs.open_card_count,
-            cs.add_to_cart_count,
-            COALESCE(o.count, 0) as orders_count,
-            COALESCE(o.price_with_disc, 0) as orders_sum,
-            COALESCE(s.count, 0) as sales_count,
-            COALESCE(s.price_with_disc, 0) as sales_sum,
-            COALESCE(oc.count, 0) as orders_cancelled_count,
-            COALESCE(oc.price_with_disc, 0) as orders_cancelled_sum,
-            COALESCE(sr.count, 0) as sales_returned_count,
-			COALESCE(sr.price_with_disc, 0) as sales_returned_sum
-        FROM get_cards_stat_by_period(%L) cs
-        LEFT JOIN get_orders_by_period(%L) o ON o.nm_id = cs.nm_id AND o.period = cs.period
-        LEFT JOIN get_sales_by_period(%L) s ON s.nm_id = cs.nm_id AND s.period = cs.period
-        LEFT JOIN get_orders_cancelled_by_period(%L) oc ON oc.nm_id = cs.nm_id AND oc.period = cs.period
-		LEFT JOIN get_sales_returned_by_period(%L) sr ON sr.nm_id = cs.nm_id AND sr.period = cs.period
-		ORDER BY period, nm_id',
-        period_type, period_type, period_type, period_type, period_type, period_type
+        $$
+        WITH all_periods_nmid AS (
+            SELECT period, nm_id 
+            FROM get_cards_stat_by_period(%L)
+            UNION
+            SELECT period, nm_id 
+            FROM get_orders_by_period(%L)
+            UNION
+            SELECT period, nm_id 
+            FROM get_sales_by_period(%L)
+            UNION
+            SELECT period, nm_id 
+            FROM get_orders_cancelled_by_period(%L)
+            UNION
+            SELECT period, nm_id 
+            FROM get_sales_returned_by_period(%L)
+        )
+        SELECT 
+            p.period,
+            p.nm_id,
+			c.vendor_code,
+            COALESCE(cs.open_card_count, 0)         AS open_card_count,
+            COALESCE(cs.add_to_cart_count, 0)       AS add_to_cart_count,
+            COALESCE(o.count, 0)                   AS orders_count,
+            COALESCE(o.price_with_disc, 0)         AS orders_sum,
+            COALESCE(s.count, 0)                   AS sales_count,
+            COALESCE(s.price_with_disc, 0)         AS sales_sum,
+            COALESCE(oc.count, 0)                  AS orders_cancelled_count,
+            COALESCE(oc.price_with_disc, 0)        AS orders_cancelled_sum,
+            COALESCE(sr.count, 0)                  AS sales_returned_count,
+            COALESCE(sr.price_with_disc, 0)        AS sales_returned_sum
+        FROM all_periods_nmid p
+        LEFT JOIN get_cards_stat_by_period(%L) cs
+            ON cs.period = p.period AND cs.nm_id = p.nm_id
+        LEFT JOIN get_orders_by_period(%L) o
+            ON o.period = p.period AND o.nm_id = p.nm_id
+        LEFT JOIN get_sales_by_period(%L) s
+            ON s.period = p.period AND s.nm_id = p.nm_id
+        LEFT JOIN get_orders_cancelled_by_period(%L) oc
+            ON oc.period = p.period AND oc.nm_id = p.nm_id
+        LEFT JOIN get_sales_returned_by_period(%L) sr
+            ON sr.period = p.period AND sr.nm_id = p.nm_id
+		LEFT JOIN cards c
+			ON c.nm_id = p.nm_id
+        ORDER BY p.period, p.nm_id
+        $$
+        , period_type, period_type, period_type, period_type, period_type
+        , period_type, period_type, period_type, period_type, period_type
     );
 END;
-$$
+$function$
 ;
 
 

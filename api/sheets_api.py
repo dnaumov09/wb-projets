@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
 
@@ -15,12 +15,6 @@ WB_FOLDER_ID = os.getenv('WB_FOLDER_ID')
 
 STAT_SPREADSHEET_NAME = 'Статистика'
 STAT_DAILY_PIPELINE_SHEET_NAME = 'Воронка (Дни)'
-STAT_DAILY_ORDERS_SHEET_NAME = 'Заказы (Дни)'
-STAT_WEEKLY_ORDERS_SHEET_NAME = 'Заказы (Недели)'
-STAT_MONTHLY_ORDERS_SHEET_NAME = 'Заказы (Месяца)'
-STAT_DAILY_SALES_SHEET_NAME = 'Продажи (Дни)'
-STAT_WEEKLY_SALES_SHEET_NAME = 'Продажи (Недели)'
-STAT_MONTHLY_SALES_SHEET_NAME = 'Заказы (Месяца)'
 
 REMAINS_SPREADSHEET_NAME = 'Склады'
 REMAINS_AGGREGATED_REMAINS_SHEET_NAME = 'Остатки (общаяя статистика)'
@@ -28,7 +22,9 @@ REMAINS_REMAINS_ON_WH_SHEET_NAME = 'Остатки (по складам)'
 
 STAT_DAILY_PIPELINE_HEADER = [
     'Дата',
-    'Количество переходов в карточку товара',
+    'nmid',
+    'Товар',
+    'Переходов в карточку товара',
     'Положили в корзину, шт.',
     'Заказали товаров, шт.',
     'Заказали на сумму, руб.',
@@ -36,6 +32,8 @@ STAT_DAILY_PIPELINE_HEADER = [
     'Выкупили на сумму, руб.',
     'Отказов, шт.',
     'Отказов на сумму, руб.',
+    'Возвратов, шт.',
+    'Возвратов на сумму, руб.'
 ]
 
 REMAINS_AGGREGATED_REMAINS_HEADER = [
@@ -138,7 +136,7 @@ def protect_sheets(spreadsheet_id):
 
 def write_data(body, spreadsheet_id, range):
     sheets_service.spreadsheets().values().update(
-        spreadsheetId=spreadsheet_id, range=range, valueInputOption='RAW', body=body
+        spreadsheetId=spreadsheet_id, range=range, valueInputOption='USER_ENTERED', body=body
     ).execute()
 
 
@@ -162,8 +160,6 @@ def create_stat_spreadsheet(folder_id):
 
     body = { "requests": [
         {"updateSheetProperties": { "properties": { "sheetId": 0, "title": STAT_DAILY_PIPELINE_SHEET_NAME }, "fields": "title" } },
-        { "addSheet": { "properties": { "title": STAT_DAILY_ORDERS_SHEET_NAME } } },
-        { "addSheet": { "properties": { "title": STAT_DAILY_SALES_SHEET_NAME } } },
     ] }
     sheets_service.spreadsheets().batchUpdate(spreadsheetId=stat_spreadsheet_id, body=body).execute()
 
@@ -290,8 +286,13 @@ def update_pipeline(seller: Seller, pipeline: list):
 
     values = [STAT_DAILY_PIPELINE_HEADER]
     for item in pipeline:
+        period = item.get('period')
+        first_day_of_month = datetime(period.year, period.month, 1, 0, 0, 0)
+        first_day_of_week = (period - timedelta(days=period.weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
         values.append([
-            item.get('period').strftime("%d.%m.%Y"),
+            period.strftime("%Y-%m-%d"),
+            item.get('nm_id'),
+            item.get('vendor_code'),
             item.get('open_card_count'),
             item.get('add_to_cart_count'),
             item.get('orders_count'),
@@ -299,13 +300,17 @@ def update_pipeline(seller: Seller, pipeline: list):
             item.get('sales_count'),
             item.get('sales_sum'),
             item.get('orders_cancelled_count'),
-            item.get('orders_cancelled_sum')
+            item.get('orders_cancelled_sum'),
+            item.get('sales_returned_count'),
+            item.get('sales_returned_sum'),
+            first_day_of_week.strftime("%Y-%m-%d"),
+            first_day_of_month.strftime("%Y-%m-%d")
         ])
     
     body = { 
         'values': values 
     }
-    write_data(body, seller.google_drive_stat_spreadsheet_id, f'{STAT_DAILY_PIPELINE_SHEET_NAME}!A3')
+    write_data(body, seller.google_drive_stat_spreadsheet_id, f'{STAT_DAILY_PIPELINE_SHEET_NAME}!A2')
     write_updated_time(seller.google_drive_stat_spreadsheet_id, STAT_DAILY_PIPELINE_SHEET_NAME, 'A1')
 
 

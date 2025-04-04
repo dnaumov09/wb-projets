@@ -5,7 +5,7 @@ from typing import List, Dict, Any
 from enum import Enum
 from typing import List, Tuple
 
-from sqlalchemy import select, func, Integer, Float
+from sqlalchemy import select, func, Integer, Float, String
 from db.base import session
 
 
@@ -100,6 +100,7 @@ def get_sales_by_period(period: Period, is_aggregated: bool = False):
 
 def get_pipeline_by_period(period: Period, is_aggregated: bool = False):
     columns = [
+        ('vendor_code', String),
         ('open_card_count', Integer),
         ('add_to_cart_count', Integer),
         ('orders_count', Integer),
