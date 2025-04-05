@@ -4,8 +4,9 @@ import logging
 from db.model.seller import Seller, get_sellers
 from db.model.warehouse import get_warehouses
 from db.model.remains import Remains, save_remains
+from db.model.warehouse_remains_snapshot import save_remains_snapshot
 from db.model.card import get_seller_cards
-from db.model.warehouse_remains import WarehouseRemains, save_warehouse_remains
+from db.model.warehouse_remains import WarehouseRemains, save_warehouse_remains, get_warehouse_remains_by_seller_id
 from db.model.settings import get_seller_settings
 from db.model.warehouse import check_warehouse
 from db.util import camel_to_snake
@@ -77,3 +78,11 @@ def update_remains_data(seller: Seller) -> list[Remains, WarehouseRemains]:
     remains = save_remains(remains)
     warehouse_remains = save_warehouse_remains(warehouse_remains)
     logging.info(f"[{seller.trade_mark}] Remains saved {len(warehouse_remains)}")
+
+
+def create_remains_snapshot():
+    for seller in get_sellers():
+        settings = get_seller_settings(seller)
+        if settings.load_remains:
+            remains = get_warehouse_remains_by_seller_id(seller.id)
+            save_remains_snapshot(remains)

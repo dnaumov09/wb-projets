@@ -95,6 +95,7 @@ def run_stat_updating():
 def run_remains_updating():
     """Update remains data and related reports."""
     remains_service.load_remains()
+    remains_service.create_remains_snapshot()
     reporting_service.update_remains_data()
 
 
