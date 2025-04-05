@@ -11,11 +11,13 @@ def main():
 
 
 def run_tests():
+    # from services import scheduler
+    # scheduler._run_daily_task()
     pass
     
 
 if __name__ == "__main__":
     logging_settings.init_logging(logging_settings.logging.INFO)
     run_tests()
-    main()
+    # main()
     

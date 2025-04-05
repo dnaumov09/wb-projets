@@ -47,7 +47,9 @@ def save_records(session: Session, model, data: list[dict], key_fields: list[str
                 setattr(obj, k, v)
             updated_records.append(obj)
         else:
-            obj = model(**item)
+            obj = model()
+            for k, v in item.items():
+                setattr(obj, k, v)
             new_records.append(obj)
     
     if new_records:
