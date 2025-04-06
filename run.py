@@ -11,8 +11,8 @@ def main():
 
 
 def run_tests():
-    from services import remains_service
-    remains_service.create_remains_snapshot()
+    from services import scheduler
+    scheduler.run_remains_updating()
     pass
     
 

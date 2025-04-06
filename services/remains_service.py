@@ -84,5 +84,7 @@ def create_remains_snapshot():
     for seller in get_sellers():
         settings = get_seller_settings(seller)
         if settings.load_remains:
+            logging.info(f"[{seller.trade_mark}] Creating remains snapshot")
             remains = get_warehouse_remains_by_seller_id(seller.id)
             save_remains_snapshot(remains)
+            logging.info(f"[{seller.trade_mark}] Remains snapshot created")
