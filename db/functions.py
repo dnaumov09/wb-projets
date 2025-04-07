@@ -22,7 +22,7 @@ def get_stat_by_period(
     is_aggregated: bool = False
 ):
     # Dynamically call TVF and construct table
-    table = getattr(func, tvf_name)(period.value).table_valued('period', 'nm_id', *[col for col, _ in columns]).alias('stat_table')
+    table = getattr(func, tvf_name)(period.value).table_valued('period', 'nm_id', 'vendor_code', *[col for col, _ in columns]).alias('stat_table')
 
     if is_aggregated:
         aggregated_fields = [
@@ -100,7 +100,6 @@ def get_sales_by_period(period: Period, is_aggregated: bool = False):
 
 def get_pipeline_by_period(period: Period, is_aggregated: bool = False):
     columns = [
-        ('vendor_code', String),
         ('open_card_count', Integer),
         ('add_to_cart_count', Integer),
         ('orders_count', Integer),
