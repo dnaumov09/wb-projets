@@ -5,7 +5,7 @@ import logging
 from datetime import datetime, time
 from db.model.card import Card
 from db.model.seller import Seller
-from db.model.advert import Advert
+from db.model.advert import Advert, AdvertType
 from bot.notification_service import notify_error
 
 from ratelimit import limits, sleep_and_retry
@@ -20,6 +20,7 @@ from api.wb_merchant_api_config import (
     LOAD_ADVERTS_COUNT_URL,
     LOAD_ADVERTS_INFO_URL,
     LOAD_ADVERTS_STAT_URL,
+    LOAD_ADVERTS_STAT_WORDS_URL,
     LOAD_FINANCIAL_REPORT_URL,
     CREATE_WAREHOUSE_REMAINS_TASK_URL,
     CHECK_WAREHOUSE_REMAINS_TASK_STATUS_URL,
@@ -66,7 +67,7 @@ def api_request(
         return data.get(data_key) if data_key else data
     except requests.RequestException as e:
         logging.error(f"[{seller.trade_mark}] API {method} request failed at {url}: {e}")
-        notify_error(seller, e)
+        notify_error(seller, f"API {method} request failed at {url}:\n{e}")
         return None
     
 
@@ -198,3 +199,8 @@ def load_adverts_stat(seller: Seller, adverts: list[Advert], last_updated: datet
         })
     detail_response = api_request(seller, 'POST', LOAD_ADVERTS_STAT_URL, json_payload=payload)
     return detail_response
+
+@sleep_and_retry
+@limits(calls=4, period=1)
+def load_adverts_stat_words(seller: Seller, advert: Advert):
+    return api_request(seller, 'GET', LOAD_ADVERTS_STAT_WORDS_URL, params={"id": advert.advert_id})

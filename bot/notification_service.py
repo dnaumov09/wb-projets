@@ -88,9 +88,9 @@ def build_sale_data(sale: Sale) -> str:
     return result
 
 
-def notify_error(seller: Seller, e: Exception):
+def notify_error(seller: Seller, text: str):
     send_message(chat_id=102421129, text=(
-        f'‼️ <b>Exception ({seller.trade_mark}):</b>'
+        f'‼️ <b>Error ({seller.trade_mark}):</b>'
         '\n\n'
-        f'{e}'
+        f'{text}'
     ))

@@ -12,3 +12,4 @@ ratelimit
 pytz
 alembic
 python-dateutil
+redis
