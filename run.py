@@ -11,9 +11,9 @@ def main():
 
 
 def run_tests():
-    from services.advert_service import load_adverts_stat, load_adverts
+    from services.scheduler import run_adverts_stat_updating
     # load_adverts()
-    load_adverts_stat()
+    # run_adverts_stat_updating()
     # from services import advert_service
     # advert_service.load_keywords()
     # advert_service.load_keywords_stat()
@@ -24,11 +24,14 @@ def run_tests():
     # from services import remains_service
     # remains_service.load_remains()
 
+    from services.scheduler import run_stat_updating_background
+    run_stat_updating_background()
+
     pass
     
 
 if __name__ == "__main__":
     logging_settings.init_logging(logging_settings.logging.INFO)
-    run_tests()
-    # main()
+    # run_tests()
+    main()
     

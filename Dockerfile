@@ -4,9 +4,16 @@ FROM python:3.13-slim
 # Set the working directory in the container
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y locales && \
+# Install system dependencies, including build tools and locales
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    python3-dev \
+    locales && \
     sed -i '/ru_RU.UTF-8/s/^# //g' /etc/locale.gen && \
     locale-gen ru_RU.UTF-8
+
+# Set environment variables for locale and timezone
 ENV LANG=ru_RU.UTF-8
 ENV LANGUAGE=ru_RU:ru
 ENV TZ=Europe/Moscow

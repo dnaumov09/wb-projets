@@ -8,7 +8,7 @@ def save_keywords_clusters(clusters):
         (item['advert_id'], item['name'], item['count'])
         for item in clusters
     ]
-    client.execute('TRUNCATE TABLE keywords_clusters')
+    client.execute('TRUNCATE TABLE clusters')
     client.execute('INSERT INTO clusters (advert_id, name, count) VALUES', cluster_items)
 
     keyword_items = [
@@ -16,7 +16,7 @@ def save_keywords_clusters(clusters):
         for item in clusters
         for keyword in item['keywords']
     ]
-    client.execute('TRUNCATE TABLE keywords_keywords')
+    client.execute('TRUNCATE TABLE keywords')
     client.execute('INSERT INTO keywords (advert_id, cluster, keyword) VALUES', keyword_items)
 
 
@@ -26,7 +26,7 @@ def save_keywords_excluded(excluded):
         for item in excluded
         for keyword in item['keywords']
     ]
-    client.execute('TRUNCATE TABLE keywords_excluded')
+    client.execute('TRUNCATE TABLE excluded')
     client.execute('INSERT INTO excluded (advert_id, keyword) VALUES', cluster_items)
 
 

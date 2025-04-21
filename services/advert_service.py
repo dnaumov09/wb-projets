@@ -44,7 +44,7 @@ def load_keywords():
     for seller in get_sellers():
         settings = get_seller_settings(seller)
         if settings.load_adverts_stat:
-            logging.info(f"[{seller.trade_mark}] Loading adverts stat words")
+            logging.info(f"[{seller.trade_mark}] Loading keywords")
             adverts = get_adverts_by_seller_id(seller)
 
             clusters_to_save = []
@@ -71,6 +71,8 @@ def load_keywords():
                     
             ch_kw.save_keywords_clusters(clusters_to_save)
             ch_kw.save_keywords_excluded(excluded_to_save)
+            
+            logging.info(f"[{seller.trade_mark}] Keywords saved")
 
 
 def load_keywords_stat():

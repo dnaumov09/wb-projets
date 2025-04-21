@@ -16,4 +16,3 @@ redis
 fastapi
 uvicorn
 clickhouse-driver
-clickhouse-sqlalchemy

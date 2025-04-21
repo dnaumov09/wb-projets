@@ -44,6 +44,7 @@ def _schedule_jobs():
     # Daily jobs
     schedule.every().day.at("23:59").do(notification_service.notyfy_pipeline)
     schedule.every().day.at("03:00").do(_run_daily_task)
+    schedule.every().day.at("04:00").do(run_stat_updating_background)
 
     # Every minute at 00 seconds - checking inside the function to align tasks
     schedule.every().minute.at(":00").do(_run_precise_minute_tasks)
@@ -92,6 +93,11 @@ def run_stat_updating():
     logging.info('scheduler.run_stat_updating() - done')
 
 
+def run_stat_updating_background():
+    orders_service.load_orders(True)
+    sales_service.load_sales(True)
+
+
 def run_remains_updating():
     """Update remains data and related reports."""
     remains_service.load_remains()
@@ -109,6 +115,8 @@ def run_adverts_stat_updating():
     logging.info('scheduler.run_adverts_stat_updating() - started')
     advert_service.load_adverts()
     advert_service.load_adverts_stat()
+    advert_service.load_keywords()
+    advert_service.load_keywords_stat()
     logging.info('scheduler.run_adverts_stat_updating() - done')
 
 
