@@ -39,7 +39,7 @@ def _schedule_jobs():
     """Set up all scheduled jobs."""
     
     # Daily jobs # поменять на понедельники
-    schedule.every().monday.at("08:00").do(run_finances_updating)
+    schedule.every().monday.at("11:00").do(run_finances_updating)
     
     # Daily jobs
     schedule.every().day.at("23:59").do(notification_service.notyfy_pipeline)
@@ -94,20 +94,26 @@ def run_stat_updating():
 
 
 def run_stat_updating_background():
+    logging.info('scheduler.run_stat_updating_background() - started')
     orders_service.load_orders(True)
     sales_service.load_sales(True)
+    logging.info('scheduler.run_stat_updating_background() - done')
 
 
 def run_remains_updating():
     """Update remains data and related reports."""
+    logging.info('scheduler.run_remains_updating() - started')
     remains_service.load_remains()
     remains_service.create_remains_snapshot()
     reporting_service.update_remains_data()
+    logging.info('scheduler.run_remains_updating() - done')
 
 
 def run_incomes_updating():
     """Update incomes data and related reports."""
+    logging.info('scheduler.run_incomes_updating() - started')
     incomes_services.load_incomes()
+    logging.info('scheduler.run_incomes_updating() - done')
 
 
 def run_adverts_stat_updating():
