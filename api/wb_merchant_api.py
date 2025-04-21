@@ -11,7 +11,6 @@ from bot.notification_service import notify_error
 from ratelimit import limits, sleep_and_retry
 
 from api.wb_merchant_api_config import (
-    LOAD_WAREHOUSES_URL,
     LOAD_SELLER_INFO_URL,
     LOAD_SELLER_CARDS_URL,
     LOAD_ORDERS_URL,
@@ -21,11 +20,15 @@ from api.wb_merchant_api_config import (
     LOAD_ADVERTS_INFO_URL,
     LOAD_ADVERTS_STAT_URL,
     LOAD_ADVERTS_STAT_WORDS_URL,
+    LOAD_KEYWORDS_STAT_URL,
+    UPDATE_ADVERT_BIDS_URL,
     LOAD_FINANCIAL_REPORT_URL,
     CREATE_WAREHOUSE_REMAINS_TASK_URL,
     CHECK_WAREHOUSE_REMAINS_TASK_STATUS_URL,
     GET_WAREHOUSE_REMAINS_REPORT_URL,
-    LOAD_INCOMES_URL
+    LOAD_INCOMES_URL,
+    LOAD_WB_OFFICES_URL,
+    LOAD_WB_WAREHOUSES_URL
 )
 
 
@@ -48,7 +51,7 @@ def api_request(
     url: str,
     params: Optional[Dict[str, Any]] = None,
     json_payload: Optional[Dict[str, Any]] = None,
-    timeout: int = 10,
+    timeout: int = 20,
     data_key: Optional[str] = None
 ) -> Optional[Union[Dict[str, Any], List[Dict[str, Any]]]]:
     headers = get_headers(seller)
@@ -73,8 +76,12 @@ def api_request(
 
 # --- API functions ---
 
-def load_warehouses(seller: Seller):
-    return api_request(seller, 'GET', LOAD_WAREHOUSES_URL)
+def load_wb_offices(seller: Seller):
+    return api_request(seller, 'GET', LOAD_WB_OFFICES_URL)
+
+
+def load_wb_warehouses(seller: Seller):
+    return api_request(seller, 'GET', LOAD_WB_WAREHOUSES_URL)
 
 
 def load_seller_info(seller: Seller):
@@ -204,3 +211,39 @@ def load_adverts_stat(seller: Seller, adverts: list[Advert], last_updated: datet
 @limits(calls=4, period=1)
 def load_adverts_stat_words(seller: Seller, advert: Advert):
     return api_request(seller, 'GET', LOAD_ADVERTS_STAT_WORDS_URL, params={"id": advert.advert_id})
+
+
+@sleep_and_retry
+@limits(calls=4, period=1)
+def load_adverts_keywords_stat(seller: Seller, advert: Advert):
+    return api_request(seller, 'GET', LOAD_ADVERTS_KEYWORDS_STAT_URL, params={"id": advert.advert_id})
+
+
+@sleep_and_retry
+@limits(calls=4, period=1)
+def load_keywords_stat(seller: Seller, advert: Advert, date_from: datetime, date_to: datetime):
+    params = {
+        "advert_id": advert.advert_id, 
+        'from': date_from.strftime("%Y-%m-%d"), 
+        'to': date_to.strftime("%Y-%m-%d")
+        }
+    return api_request(seller, 'GET', LOAD_KEYWORDS_STAT_URL, params=params)
+
+
+@sleep_and_retry
+@limits(calls=4, period=1)
+def update_advert_bids(seller: Seller, data):
+    payload = {
+        "bids": [
+            {
+                "advert_id": item["advert_id"],
+                "nm_bids": [
+                    {"nm": bid["nm_id"], "bid": bid["bid"]}
+                    for bid in item["bids"]
+                ]
+            }
+            for item in data
+        ]
+    }
+            
+    return api_request(seller, 'PATCH', UPDATE_ADVERT_BIDS_URL, json_payload=payload)

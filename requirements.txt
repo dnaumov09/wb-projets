@@ -13,3 +13,7 @@ pytz
 alembic
 python-dateutil
 redis
+fastapi
+uvicorn
+clickhouse-driver
+clickhouse-sqlalchemy

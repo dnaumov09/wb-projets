@@ -1,10 +1,11 @@
 from datetime import datetime
 from enum import Enum
-from sqlalchemy import ForeignKey, DateTime, Index, select
+from sqlalchemy import ForeignKey, DateTime, Index, select, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from db.base import Base, session
 from db.model.card import Card
-from db.model.advert import Advert
+from db.model.advert import Advert, AdvertType, Status
+from db.model.seller import Seller
 
 
 class AppType(Enum):
@@ -197,3 +198,27 @@ def save_adverts_stat(data):
 
     session.commit()
     return new_stat + existing_stat_output, new_booster_stat + existing_booster_stat_output
+
+
+def get_last_days_stat(seller: Seller, date_from: datetime):
+    stmt = (
+        select(
+            AdvertsStat.advert_id,
+            AdvertsStat.nm_id,
+            func.sum(AdvertsStat.sum).label("total_cost"),
+            func.sum(AdvertsStat.sum_price).label("total_revenue"),
+        )
+        # Делаем JOIN к связанному Advert (AdvertsStat -> Advert),
+        # чтобы фильтровать по статусу и типу кампании
+        .join(AdvertsStat.advert)
+        .where(AdvertsStat.date >= date_from)
+        # Фильтр по статусам: ONGOING (9) и PAUSED (11)
+        .where(Advert.status.in_([Status.ONGOING, Status.PAUSED]))
+        # Фильтр по типам: AUTOMATIC (8) и AUCTION (9)
+        .where(Advert.advert_type.in_([AdvertType.AUTOMATIC, AdvertType.AUCTION]))
+        # .where(Advert.advert_id == 23376017)
+        .where(Advert.seller_id == seller.id)
+        .group_by(AdvertsStat.advert_id, AdvertsStat.nm_id)
+    )
+
+    return session.execute(stmt).all()

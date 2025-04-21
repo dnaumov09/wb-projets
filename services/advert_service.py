@@ -1,12 +1,15 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from api import wb_merchant_api
-from api import redis
+
 from db.model.seller import get_sellers
-from db.model.advert import save_adverts, get_adverts_by_seller_id
-from db.model.adverts_stat import save_adverts_stat
+from db.model.advert import AdvertType, save_adverts, get_adverts_by_seller_id
+from db.model.adverts_stat import save_adverts_stat, get_last_days_stat
 from db.model.settings import get_seller_settings, save_settings
-from db.model.advert import AdvertType
+from db.model.advert_bid import AdvertBid, save_advert_bids, get_advert_bid, update_advert_bid
+
+from clickhouse.model import keywords as ch_kw
+from clickhouse.model import adverts as ch_ad
 
 def load_adverts():
     for seller in get_sellers():
@@ -16,11 +19,12 @@ def load_adverts():
             data = wb_merchant_api.load_adverts(seller)
             if data:
                 adverts = save_adverts(data, seller)
+                ch_ad.save_adverts(data, seller)
+                save_advert_bids(data)
                 logging.info(f"[{seller.trade_mark}] Adverts saved ({len(adverts)})")
 
 
-#https://dev.wildberries.ru/openapi/analytics#tag/Statistika-po-prodvizheniyu/paths/~1adv~1v2~1fullstats/post
-def load_adveerts_stat():
+def load_adverts_stat():
     for seller in get_sellers():
         settings = get_seller_settings(seller)
         if settings.load_adverts_stat:
@@ -30,6 +34,7 @@ def load_adveerts_stat():
             data = wb_merchant_api.load_adverts_stat(seller, adverts, settings.adverts_stat_last_updated if settings.adverts_stat_last_updated else now)
             if data:
                 advert_stat, booster_stat = save_adverts_stat(data)
+                ch_ad.save_advert_stat(data)
                 settings.adverts_stat_last_updated = now
                 save_settings(settings)
                 logging.info(f"[{seller.trade_mark}] Adverts stat saved (adverts stat: {len(advert_stat)}, booster stat: {len(booster_stat)})")
@@ -59,10 +64,152 @@ def load_keywords():
                 for cluster_data in data.get('clusters', []):
                     clusters_to_save.append({
                         "advert_id": advert.advert_id,
-                        "name": cluster_data.get('cluster').lower(),
+                        "name": cluster_data.get('cluster'),
                         "count": cluster_data.get('count'),
                         "keywords": cluster_data.get('keywords', [])
                     })
                     
-            redis.save_cluster(clusters_to_save)
-            redis.save_excluded(excluded_to_save)
+            ch_kw.save_keywords_clusters(clusters_to_save)
+            ch_kw.save_keywords_excluded(excluded_to_save)
+
+
+def load_keywords_stat():
+    valid_types = {AdvertType.AUCTION, AdvertType.AUTOMATIC}
+
+    for seller in get_sellers():
+        settings = get_seller_settings(seller)
+        if settings.load_adverts_stat:
+            logging.info(f"[{seller.trade_mark}] Loading keywords stat words")
+
+            adverts = get_adverts_by_seller_id(seller)
+            adverts = [
+                advert for advert in adverts
+                if advert.advert_type in valid_types
+            ]  
+
+            date_to = datetime.now()
+            date_from = date_to - timedelta(days=6)  
+            
+            data_to_save = []
+            for advert in adverts:
+                data = wb_merchant_api.load_keywords_stat(seller, advert, date_from, date_to)
+                data_to_save.append({
+                    'advert_id': advert.advert_id,
+                    'stat': data.get('keywords')
+                })
+
+            ch_kw.save_keywords_stat(data_to_save)
+
+
+
+
+
+
+
+
+
+
+# ------------------- Параметры для расчёта -------------------
+# TARGET_ROI = 3          # Целевой ROI (например, 3 = 300%)
+# DEAD_ZONE = 0.01          # Зона нечувствительности: ±5% от целевого ROI
+# MAX_ADJUST_STEP = 0.2     # Макс. изменение ставки за один шаг (±20%)
+# MIN_BID = 10.0            # Минимальная допустимая ставка
+# MAX_BID = 500.0           # Максимальная допустимая ставка
+# DAYS_BACK = 7             # Берём статистику за последние 7 дней
+
+
+# def get_current_bid(advert_id: int, nm_id: int):
+#     return get_advert_bid(advert_id, nm_id)
+
+
+# def update_bid(seller: Seller, advert_id: int, nm_id: int, current_bid: AdvertBid, new_bid: float):
+#     logging.info(f"Updating bid: advert_id={advert_id}, nm_id={nm_id}, old_bid={current_bid.cpm}, new_bid={new_bid}")
+#     # current_bid.cpm = new_bid
+#     # update_advert_bid(current_bid)
+#     # wb_merchant_api.update_advert_bids(seller, [{
+#     #     'advert_id': advert_id, 
+#     #     'bids': [{
+#     #         'nm_id': nm_id,
+#     #         'bid': int(round(new_bid))
+#     #     }]
+#     # }])
+
+
+# def calculate_roi(revenue: float, cost: float) -> float:
+#     """
+#     ROI = (revenue - cost) / cost
+#     Если cost <= 0, возвращаем 0.0, чтобы избежать деления на ноль.
+#     """
+#     if cost <= 0:
+#         return 0.0
+#     return (revenue - cost) / cost
+
+
+# def calculate_drr(revenue: float, cost: float) -> float:
+#     """
+#     ДРР = cost / revenue
+#     Если revenue <= 0, возвращаем 0.0, чтобы избежать деления на ноль.
+#     """
+#     if revenue <= 0:
+#         return 0.0
+#     return cost / revenue
+
+
+# def update_bids(seller: Seller, days_back: int = DAYS_BACK):
+#     """
+#     Функция, которая:
+#     1. Выгружает статистику за последние days_back дней.
+#     2. Агегирует её по (advert_id, nm_id).
+#     3. Считает ROAS.
+#     4. Сравнивает с целевым ROAS и корректирует ставку.
+#     5. Вызывает обновление ставки через update_bid.
+#     """
+
+#     now = datetime.now()
+#     date_from = now - timedelta(days=days_back)
+
+#     data = get_last_days_stat(seller, date_from)
+
+#     for row in data:
+#         advert_id = row.advert_id
+#         nm_id = row.nm_id
+#         total_cost = row.total_cost or 0.0
+#         total_revenue = row.total_revenue or 0.0
+
+#         # Считаем ROI
+#         roi = calculate_roi(total_revenue, total_cost)
+#         drr = calculate_drr(total_revenue, total_cost)
+#         logging.info(f"ДРР = {drr}")
+
+#         # Смотрим, на сколько % он отклоняется от TARGET_ROI
+#         # Пример: если ROI = 1.5, а TARGET_ROI=2.0 => roi_diff = (1.5 - 2.0)/2.0 = -0.25 (-25%)
+#         #         если ROI=3.0 => diff= (3.0-2.0)/2.0 = +0.5 (+50%)
+#         if TARGET_ROI == 0:
+#             roi_diff = 0.0
+#         else:
+#             roi_diff = (roi - TARGET_ROI) / TARGET_ROI
+
+#         # Текущая ставка
+#         current_bid = get_current_bid(advert_id, nm_id)
+
+#         # Зона нечувствительности (если отклонение меньше ±DEAD_ZONE, ничего не делаем)
+#         if abs(roi_diff) < DEAD_ZONE:
+#             continue
+
+#         # Коррекция ставки
+#         # Если roi_diff>0 => ROI выше целевого => можем повысить ставку
+#         # Если roi_diff<0 => ROI ниже целевого => снижаем ставку
+#         # Но не более чем на ±MAX_ADJUST_STEP
+#         if roi_diff > 0:
+#             corr_ratio = min(roi_diff, MAX_ADJUST_STEP)
+#         else:
+#             corr_ratio = max(roi_diff, -MAX_ADJUST_STEP)
+
+#         new_bid = current_bid.cpm * (1 + corr_ratio)
+
+#         # Ограничиваем ставку заданными границами
+#         new_bid = max(MIN_BID, min(new_bid, MAX_BID))
+
+#         # Проверяем, есть ли смысл обновлять (изменение > 0.01)
+#         if abs(new_bid - current_bid.cpm) > 0.01:
+#             update_bid(seller, advert_id, nm_id, current_bid, new_bid)

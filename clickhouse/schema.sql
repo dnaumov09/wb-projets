@@ -1,0 +1,71 @@
+CREATE TABLE IF NOT EXISTS clusters (
+    advert_id UInt32,
+    name String,
+    count Nullable(UInt32)
+)
+ENGINE = MergeTree()
+ORDER BY name;
+
+
+CREATE TABLE IF NOT EXISTS keywords (
+    advert_id UInt32,
+    cluster String,
+    keyword String
+) 
+ENGINE = MergeTree()
+ORDER BY keyword;
+
+
+CREATE TABLE IF NOT EXISTS keywords_stat (
+    advert_id UInt32,
+    date Date,
+    keyword String,
+    views UInt32,
+    clicks UInt32, 
+    ctr Float32,
+    sum Float32
+) 
+ENGINE = MergeTree()
+ORDER BY keyword;
+
+
+CREATE TABLE IF NOT EXISTS excluded (
+    advert_id UInt32,
+    keyword String
+) 
+ENGINE = MergeTree()
+ORDER BY keyword;
+
+CREATE TABLE IF NOT EXISTS adverts (
+    advert_id UInt32,
+    seller_id UInt32,
+    create_time DateTime64(3),
+    start_time DateTime64(3),
+    end_time DateTime64(3),
+    change_time DateTime64(3),
+    name String,
+    daily_budget Float32,
+    search_pluse_state Boolean,
+    advert_type Int8,
+    status Int8,
+    payment_type String
+)
+ENGINE = MergeTree()
+ORDER BY advert_id;
+
+
+CREATE TABLE IF NOT EXISTS adverts_stat (
+    advert_id UInt32,
+    date Date,
+    nm_id UInt32,
+    sum Float32,
+    views UInt32,
+    clicks UInt32,
+    atbs UInt32,
+    orders UInt32,
+    shks UInt32,
+    sum_price Float32,
+    app_type Int8
+) 
+ENGINE = ReplacingMergeTree()
+ORDER BY (advert_id, date, nm_id, app_type);

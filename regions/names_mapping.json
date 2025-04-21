@@ -1,0 +1,486 @@
+[
+    {
+      "name": "Gorno-Altay",
+      "region_ru": "Республика Алтай"
+    },
+    {
+      "name": "Pskov",
+      "region_ru": "Псковская область"
+    },
+    {
+      "name": "Krasnodar",
+      "region_ru": "Краснодарский край"
+    },
+    {
+      "name": "Karachay-Cherkess",
+      "region_ru": "Карачаево-Черкесская Республика"
+    },
+    {
+      "name": "Kabardin-Balkar",
+      "region_ru": "Кабардино-Балкарская Республика"
+    },
+    {
+      "name": "North Ossetia",
+      "region_ru": "Республика Северная Осетия — Алания"
+    },
+    {
+      "name": "Ingush",
+      "region_ru": "Республика Ингушетия"
+    },
+    {
+      "name": "Chechnya",
+      "region_ru": "Чеченская Республика"
+    },
+    {
+      "name": "Dagestan",
+      "region_ru": "Дагестанская Республика"
+    },
+    {
+      "name": "Murmansk",
+      "region_ru": "Мурманская область"
+    },
+    {
+      "name": "Arkhangelsk",
+      "region_ru": "Архангельская область"
+    },
+    {
+      "name": "Astrakhan",
+      "region_ru": "Астраханская область"
+    },
+    {
+      "name": "Bashkortostan",
+      "region_ru": "Республика Башкортостан"
+    },
+    {
+      "name": "Belgorod",
+      "region_ru": "Белгородская область"
+    },
+    {
+      "name": "Bryansk",
+      "region_ru": "Брянская область"
+    },
+    {
+      "name": "Buryatia",
+      "region_ru": "Республика Бурятия"
+    },
+    {
+      "name": "Kalmykia",
+      "region_ru": "Республика Калмыкия"
+    },
+    {
+      "name": "Kirov",
+      "region_ru": "Кировская область"
+    },
+    {
+      "name": "Komi",
+      "region_ru": "Республика Коми"
+    },
+    {
+      "name": "Kostroma",
+      "region_ru": "Костромская область"
+    },
+    {
+      "name": "Krasnoyarsk",
+      "region_ru": "Красноярский край"
+    },
+    {
+      "name": "Kurgan",
+      "region_ru": "Курганская область"
+    },
+    {
+      "name": "Kursk",
+      "region_ru": "Курская область"
+    },
+    {
+      "name": "Leningrad",
+      "region_ru": "Ленинградская область"
+    },
+    {
+      "name": "Lipetsk",
+      "region_ru": "Липецкая область"
+    },
+    {
+      "name": "Magadan",
+      "region_ru": "Магаданская область"
+    },
+    {
+      "name": "Mari El",
+      "region_ru": "Республика Марий Эл"
+    },
+    {
+      "name": "Moscow",
+      "region_ru": "Московская область"
+    },
+    {
+      "name": "Mordovia",
+      "region_ru": "Республика Мордовия"
+    },
+    {
+      "name": "Moscow City",
+      "region_ru": "Москва"
+    },
+    {
+      "name": "Murmansk",
+      "region_ru": "Мурманская область"
+    },
+    {
+      "name": "Nizhny Novgorod",
+      "region_ru": "Нижегородская область"
+    },
+    {
+      "name": "Novgorod",
+      "region_ru": "Новгородская область"
+    },
+    {
+      "name": "Novosibirsk",
+      "region_ru": "Новосибирская область"
+    },
+    {
+      "name": "Omsk",
+      "region_ru": "Омская область"
+    },
+    {
+      "name": "Orenburg",
+      "region_ru": "Оренбургская область"
+    },
+    {
+      "name": "Oryol",
+      "region_ru": "Орловская область"
+    },
+    {
+      "name": "Penza",
+      "region_ru": "Пензенская область"
+    },
+    {
+      "name": "Perm",
+      "region_ru": "Пермский край"
+    },
+    {
+      "name": "Primorsky",
+      "region_ru": "Приморский край"
+    },
+    {
+      "name": "Rostov",
+      "region_ru": "Ростовская область"
+    },
+    {
+      "name": "Ryazan",
+      "region_ru": "Рязанская область"
+    },
+    {
+      "name": "Sakha (Yakutia)",
+      "region_ru": "Республика Саха (Якутия)"
+    },
+    {
+      "name": "Saratov",
+      "region_ru": "Саратовская область"
+    },
+    {
+      "name": "Smolensk",
+      "region_ru": "Смоленская область"
+    },
+    {
+      "name": "Saint Petersburg",
+      "region_ru": "Санкт-Петербург"
+    },
+    {
+      "name": "Stavropol",
+      "region_ru": "Ставропольский край"
+    },
+    {
+      "name": "Sverdlovsk",
+      "region_ru": "Свердловская область"
+    },
+    {
+      "name": "Tambov",
+      "region_ru": "Тамбовская область"
+    },
+    {
+      "name": "Tatarstan",
+      "region_ru": "Республика Татарстан"
+    },
+    {
+      "name": "Tomsk",
+      "region_ru": "Томская область"
+    },
+    {
+      "name": "Tula",
+      "region_ru": "Тульская область"
+    },
+    {
+      "name": "Tuva",
+      "region_ru": "Республика Тыва"
+    },
+    {
+      "name": "Tver",
+      "region_ru": "Тверская область"
+    },
+    {
+      "name": "Tyumen",
+      "region_ru": "Тюменская область"
+    },
+    {
+      "name": "Udmurtia",
+      "region_ru": "Республика Удмуртия"
+    },
+    {
+      "name": "Ulyanovsk",
+      "region_ru": "Ульяновская область"
+    },
+    {
+      "name": "Vladimir",
+      "region_ru": "Владимирская область"
+    },
+    {
+      "name": "Volgograd",
+      "region_ru": "Волгоградская область"
+    },
+    {
+      "name": "Vologda",
+      "region_ru": "Вологодская область"
+    },
+    {
+      "name": "Voronezh",
+      "region_ru": "Воронежская область"
+    },
+    {
+      "name": "Yamalo-Nenets",
+      "region_ru": "Ямало-Ненецкий автономный округ"
+    },
+    {
+      "name": "Yaroslavl",
+      "region_ru": "Ярославская область"
+    },
+    {
+      "name": "Crimea",
+      "region_ru": "Республика Крым"
+    },
+    {
+      "name": "Kaliningrad",
+      "region_ru": "Калининградская область"
+    },
+    {
+      "name": "Kursk",
+      "region_ru": "Курская область"
+    },
+    {
+      "name": "Buryat",
+      "region_ru": "Республика Бурятия"
+    },
+    {
+      "name": "Chita",
+      "region_ru": "Забайкальский край"
+    },
+    {
+      "name": "Chita",
+      "region_ru": "Забайкальский край"
+    },
+    {
+      "name": "Amur",
+      "region_ru": "Амурская область"
+    },
+    {
+      "name": "Yevrey",
+      "region_ru": "Еврейская автономная область"
+    },
+    {
+      "name": "Khabarovsk",
+      "region_ru": "Хабаровский край"
+    },
+    {
+      "name": "Kurgan",
+      "region_ru": "Курганская область"
+    },
+    {
+      "name": "Novosibirsk",
+      "region_ru": "Новосибирская область"
+    },
+    {
+      "name": "Chelyabinsk",
+      "region_ru": "Челябинская область"
+    },
+    {
+      "name": "Altay",
+      "region_ru": "Алтайский край"
+    },
+    {
+      "name": "Volgograd",
+      "region_ru": "Волгоградская область"
+    },
+    {
+      "name": "Chukchi Autonomous Okrug",
+      "region_ru": "Чукотский автономный округ"
+    },
+    {
+      "name": "Nenets",
+      "region_ru": "Ненецкий автономный округ"
+    },
+    {
+      "name": "Sakha (Yakutia)",
+      "region_ru": "Республика Саха (Якутия)"
+    },
+    {
+      "name": "Krasnoyarsk",
+      "region_ru": "Красноярский край"
+    },
+    {
+      "name": "Kalmyk",
+      "region_ru": "Республика Калмыкия"
+    },
+    {
+      "name": "Kamchatka",
+      "region_ru": "Камчатский край"
+    },
+    {
+      "name": "Bashkortostan",
+      "region_ru": "Республика Башкортостан"
+    },
+    {
+      "name": "Khanty-Mansiy",
+      "region_ru": "Ханты-Мансийский автономный округ — Югра"
+    },
+    {
+      "name": "Tatarstan",
+      "region_ru": "Республика Татарстан"
+    },
+    {
+      "name": "Penza",
+      "region_ru": "Пензенская область"
+    },
+    {
+      "name": "Kemerovo",
+      "region_ru": "Кемеровская область"
+    },
+    {
+      "name": "Orel",
+      "region_ru": "Орловская область"
+    },
+    {
+      "name": "Irkutsk",
+      "region_ru": "Иркутская область"
+    },
+    {
+      "name": "Khakass",
+      "region_ru": "Республика Хакасия"
+    },
+    {
+      "name": "Mordovia",
+      "region_ru": "Республика Мордовия"
+    },
+    {
+      "name": "Kaluga",
+      "region_ru": "Калужская область"
+    },
+    {
+      "name": "Ryazan'",
+      "region_ru": "Рязанская область"
+    },
+    {
+      "name": "Ivanovo",
+      "region_ru": "Ивановская область"
+    },
+    {
+      "name": "Chuvash",
+      "region_ru": "Чувашская Республика"
+    },
+    {
+      "name": "Vologda",
+      "region_ru": "Вологодская область"
+    },
+    {
+      "name": "Novgorod",
+      "region_ru": "Новгородская область"
+    },
+    {
+      "name": "Mariy-El",
+      "region_ru": "Республика Марий Эл"
+    },
+    {
+      "name": "Kirov",
+      "region_ru": "Кировская область"
+    },
+    {
+      "name": "Udmurt",
+      "region_ru": "Республика Удмуртия"
+    },
+    {
+      "name": "Komi",
+      "region_ru": "Республика Коми"
+    },
+    {
+      "name": "Samara",
+      "region_ru": "Самарская область"
+    },
+    {
+      "name": "Adygey",
+      "region_ru": "Республика Адыгея"
+    },
+    {
+      "name": "Karelia",
+      "region_ru": "Республика Карелия"
+    },
+    {
+      "name": "Primor'ye",
+      "region_ru": "Приморский край"
+    },
+    {
+      "name": "Tyumen'",
+      "region_ru": "Тюменская область"
+    },
+    {
+      "name": "Astrakhan'",
+      "region_ru": "Астраханская область"
+    },
+    {
+      "name": "Maga Buryatdan",
+      "region_ru": "Республика Бурятия"
+    },
+    {
+      "name": "Sakhalin",
+      "region_ru": "Сахалинская область"
+    },
+    {
+      "name": "Yamal-Nenets",
+      "region_ru": "Ямало-Ненецкий автономный округ"
+    },
+    {
+      "name": "City of St. Petersburg",
+      "region_ru": "Санкт-Петербург"
+    },
+    {
+      "name": "Arkhangel'sk",
+      "region_ru": "Архангельская область"
+    },
+    {
+      "name": "Ul'yanovsk",
+      "region_ru": "Ульяновская область"
+    },
+    {
+      "name": "Yaroslavl'",
+      "region_ru": "Ярославская область"
+    },
+    {
+      "name": "Nizhegorod",
+      "region_ru": "Нижегородская область"
+    },
+    {
+      "name": "Tver'",
+      "region_ru": "Тверская область"
+    },
+    {
+      "name": "Moskovskaya",
+      "region_ru": "Московская область"
+    },
+    {
+      "name": "Moskva",
+      "region_ru": "Москва"
+    },
+    {
+      "name": "Perm'",
+      "region_ru": "Пермский край"
+    },
+    {
+      "name": "Stavropol'",
+      "region_ru": "Ставропольский край"
+    }
+  ]  

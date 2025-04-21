@@ -108,7 +108,7 @@ def run_adverts_stat_updating():
     """Update adverts and their statistics."""
     logging.info('scheduler.run_adverts_stat_updating() - started')
     advert_service.load_adverts()
-    advert_service.load_adveerts_stat()
+    advert_service.load_adverts_stat()
     logging.info('scheduler.run_adverts_stat_updating() - done')
 
 

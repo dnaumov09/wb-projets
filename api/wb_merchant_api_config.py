@@ -1,4 +1,5 @@
-LOAD_WAREHOUSES_URL = "https://supplies-api.wildberries.ru/api/v1/warehouses"
+LOAD_WB_OFFICES_URL = "https://marketplace-api.wildberries.ru/api/v3/offices"
+LOAD_WB_WAREHOUSES_URL = "https://supplies-api.wildberries.ru/api/v1/warehouses"
 LOAD_SELLER_INFO_URL = 'https://common-api.wildberries.ru/api/v1/seller-info'
 LOAD_SELLER_CARDS_URL = 'https://content-api.wildberries.ru/content/v2/get/cards/list'
 LOAD_ORDERS_URL = 'https://statistics-api.wildberries.ru/api/v1/supplier/orders'
@@ -8,6 +9,8 @@ LOAD_ADVERTS_COUNT_URL = 'https://advert-api.wildberries.ru/adv/v1/promotion/cou
 LOAD_ADVERTS_INFO_URL = 'https://advert-api.wildberries.ru/adv/v1/promotion/adverts'
 LOAD_ADVERTS_STAT_URL = 'https://advert-api.wildberries.ru/adv/v2/fullstats'
 LOAD_ADVERTS_STAT_WORDS_URL = 'https://advert-api.wildberries.ru/adv/v2/auto/stat-words'
+LOAD_KEYWORDS_STAT_URL = 'https://advert-api.wildberries.ru/adv/v0/stats/keywords'
+UPDATE_ADVERT_BIDS_URL = 'https://advert-api.wildberries.ru/adv/v0/bids'
 CREATE_WAREHOUSE_REMAINS_TASK_URL = 'https://seller-analytics-api.wildberries.ru/api/v1/warehouse_remains?groupByBrand={group_by_brand}&groupBySubject={group_by_subject}&groupBySa={group_by_sa}&groupByNm={group_by_nm}&groupByBarcode={group_by_barcode}&groupBySize={group_by_size}'
 CHECK_WAREHOUSE_REMAINS_TASK_STATUS_URL = 'https://seller-analytics-api.wildberries.ru/api/v1/warehouse_remains/tasks/{task_id}/status'
 GET_WAREHOUSE_REMAINS_REPORT_URL = 'https://seller-analytics-api.wildberries.ru/api/v1/warehouse_remains/tasks/{task_id}/download'
