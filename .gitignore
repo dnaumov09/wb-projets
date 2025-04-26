@@ -11,3 +11,4 @@ alembic
 alembic.ini
 google-credentials.json
 .DN
+test.py

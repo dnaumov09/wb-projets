@@ -3,7 +3,7 @@ from datetime import datetime
 
 from db.model.order import Order, OrderStatus
 from db.model.sale import Sale, SaleStatus
-from db.model.user import get_admins
+from db.model.user import get_admins, get_seller_users
 from db.model.seller import Seller
 
 from bot.stat_handler import build_pipeline_data
@@ -115,4 +115,8 @@ def notify_new_supply_slot(seller: Seller, date: datetime, warehouse_name: str, 
         f'Приёмка: {acceptance_cost} ₽'
     )
     print(text)
-    send_message(chat_id=102421129, text=text)
+
+    users = get_seller_users(seller)
+    for user in users:
+        if user.receive_supplies_info:
+            send_message(chat_id=user.tg_chat_id, text=text)

@@ -21,3 +21,7 @@ def get_user(chat_id: int) -> User:
 
 def get_admins() -> list[User]:
     return session.query(User).all()
+
+
+def get_seller_users(seller: Seller):
+    return session.query(User).where(User.seller_id == seller.id).all()

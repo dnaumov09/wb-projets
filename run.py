@@ -8,17 +8,8 @@ from server import api
 
 def main():
     scheduler.start_scheduler()
-    # api.start_api()
     bot.start_bot()
-
-
-from db.model.seller import get_seller
-SELLER = get_seller(1)
-
-def run_tests():
-    pass
 
 if __name__ == "__main__":
     logging_settings.init_logging(logging_settings.logging.INFO)
     main()
-    
