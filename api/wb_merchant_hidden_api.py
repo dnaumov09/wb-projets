@@ -9,19 +9,8 @@ from datetime import datetime, timedelta
 import requests
 
 
-SUPPLIER_ID = os.getenv('SUPPLIER_ID')
-WB_TOKEN = os.getenv('WB_TOKEN')
-VALIDATION_KEY = os.getenv('VALIDATION_KEY')
-
-HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/135.0.0.0 Safari/537.36"
-    ),
-    "Content-Type": "application/json",
-}
-SUPPLY_MANAGER_BASE_URL = "https://seller-supply.wildberries.ru/ns/sm-supply/supply-manager/api/v1"
+class MerchantHiddenAPIEndpoints:
+    SUPPLIES_STATUS_URL = "https://seller-supply.wildberries.ru/ns/sm-supply/supply-manager/api/v1/supply/getAcceptanceCosts"
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -48,7 +37,14 @@ class WBHiddenAPI:
         self._timeout = timeout
         self._s = session or requests.Session()
 
-        self._s.headers.update(HEADERS)
+        self._s.headers.update({
+            "User-Agent": (
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/135.0.0.0 Safari/537.36"
+            ),
+            "Content-Type": "application/json",
+        })
         self._s.cookies.update({
                 "x-supplier-id-external": cfg.supplier_id,
                 "wbx-validation-key": cfg.validation_key,
@@ -96,7 +92,7 @@ class WBHiddenAPI:
                 "supplyId": supply_id,
             },
         }
-        return self._post(f"{SUPPLY_MANAGER_BASE_URL}/supply/getAcceptanceCosts", payload)
+        return self._post(MerchantHiddenAPIEndpoints.SUPPLIES_STATUS_URL, payload)
     
 
 _client: WBHiddenAPI | None = None 
@@ -104,9 +100,9 @@ def _get_client() -> WBHiddenAPI:
     global _client  
     if _client is None:
         cfg = APIConfig(
-            supplier_id=SUPPLIER_ID,
-            wb_token=WB_TOKEN,
-            validation_key=VALIDATION_KEY,
+            supplier_id=os.getenv('SUPPLIER_ID'),
+            wb_token=os.getenv('WB_TOKEN'),
+            validation_key=os.getenv('VALIDATION_KEY')
         )
         _client = WBHiddenAPI(cfg)
     return _client

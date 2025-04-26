@@ -10,26 +10,26 @@ from bot.notification_service import notify_error
 
 from ratelimit import limits, sleep_and_retry
 
-from api.wb_merchant_api_config import (
-    LOAD_SELLER_INFO_URL,
-    LOAD_SELLER_CARDS_URL,
-    LOAD_ORDERS_URL,
-    LOAD_SALES_URL,
-    LOAD_CARD_STAT_DAILY_URL,
-    LOAD_ADVERTS_COUNT_URL,
-    LOAD_ADVERTS_INFO_URL,
-    LOAD_ADVERTS_STAT_URL,
-    LOAD_ADVERTS_STAT_WORDS_URL,
-    LOAD_KEYWORDS_STAT_URL,
-    UPDATE_ADVERT_BIDS_URL,
-    LOAD_FINANCIAL_REPORT_URL,
-    CREATE_WAREHOUSE_REMAINS_TASK_URL,
-    CHECK_WAREHOUSE_REMAINS_TASK_STATUS_URL,
-    GET_WAREHOUSE_REMAINS_REPORT_URL,
-    LOAD_INCOMES_URL,
-    LOAD_WB_OFFICES_URL,
-    LOAD_WB_WAREHOUSES_URL
-)
+
+class MerchantAPIEndpoints:
+    LOAD_WB_OFFICES_URL = "https://marketplace-api.wildberries.ru/api/v3/offices"
+    LOAD_WB_WAREHOUSES_URL = "https://supplies-api.wildberries.ru/api/v1/warehouses"
+    LOAD_SELLER_INFO_URL = 'https://common-api.wildberries.ru/api/v1/seller-info'
+    LOAD_SELLER_CARDS_URL = 'https://content-api.wildberries.ru/content/v2/get/cards/list'
+    LOAD_ORDERS_URL = 'https://statistics-api.wildberries.ru/api/v1/supplier/orders'
+    LOAD_SALES_URL = 'https://statistics-api.wildberries.ru/api/v1/supplier/sales'
+    LOAD_CARD_STAT_DAILY_URL = 'https://seller-analytics-api.wildberries.ru/api/v2/nm-report/detail/history'
+    LOAD_ADVERTS_COUNT_URL = 'https://advert-api.wildberries.ru/adv/v1/promotion/count'
+    LOAD_ADVERTS_INFO_URL = 'https://advert-api.wildberries.ru/adv/v1/promotion/adverts'
+    LOAD_ADVERTS_STAT_URL = 'https://advert-api.wildberries.ru/adv/v2/fullstats'
+    LOAD_ADVERTS_STAT_WORDS_URL = 'https://advert-api.wildberries.ru/adv/v2/auto/stat-words'
+    LOAD_KEYWORDS_STAT_URL = 'https://advert-api.wildberries.ru/adv/v0/stats/keywords'
+    UPDATE_ADVERT_BIDS_URL = 'https://advert-api.wildberries.ru/adv/v0/bids'
+    CREATE_WAREHOUSE_REMAINS_TASK_URL = 'https://seller-analytics-api.wildberries.ru/api/v1/warehouse_remains?groupByBrand={group_by_brand}&groupBySubject={group_by_subject}&groupBySa={group_by_sa}&groupByNm={group_by_nm}&groupByBarcode={group_by_barcode}&groupBySize={group_by_size}'
+    CHECK_WAREHOUSE_REMAINS_TASK_STATUS_URL = 'https://seller-analytics-api.wildberries.ru/api/v1/warehouse_remains/tasks/{task_id}/status'
+    GET_WAREHOUSE_REMAINS_REPORT_URL = 'https://seller-analytics-api.wildberries.ru/api/v1/warehouse_remains/tasks/{task_id}/download'
+    LOAD_FINANCIAL_REPORT_URL = 'https://statistics-api.wildberries.ru/api/v5/supplier/reportDetailByPeriod?dateFrom={date_from}&dateTo={date_to}'
+    LOAD_INCOMES_URL = 'https://statistics-api.wildberries.ru/api/v1/supplier/incomes?dateFrom={date_from}'
 
 
 # --- Helpers ---
@@ -77,15 +77,15 @@ def api_request(
 # --- API functions ---
 
 def load_wb_offices(seller: Seller):
-    return api_request(seller, 'GET', LOAD_WB_OFFICES_URL)
+    return api_request(seller, 'GET', MerchantAPIEndpoints.LOAD_WB_OFFICES_URL)
 
 
 def load_wb_warehouses(seller: Seller):
-    return api_request(seller, 'GET', LOAD_WB_WAREHOUSES_URL)
+    return api_request(seller, 'GET', MerchantAPIEndpoints.LOAD_WB_WAREHOUSES_URL)
 
 
 def load_seller_info(seller: Seller):
-    return api_request(seller, 'GET', LOAD_SELLER_INFO_URL)
+    return api_request(seller, 'GET', MerchantAPIEndpoints.LOAD_SELLER_INFO_URL)
 
 
 @sleep_and_retry
@@ -97,13 +97,13 @@ def load_seller_cards(seller: Seller):
             "filter": {"withPhoto": -1}
         }
     }
-    return api_request(seller, 'POST', LOAD_SELLER_CARDS_URL, json_payload=payload)
+    return api_request(seller, 'POST', MerchantAPIEndpoints.LOAD_SELLER_CARDS_URL, json_payload=payload)
 
 
 @sleep_and_retry
 @limits(calls=1, period=61)
 def load_incomes(last_updated: datetime, seller: Seller):
-    url = format_url(LOAD_INCOMES_URL,
+    url = format_url(MerchantAPIEndpoints.LOAD_INCOMES_URL,
                      date_from=last_updated.strftime("%Y-%m-%d"))
     return api_request(seller, 'GET', url)
 
@@ -111,7 +111,7 @@ def load_incomes(last_updated: datetime, seller: Seller):
 @sleep_and_retry
 @limits(calls=1, period=61)
 def create_warehouse_remains_task(seller: Seller):
-    url = format_url(CREATE_WAREHOUSE_REMAINS_TASK_URL,
+    url = format_url(MerchantAPIEndpoints.CREATE_WAREHOUSE_REMAINS_TASK_URL,
                      group_by_brand=True,
                      group_by_subject=True,
                      group_by_sa=True,
@@ -125,7 +125,7 @@ def create_warehouse_remains_task(seller: Seller):
 @sleep_and_retry
 @limits(calls=1, period=5)
 def check_warehouse_remains_task_status(seller: Seller, task_id: str):
-    url = format_url(CHECK_WAREHOUSE_REMAINS_TASK_STATUS_URL, task_id=task_id)
+    url = format_url(MerchantAPIEndpoints.CHECK_WAREHOUSE_REMAINS_TASK_STATUS_URL, task_id=task_id)
     result = api_request(seller, 'GET', url, data_key='data')
     return result.get('status') if result else None
 
@@ -133,7 +133,7 @@ def check_warehouse_remains_task_status(seller: Seller, task_id: str):
 @sleep_and_retry
 @limits(calls=1, period=61)
 def load_warehouse_remains_report(seller: Seller, task_id: str):
-    url = format_url(GET_WAREHOUSE_REMAINS_REPORT_URL, task_id=task_id)
+    url = format_url(MerchantAPIEndpoints.GET_WAREHOUSE_REMAINS_REPORT_URL, task_id=task_id)
     return api_request(seller, 'GET', url)
 
 
@@ -149,13 +149,13 @@ def load_cards_stat(last_updated: datetime, seller: Seller, seller_cards: list[C
         "period": {"begin": begin_date, "end": end_date},
         "aggregationLevel": "day"
     }
-    return api_request(seller, 'POST', LOAD_CARD_STAT_DAILY_URL, json_payload=payload, data_key='data')
+    return api_request(seller, 'POST', MerchantAPIEndpoints.LOAD_CARD_STAT_DAILY_URL, json_payload=payload, data_key='data')
 
 
 @sleep_and_retry
 @limits(calls=1, period=61)
 def load_fincancial_report(date_from: datetime, date_to: datetime, seller: Seller):
-    url = format_url(LOAD_FINANCIAL_REPORT_URL, 
+    url = format_url(MerchantAPIEndpoints.LOAD_FINANCIAL_REPORT_URL, 
                      date_from=date_from.strftime("%Y-%m-%dT%H:%M:%S.%f"),
                      date_to=date_to.strftime("%Y-%m-%dT%H:%M:%S.%f")
                      )
@@ -166,20 +166,20 @@ def load_fincancial_report(date_from: datetime, date_to: datetime, seller: Selle
 @limits(calls=1, period=61)
 def load_orders(last_updated: datetime, seller: Seller):
     params = {"dateFrom": last_updated.strftime("%Y-%m-%dT%H:%M:%S"), "flag": 0}
-    return api_request(seller, 'GET', LOAD_ORDERS_URL, params=params)
+    return api_request(seller, 'GET', MerchantAPIEndpoints.LOAD_ORDERS_URL, params=params)
 
 
 @sleep_and_retry
 @limits(calls=1, period=61)
 def load_sales(last_updated: datetime, seller: Seller):
     params = {"dateFrom": last_updated.strftime("%Y-%m-%dT%H:%M:%S"), "flag": 0}
-    return api_request(seller, 'GET', LOAD_SALES_URL, params=params)
+    return api_request(seller, 'GET', MerchantAPIEndpoints.LOAD_SALES_URL, params=params)
 
 
 @sleep_and_retry
 @limits(calls=5, period=1)
 def load_adverts(seller: Seller):
-    count_response = api_request(seller, 'GET', LOAD_ADVERTS_COUNT_URL)
+    count_response = api_request(seller, 'GET', MerchantAPIEndpoints.LOAD_ADVERTS_COUNT_URL)
     if not count_response or 'adverts' not in count_response:
         return None
 
@@ -187,7 +187,7 @@ def load_adverts(seller: Seller):
     if not advert_ids:
         return None
 
-    detail_response = api_request(seller, 'POST', LOAD_ADVERTS_INFO_URL, json_payload=list(advert_ids))
+    detail_response = api_request(seller, 'POST', MerchantAPIEndpoints.LOAD_ADVERTS_INFO_URL, json_payload=list(advert_ids))
     return detail_response
 
 
@@ -204,13 +204,13 @@ def load_adverts_stat(seller: Seller, adverts: list[Advert], last_updated: datet
                 "end": end_date
             }
         })
-    detail_response = api_request(seller, 'POST', LOAD_ADVERTS_STAT_URL, json_payload=payload)
+    detail_response = api_request(seller, 'POST', MerchantAPIEndpoints.LOAD_ADVERTS_STAT_URL, json_payload=payload)
     return detail_response
 
 @sleep_and_retry
 @limits(calls=4, period=1)
 def load_adverts_stat_words(seller: Seller, advert: Advert):
-    return api_request(seller, 'GET', LOAD_ADVERTS_STAT_WORDS_URL, params={"id": advert.advert_id})
+    return api_request(seller, 'GET', MerchantAPIEndpoints.LOAD_ADVERTS_STAT_WORDS_URL, params={"id": advert.advert_id})
 
 
 @sleep_and_retry
@@ -221,7 +221,7 @@ def load_keywords_stat(seller: Seller, advert: Advert, date_from: datetime, date
         'from': date_from.strftime("%Y-%m-%d"), 
         'to': date_to.strftime("%Y-%m-%d")
         }
-    return api_request(seller, 'GET', LOAD_KEYWORDS_STAT_URL, params=params)
+    return api_request(seller, 'GET', MerchantAPIEndpoints.LOAD_KEYWORDS_STAT_URL, params=params)
 
 
 @sleep_and_retry
@@ -240,4 +240,4 @@ def update_advert_bids(seller: Seller, data):
         ]
     }
             
-    return api_request(seller, 'PATCH', UPDATE_ADVERT_BIDS_URL, json_payload=payload)
+    return api_request(seller, 'PATCH', MerchantAPIEndpoints.UPDATE_ADVERT_BIDS_URL, json_payload=payload)
