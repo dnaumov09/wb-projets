@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, Column, String, Boolean, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from db.base import Base, session
 from db.model.seller import Seller
@@ -6,12 +6,21 @@ from db.model.seller import Seller
 class User(Base):
     __tablename__ = 'users'
 
-    tg_chat_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=False)
-    name: Mapped[str] = mapped_column(nullable=False)
-    receive_orders: Mapped[bool] = mapped_column(nullable=False)
+    tg_chat_id = Column(Integer, primary_key=True, autoincrement=False)  
+    name = Column(String, nullable=False) 
+    receive_orders = Column(Boolean, nullable=False, default=False)
+    receive_supplies_info = Column(Boolean, nullable=True, default=False)
 
-    seller_id: Mapped[int] = mapped_column(ForeignKey('sellers.id'), nullable=True)
-    id: Mapped[Seller] = relationship("Seller")
+    seller_id = Column(Integer, ForeignKey('sellers.id'), nullable=True)
+    id = relationship("Seller")
+
+    # tg_chat_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=False)
+    # name: Mapped[str] = mapped_column(nullable=False)
+    # receive_orders: Mapped[bool] = mapped_column(nullable=False, default=False)
+    # receive_supplies_info: Mapped[bool] = mapped_column(nullable=False, default=False)
+
+    # seller_id: Mapped[int] = mapped_column(ForeignKey('sellers.id'), nullable=True)
+    # id: Mapped[Seller] = relationship("Seller")
 
 
 def get_user(chat_id: int) -> User:
