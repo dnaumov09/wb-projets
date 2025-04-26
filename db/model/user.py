@@ -12,7 +12,7 @@ class User(Base):
     receive_supplies_info = Column(Boolean, nullable=True, default=False)
 
     seller_id = Column(Integer, ForeignKey('sellers.id'), nullable=True)
-    id = relationship("Seller")
+    seller = relationship("Seller")
 
 
 def get_user(chat_id: int) -> User:
