@@ -123,7 +123,7 @@ def main():
         datefmt="%Y-%m-%d %H:%M:%S",
     )
 
-    wb   = WBClient("eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjUwMjE3djEiLCJ0eXAiOiJKV1QifQ.eyJlbnQiOjEsImV4cCI6MTc1NzcyOTgwNCwiaWQiOiIwMTk1OTUwMy1iOThiLTdlNTYtYjRlNS1mMTY3YTlkODRjZTQiLCJpaWQiOjE1NTAxNDc0MCwib2lkIjo0MzkwNjkzLCJzIjo3OTM0LCJzaWQiOiJjZDA3OWE1NS01NmU5LTQ1NGYtYmI0MS1jZGIwMzA4OTQ5MTMiLCJ0IjpmYWxzZSwidWlkIjoxNTUwMTQ3NDB9.YFsUKXxCozKER64Zye5cy6c-PxWmpT-GpkbopxRGZhXKX2yX54Rqwn9h-RZkHvCv9OInP-3qT64GvNN3qujXFw")
+    wb   = WBClient("")
     mgr  = CampaignManager(wb, campaign_cfg)
 
     logging.info("Start bandit loop. Campaigns=%s", list(campaign_cfg.keys()))
