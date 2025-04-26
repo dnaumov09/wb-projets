@@ -28,6 +28,7 @@ class SellerSettings(Base):
 
     load_adverts_stat: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     adverts_stat_last_updated: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    keywords_stat_last_updated: Mapped[datetime] = mapped_column(DateTime, nullable=True)
 
     load_finances: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     finances_last_updated: Mapped[datetime] = mapped_column(DateTime, nullable=True)

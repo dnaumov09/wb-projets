@@ -16,3 +16,4 @@ redis
 fastapi
 uvicorn
 clickhouse-driver
+numpy

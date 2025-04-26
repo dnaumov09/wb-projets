@@ -16,17 +16,18 @@ ENGINE = MergeTree()
 ORDER BY keyword;
 
 
-CREATE TABLE IF NOT EXISTS keywords_stat (
+CREATE TABLE keywords_stat (
     advert_id UInt32,
     date Date,
     keyword String,
     views UInt32,
-    clicks UInt32, 
+    clicks UInt32,
     ctr Float32,
-    sum Float32
+    sum Float64
 ) 
-ENGINE = MergeTree()
-ORDER BY keyword;
+ENGINE = ReplacingMergeTree()
+PARTITION BY (date)
+ORDER BY (advert_id, date, keyword);
 
 
 CREATE TABLE IF NOT EXISTS excluded (

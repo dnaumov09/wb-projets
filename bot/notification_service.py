@@ -1,4 +1,5 @@
 from bot.bot import send_message
+from datetime import datetime
 
 from db.model.order import Order, OrderStatus
 from db.model.sale import Sale, SaleStatus
@@ -94,3 +95,24 @@ def notify_error(seller: Seller, text: str):
         '\n\n'
         f'{text}'
     ))
+
+
+def notify_new_supply_slot(seller: Seller, date: datetime, warehouse_name: str, supply_id: str, coefficient: int, acceptance_cost: float):
+    dt_day = date.strftime("%A")
+    dt_day = dt_day[0].upper() + dt_day[1:]
+    dt_date = date.strftime("%d.%m, %Y")
+
+    text=(
+        f'🗓️ <b>Новый слот для поставки №{supply_id}:</b>'
+        '\n\n'
+        f'<b>{dt_day} - {dt_date}</b>'
+        '\n'
+        f'Склад: {warehouse_name}'
+        '\n'
+        '\n'
+        f'Коэф. логистики: {coefficient}'
+        '\n'
+        f'Приёмка: {acceptance_cost} ₽'
+    )
+    print(text)
+    send_message(chat_id=102421129, text=text)

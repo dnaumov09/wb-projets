@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timedelta
 from api import wb_merchant_api
 
-from db.model.seller import get_sellers
+from db.model.seller import Seller
 from db.model.advert import AdvertType, save_adverts, get_adverts_by_seller_id
 from db.model.adverts_stat import save_adverts_stat, get_last_days_stat
 from db.model.settings import get_seller_settings, save_settings
@@ -11,96 +11,96 @@ from db.model.advert_bid import AdvertBid, save_advert_bids, get_advert_bid, upd
 from clickhouse.model import keywords as ch_kw
 from clickhouse.model import adverts as ch_ad
 
-def load_adverts():
-    for seller in get_sellers():
-        settings = get_seller_settings(seller)
-        if settings.load_adverts_stat:
-            logging.info(f"[{seller.trade_mark}] Loading adverts")
-            data = wb_merchant_api.load_adverts(seller)
-            if data:
-                adverts = save_adverts(data, seller)
-                ch_ad.save_adverts(data, seller)
-                save_advert_bids(data)
-                logging.info(f"[{seller.trade_mark}] Adverts saved ({len(adverts)})")
+def load_adverts(seller: Seller):
+    logging.info(f"[{seller.trade_mark}] Loading adverts")
+    data = wb_merchant_api.load_adverts(seller)
+    if data:
+        adverts = save_adverts(data, seller)
+        ch_ad.save_adverts(data, seller)
+        # save_advert_bids(data)
+        logging.info(f"[{seller.trade_mark}] Adverts saved ({len(adverts)})")
 
 
-def load_adverts_stat():
-    for seller in get_sellers():
-        settings = get_seller_settings(seller)
-        if settings.load_adverts_stat:
-            now = datetime.now()
-            logging.info(f"[{seller.trade_mark}] Loading adverts stat")
-            adverts = get_adverts_by_seller_id(seller)
-            data = wb_merchant_api.load_adverts_stat(seller, adverts, settings.adverts_stat_last_updated if settings.adverts_stat_last_updated else now)
-            if data:
-                advert_stat, booster_stat = save_adverts_stat(data)
-                ch_ad.save_advert_stat(data)
-                settings.adverts_stat_last_updated = now
-                save_settings(settings)
-                logging.info(f"[{seller.trade_mark}] Adverts stat saved (adverts stat: {len(advert_stat)}, booster stat: {len(booster_stat)})")
+def load_adverts_stat(seller: Seller):
+    settings = get_seller_settings(seller)
+    now = datetime.now()
+    logging.info(f"[{seller.trade_mark}] Loading adverts stat")
+    adverts = get_adverts_by_seller_id(seller)
+    data = wb_merchant_api.load_adverts_stat(seller, adverts, settings.adverts_stat_last_updated if settings.adverts_stat_last_updated else now)
+    if data:
+        advert_stat, booster_stat = save_adverts_stat(data)
+        ch_ad.save_advert_stat(data)
+        settings.adverts_stat_last_updated = now
+        save_settings(settings)
+        logging.info(f"[{seller.trade_mark}] Adverts stat saved (adverts stat: {len(advert_stat)}, booster stat: {len(booster_stat)})")
 
 
-def load_keywords():
-    for seller in get_sellers():
-        settings = get_seller_settings(seller)
-        if settings.load_adverts_stat:
-            logging.info(f"[{seller.trade_mark}] Loading keywords")
-            adverts = get_adverts_by_seller_id(seller)
+def load_keywords(seller: Seller):
+    logging.info(f"[{seller.trade_mark}] Loading keywords")
+    adverts = get_adverts_by_seller_id(seller)
 
-            clusters_to_save = []
-            excluded_to_save = []
+    clusters_to_save = []
+    excluded_to_save = []
 
-            for advert in adverts:
-                if advert.advert_type != AdvertType.AUTOMATIC:
-                    continue
+    for advert in adverts:
+        if advert.advert_type != AdvertType.AUTOMATIC:
+            continue
 
-                data = wb_merchant_api.load_adverts_stat_words(seller, advert)
+        data = wb_merchant_api.load_adverts_stat_words(seller, advert)
             
-                excluded_to_save.append({
-                    "advert_id": advert.advert_id,
-                    "keywords": data.get('excluded', []),
-                })
+        excluded_to_save.append({
+            "advert_id": advert.advert_id,
+            "keywords": data.get('excluded', []),
+        })
 
-                for cluster_data in data.get('clusters', []):
-                    clusters_to_save.append({
-                        "advert_id": advert.advert_id,
-                        "name": cluster_data.get('cluster'),
-                        "count": cluster_data.get('count'),
-                        "keywords": cluster_data.get('keywords', [])
-                    })
+        for cluster_data in data.get('clusters', []):
+            clusters_to_save.append({
+                "advert_id": advert.advert_id,
+                "name": cluster_data.get('cluster'),
+                "count": cluster_data.get('count'),
+                "keywords": cluster_data.get('keywords', [])
+            })
                     
-            ch_kw.save_keywords_clusters(clusters_to_save)
-            ch_kw.save_keywords_excluded(excluded_to_save)
+    ch_kw.save_keywords_clusters(clusters_to_save)
+    ch_kw.save_keywords_excluded(excluded_to_save)
             
-            logging.info(f"[{seller.trade_mark}] Keywords saved")
+    logging.info(f"[{seller.trade_mark}] Keywords saved")
 
 
-def load_keywords_stat():
+def load_keywords_stat(seller: Seller):
+    settings = get_seller_settings(seller)
     valid_types = {AdvertType.AUCTION, AdvertType.AUTOMATIC}
 
-    for seller in get_sellers():
-        settings = get_seller_settings(seller)
-        if settings.load_adverts_stat:
-            logging.info(f"[{seller.trade_mark}] Loading keywords stat words")
+    logging.info(f"[{seller.trade_mark}] Loading keywords stat")
 
-            adverts = get_adverts_by_seller_id(seller)
-            adverts = [
-                advert for advert in adverts
-                if advert.advert_type in valid_types
-            ]  
-
-            date_to = datetime.now()
-            date_from = date_to - timedelta(days=6)  
-            
-            data_to_save = []
-            for advert in adverts:
-                data = wb_merchant_api.load_keywords_stat(seller, advert, date_from, date_to)
+    adverts = get_adverts_by_seller_id(seller)
+    adverts = [
+        advert for advert in adverts
+        if advert.advert_type in valid_types
+    ]  
+    
+    now = datetime.now()
+    date_from = settings.keywords_stat_last_updated
+    data_to_save = []
+    while date_from < now:
+        date_to = min(date_from + timedelta(6), now)
+        for advert in adverts:
+            data = wb_merchant_api.load_keywords_stat(seller, advert, date_from, date_to)
+            keywords = data.get('keywords', [])
+            if keywords:
                 data_to_save.append({
                     'advert_id': advert.advert_id,
-                    'stat': data.get('keywords')
+                    'stat': keywords
                 })
-
-            ch_kw.save_keywords_stat(data_to_save)
+        date_from = date_to + timedelta(days=1)
+        
+    if not data_to_save:
+        pass
+    
+    ch_kw.save_keywords_stat(data_to_save)
+    settings.keywords_stat_last_updated = now
+    save_settings(settings)
+    logging.info(f"[{seller.trade_mark}] Keywords stat saved")
 
 
 

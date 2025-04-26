@@ -46,7 +46,7 @@ class Advert(Base):
     search_pluse_state: Mapped[bool] = mapped_column(nullable=True)
 
     advert_type: Mapped[AdvertType] = mapped_column(PgEnum(AdvertType, native_enum=False), nullable=False)
-    status: Mapped[Status] = mapped_column(PgEnum(Status, native_enum=False), nullable=False)
+    status: Mapped[Status] = mapped_column(PgEnum(Status, native_enum=False), nullable=False) # -1 - кампания в процессе удаления, 4 - готова к запуску, 7 - кампания завершена, 8 - отказался, 9 - идут показы, 11 - кампания на паузе
     payment_type: Mapped[PaymentType] = mapped_column(PgEnum(PaymentType, native_enum=False), nullable=False)
 
 

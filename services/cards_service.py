@@ -1,15 +1,10 @@
 import logging
 from api import wb_merchant_api
-from db.model.seller import Seller, get_sellers
+from db.model.seller import Seller
 from db.model.card import save_cards
 
 
-def load_cards():
-    for seller in get_sellers():
-        load_seller_cards(seller)
-
-
-def load_seller_cards(seller: Seller):
+def load_cards(seller: Seller):
     logging.info(f"[{seller.trade_mark}] Loading cards")
     data = wb_merchant_api.load_seller_cards(seller)
     if data:

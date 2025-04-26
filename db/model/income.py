@@ -36,6 +36,8 @@ class Income(Base):
 
     status = Column(String)
 
+    buying_price = Column(Float, nullable=True, default=0)
+
 
 def save_incomes(data, seller: Seller):
     data = [

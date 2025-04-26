@@ -16,18 +16,13 @@ def update_schema():
         sql_script = f.read()
 
     # 2) Разбиваем на отдельные запросы по точке с запятой
-    #    Однако учтите, что не всегда простой split(";") корректен,
-    #    например, если внутри запроса встречаются комментарии или точки с запятой внутри строк.
-    #    В простых случаях этого бывает достаточно.
     queries = [q.strip() for q in sql_script.split(';') if q.strip()]
 
     # 3) Выполняем каждый запрос
     for query in queries:
-        # Если это запрос на создание/изменение таблицы и т.д. – просто execute
-        # Если это SELECT и вы хотите результат, сохраните в переменную
         print(f"Executing query:\n{query}")
         result = client.execute(query)
         print("Result:", result)
 
 
-update_schema()
+# update_schema()

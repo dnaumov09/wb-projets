@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Iterable, Dict, Any
 
 from clickhouse.base import client
 
@@ -30,11 +31,41 @@ def save_keywords_excluded(excluded):
     client.execute('INSERT INTO excluded (advert_id, keyword) VALUES', cluster_items)
 
 
-def save_keywords_stat(stat):
-    stat_items = [
-        (item['advert_id'], datetime.strptime(stat['date'], "%Y-%m-%d"), stats['keyword'], stats['views'], stats['clicks'], stats['ctr'], stats['sum'])
-        for item in stat
+def _iter_stat_rows(kw_stat: Iterable[Dict[str, Any]]) -> Iterable[tuple]:
+    for item in kw_stat:
+        advert_id = item["advert_id"]
+        for stat in item['stat']:
+            date = datetime.strptime(stat['date'], "%Y-%m-%d")
+            for stats in stat['stats']:
+                yield (
+                        advert_id,
+                        date,
+                        stats['keyword'], 
+                        stats['views'], 
+                        stats['clicks'], 
+                        stats['ctr'], 
+                        stats['sum']
+                    )
+
+
+def _collect_dates(kw_stat: Iterable[Dict[str, Any]]) -> set[str]:
+    return {
+        datetime.strptime(stat['date'], "%Y-%m-%d").date()
+        for item in kw_stat
         for stat in item['stat']
-        for stats in stat['stats']
-    ]        
-    client.execute('INSERT INTO keywords_stat (advert_id, date, keyword, views, clicks, ctr, sum) VALUES', stat_items)
+    }
+
+
+def save_keywords_stat(stat):
+    dates = _collect_dates(stat)
+    
+    client.execute(f"ALTER TABLE keywords_stat DELETE WHERE date IN %(dates)s", {"dates": list(dates)})
+
+    client.execute(
+        """
+        INSERT INTO keywords_stat
+            (advert_id, date, keyword, views, clicks, ctr, sum)
+        VALUES
+        """,
+        _iter_stat_rows(stat),
+    )

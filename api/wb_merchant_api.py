@@ -215,12 +215,6 @@ def load_adverts_stat_words(seller: Seller, advert: Advert):
 
 @sleep_and_retry
 @limits(calls=4, period=1)
-def load_adverts_keywords_stat(seller: Seller, advert: Advert):
-    return api_request(seller, 'GET', LOAD_ADVERTS_KEYWORDS_STAT_URL, params={"id": advert.advert_id})
-
-
-@sleep_and_retry
-@limits(calls=4, period=1)
 def load_keywords_stat(seller: Seller, advert: Advert, date_from: datetime, date_to: datetime):
     params = {
         "advert_id": advert.advert_id, 

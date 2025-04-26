@@ -387,7 +387,9 @@ BEGIN
 			sum(fr.storage_fee) as storage_fee,
 			sum(fr.acceptance) as acceptance,
 			sum(fr.deduction) as deduction,
-			sum(fr.ttl_for_pay) as ttl_for_pay
+			sum(fr.ttl_for_pay) as ttl_for_pay,
+            sum(fr.buying_price) as buying_price,
+			sum(fr.ttl_for_pay) - sum(fr.buying_price) as profit
 		from financial_report fr
 		group by 
 			date_trunc(%L, fr.date_from)

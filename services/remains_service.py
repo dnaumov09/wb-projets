@@ -1,7 +1,7 @@
 import time
 import logging
 
-from db.model.seller import Seller, get_sellers
+from db.model.seller import Seller
 from db.model.warehouse import get_warehouses
 from db.model.remains import Remains, save_remains
 from db.model.warehouse_remains_snapshot import save_remains_snapshot
@@ -24,14 +24,7 @@ NOT_WAREHOUSES = {
 }
 
 
-def load_remains():
-    for seller in get_sellers():
-        settings = get_seller_settings(seller)
-        if settings.load_remains:
-            update_remains_data(seller)  
-
-
-def update_remains_data(seller: Seller) -> list[Remains, WarehouseRemains]:
+def load_remains(seller: Seller):
     logging.info(f"[{seller.trade_mark}] Sending remains report task")
     task_id = wb_merchant_api.create_warehouse_remains_task(seller)
     logging.info(f"[{seller.trade_mark}] Report task sent")
@@ -74,17 +67,13 @@ def update_remains_data(seller: Seller) -> list[Remains, WarehouseRemains]:
                     }
                 )
         
-
     remains = save_remains(remains)
     warehouse_remains = save_warehouse_remains(warehouse_remains)
     logging.info(f"[{seller.trade_mark}] Remains saved {len(warehouse_remains)}")
 
 
-def create_remains_snapshot():
-    for seller in get_sellers():
-        settings = get_seller_settings(seller)
-        if settings.load_remains:
-            logging.info(f"[{seller.trade_mark}] Creating remains snapshot")
-            remains = get_warehouse_remains_by_seller_id(seller.id)
-            save_remains_snapshot(remains)
-            logging.info(f"[{seller.trade_mark}] Remains snapshot created")
+def create_remains_snapshot(seller: Seller):
+    logging.info(f"[{seller.trade_mark}] Creating remains snapshot")
+    remains = get_warehouse_remains_by_seller_id(seller.id)
+    save_remains_snapshot(remains)
+    logging.info(f"[{seller.trade_mark}] Remains snapshot created")

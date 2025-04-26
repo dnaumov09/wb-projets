@@ -4,6 +4,8 @@ import time
 from datetime import datetime
 from threading import Thread
 
+from db.model.seller import Seller, get_seller
+
 from bot import notification_service
 from services import (
     remains_service,
@@ -14,7 +16,8 @@ from services import (
     reporting_service,
     advert_service,
     finance_service,
-    incomes_services
+    incomes_services,
+    supplies_service
 )
 
 
@@ -44,7 +47,6 @@ def _schedule_jobs():
     # Daily jobs
     schedule.every().day.at("23:59").do(notification_service.notyfy_pipeline)
     schedule.every().day.at("03:00").do(_run_daily_task)
-    schedule.every().day.at("04:00").do(run_stat_updating_background)
 
     # Every minute at 00 seconds - checking inside the function to align tasks
     schedule.every().minute.at(":00").do(_run_precise_minute_tasks)
@@ -61,74 +63,81 @@ def _run_precise_minute_tasks():
     - Every 5-minute task (only if minute % 5 == 0)
     """
     now = datetime.now()
-
+    
     # Run every minute task
-    # run_every_minute_task()
+    _run_every_minute_task()
 
     # Run every 5 minutes task if aligned
     if now.minute % 5 == 0:
         _run_every_5minutes_task()
 
 
+SELLER = get_seller(1)
+
+
+def _run_every_minute_task():
+    supplies_service.get_supplies_offices_status(SELLER)
+
 def _run_every_5minutes_task():
     """Task that runs every 5 minutes at 00 seconds."""
-    run_stat_updating()
-    run_adverts_stat_updating()
+    run_stat_updating(SELLER)
+    run_adverts_stat_updating(SELLER)
 
 
 def _run_daily_task():
-    """Task that runs every 5 minutes at 00 seconds."""
-    run_remains_updating()
-    run_incomes_updating()
+    """Task that runs every day at 03:00 seconds."""
+    run_remains_updating(SELLER)
+    run_incomes_updating(SELLER)
+    run_stat_updating_background(SELLER)
     reporting_service.update_pipeline_data()
     
 
-def run_stat_updating():
+def run_stat_updating(seller: Seller):
     """Update various statistics including cards, orders, and sales."""
     logging.info('scheduler.run_stat_updating() - started')
-    cards_service.load_cards()
-    card_stat_service.load_cards_stat()
-    orders_service.load_orders()
-    sales_service.load_sales()
+    cards_service.load_cards(seller)
+    card_stat_service.load_cards_stat(seller)
+    orders_service.load_orders(seller)
+    sales_service.load_sales(seller)
     logging.info('scheduler.run_stat_updating() - done')
 
 
-def run_stat_updating_background():
+def run_stat_updating_background(seller: Seller):
     logging.info('scheduler.run_stat_updating_background() - started')
-    orders_service.load_orders(True)
-    sales_service.load_sales(True)
+    orders_service.load_orders(seller, True)
+    sales_service.load_sales(seller, True)
     logging.info('scheduler.run_stat_updating_background() - done')
 
 
-def run_remains_updating():
+def run_remains_updating(seller: Seller):
     """Update remains data and related reports."""
     logging.info('scheduler.run_remains_updating() - started')
-    remains_service.load_remains()
-    remains_service.create_remains_snapshot()
-    reporting_service.update_remains_data()
+    remains_service.load_remains(seller)
+    remains_service.create_remains_snapshot(seller)
+    # reporting_service.update_remains_data(seller)
     logging.info('scheduler.run_remains_updating() - done')
 
 
-def run_incomes_updating():
+def run_incomes_updating(seller: Seller):
     """Update incomes data and related reports."""
     logging.info('scheduler.run_incomes_updating() - started')
-    incomes_services.load_incomes()
+    incomes_services.load_incomes(seller)
     logging.info('scheduler.run_incomes_updating() - done')
 
 
-def run_adverts_stat_updating():
+def run_adverts_stat_updating(seller: Seller):
     """Update adverts and their statistics."""
     logging.info('scheduler.run_adverts_stat_updating() - started')
-    advert_service.load_adverts()
-    advert_service.load_adverts_stat()
-    advert_service.load_keywords()
-    advert_service.load_keywords_stat()
+    advert_service.load_adverts(seller)
+    advert_service.load_adverts_stat(seller)
+    advert_service.load_keywords(seller)
+    advert_service.load_keywords_stat(seller)
     logging.info('scheduler.run_adverts_stat_updating() - done')
 
 
 def run_finances_updating():
     """Update finances and related reports."""
     logging.info('scheduler.run_finances_updating() - started')
-    finance_service.load_finances()
+    finance_service.load_finances(SELLER)
     logging.info('scheduler.run_finances_updating() - done')
 
