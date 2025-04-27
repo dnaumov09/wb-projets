@@ -98,7 +98,7 @@ def run_remains_updating():
     """Update remains data and related reports."""
     logging.info('scheduler.run_remains_updating() - started')
     remains_service.load_remains(SELLER)
-    # remains_service.create_remains_snapshot(SELLER)
+    remains_service.create_remains_snapshot(SELLER)
     logging.info('scheduler.run_remains_updating() - done')
 
 
