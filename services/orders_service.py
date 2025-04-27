@@ -1,11 +1,12 @@
 import logging
 from datetime import datetime, timedelta
-from api import wb_merchant_api
 
 from bot.notification_service import notify_updated_orders
 from db.model.seller import Seller
 from db.model.order import save_orders
 from db.model.settings import get_seller_settings, save_settings
+
+from wildberries.api import get_API
 
 def load_orders(seller: Seller, background: bool = False):
     settings = get_seller_settings(seller)
@@ -16,7 +17,7 @@ def load_orders(seller: Seller, background: bool = False):
         date_from = now - timedelta(weeks=1)
     else:
         date_from = settings.orders_last_updated if settings.orders_last_updated else now
-    data = wb_merchant_api.load_orders(date_from, seller)
+    data = get_API(seller).statistics.load_orders(date_from)
             
     if data:
         updates = save_orders(data, seller)

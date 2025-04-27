@@ -3,15 +3,14 @@ import logging
 
 from db.model.seller import Seller
 from db.model.warehouse import get_warehouses
-from db.model.remains import Remains, save_remains
+from db.model.remains import save_remains
 from db.model.warehouse_remains_snapshot import save_remains_snapshot
 from db.model.card import get_seller_cards
-from db.model.warehouse_remains import WarehouseRemains, save_warehouse_remains, get_warehouse_remains_by_seller_id
-from db.model.settings import get_seller_settings
+from db.model.warehouse_remains import save_warehouse_remains, get_warehouse_remains_by_seller_id
 from db.model.warehouse import check_warehouse
 from db.util import camel_to_snake
 
-from api import wb_merchant_api
+from wildberries.api import get_API
 
 
 warehouses = get_warehouses()
@@ -25,17 +24,19 @@ NOT_WAREHOUSES = {
 
 
 def load_remains(seller: Seller):
+    api = get_API(seller)
+    
     logging.info(f"[{seller.trade_mark}] Sending remains report task")
-    task_id = wb_merchant_api.create_warehouse_remains_task(seller)
+    task_id = api.seller_analytics.create_warehouse_remains_task()
     logging.info(f"[{seller.trade_mark}] Report task sent")
     
     logging.info(f"[{seller.trade_mark}] Checking task status ({task_id})")
-    while wb_merchant_api.check_warehouse_remains_task_status(seller, task_id) != 'done':
+    while api.seller_analytics.check_warehouse_remains_task_status(task_id) != 'done':
         logging.info(f"[{seller.trade_mark}] Waiting for task to be done...")
         time.sleep(1)
     
     logging.info(f"[{seller.trade_mark}] Loading remains report")
-    data = wb_merchant_api.load_warehouse_remains_report(seller, task_id)
+    data = api.seller_analytics.download_warehouse_remains_report(task_id)
     logging.info(f"[{seller.trade_mark}] Remains report receaved")
 
     data = [

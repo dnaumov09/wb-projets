@@ -1,10 +1,12 @@
 import logging
 from datetime import datetime, timedelta
-from db.model.seller import Seller
-from api import wb_merchant_api
-from db.model.settings import get_seller_settings, save_settings
 
+from db.model.settings import get_seller_settings, save_settings
 from db.model.realization import save_realizations
+from db.model.seller import Seller
+
+from wildberries.api import get_API
+
 
 def load_finances(seller: Seller):
     settings = get_seller_settings(seller)
@@ -12,7 +14,7 @@ def load_finances(seller: Seller):
         logging.info(f"[{seller.trade_mark}] Loading financial report")
         last_monday = get_monday_000000000000(settings.finances_last_updated)
         last_sunday = get_last_sunday_235959999999()
-        data = wb_merchant_api.load_fincancial_report(last_monday, last_sunday, seller)
+        data = get_API(seller).statistics.load_financial_report(last_monday, last_sunday)
         if not data:
             pass
         realizations = save_realizations(data, seller)

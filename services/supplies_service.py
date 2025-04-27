@@ -1,5 +1,5 @@
 from datetime import datetime
-from api import wb_merchant_hidden_api
+from wildberries import hidden_api
 from bot import notification_service
 
 from db.model.seller import Seller
@@ -8,7 +8,7 @@ from db.model.seller import Seller
 _previous_statuses = []
 def get_supplies_offices_status(seller: Seller):
     global _previous_statuses
-    new_statuses = wb_merchant_hidden_api.get_status()
+    new_statuses = hidden_api.get_status()
     
     for new_supply in new_statuses:
         for new_acceptance in new_supply.get('acceptance_costs', []):

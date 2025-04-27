@@ -1,0 +1,1 @@
+from wildberries._hidden_api.wb_merchant_hidden_api import get_status

@@ -7,7 +7,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.types import Message
 
-from bot.feedbacks_handler import router as feedbacks_router
+from aaa.feedbacks_handler import router as feedbacks_router
 from bot.stat_handler import router as stat_router
 from bot.security_handler import AuthorizationMiddleware
 

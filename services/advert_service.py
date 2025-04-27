@@ -1,19 +1,20 @@
 import logging
 from datetime import datetime, timedelta
-from api import wb_merchant_api
 
 from db.model.seller import Seller
-from db.model.advert import AdvertType, save_adverts, get_adverts_by_seller_id
-from db.model.adverts_stat import save_adverts_stat, get_last_days_stat
+from db.model.advert import AdvertType, save_adverts, get_adverts_by_seller
+from db.model.adverts_stat import save_adverts_stat
 from db.model.settings import get_seller_settings, save_settings
-from db.model.advert_bid import AdvertBid, save_advert_bids, get_advert_bid, update_advert_bid
 
 from clickhouse.model import keywords as ch_kw
 from clickhouse.model import adverts as ch_ad
 
+from wildberries.api import get_API
+
+
 def load_adverts(seller: Seller):
     logging.info(f"[{seller.trade_mark}] Loading adverts")
-    data = wb_merchant_api.load_adverts(seller)
+    data = get_API(seller).adverts.load_adverts()
     if data:
         adverts = save_adverts(data, seller)
         ch_ad.save_adverts(data, seller)
@@ -25,8 +26,8 @@ def load_adverts_stat(seller: Seller):
     settings = get_seller_settings(seller)
     now = datetime.now()
     logging.info(f"[{seller.trade_mark}] Loading adverts stat")
-    adverts = get_adverts_by_seller_id(seller)
-    data = wb_merchant_api.load_adverts_stat(seller, adverts, settings.adverts_stat_last_updated if settings.adverts_stat_last_updated else now)
+    adverts = get_adverts_by_seller(seller)
+    data = get_API(seller).adverts.load_adverts_stat(adverts, settings.adverts_stat_last_updated if settings.adverts_stat_last_updated else now)
     if data:
         advert_stat, booster_stat = save_adverts_stat(data)
         ch_ad.save_advert_stat(data)
@@ -37,7 +38,7 @@ def load_adverts_stat(seller: Seller):
 
 def load_keywords(seller: Seller):
     logging.info(f"[{seller.trade_mark}] Loading keywords")
-    adverts = get_adverts_by_seller_id(seller)
+    adverts = get_adverts_by_seller(seller)
 
     clusters_to_save = []
     excluded_to_save = []
@@ -45,8 +46,7 @@ def load_keywords(seller: Seller):
     for advert in adverts:
         if advert.advert_type != AdvertType.AUTOMATIC:
             continue
-
-        data = wb_merchant_api.load_adverts_stat_words(seller, advert)
+        data = get_API(seller).adverts.load_adverts_stat_words(advert)
             
         excluded_to_save.append({
             "advert_id": advert.advert_id,
@@ -73,7 +73,7 @@ def load_keywords_stat(seller: Seller):
 
     logging.info(f"[{seller.trade_mark}] Loading keywords stat")
 
-    adverts = get_adverts_by_seller_id(seller)
+    adverts = get_adverts_by_seller(seller)
     adverts = [
         advert for advert in adverts
         if advert.advert_type in valid_types
@@ -85,7 +85,7 @@ def load_keywords_stat(seller: Seller):
     while date_from < now:
         date_to = min(date_from + timedelta(6), now)
         for advert in adverts:
-            data = wb_merchant_api.load_keywords_stat(seller, advert, date_from, date_to)
+            data = get_API(seller).adverts.load_keywords_stat(advert, date_from, date_to)
             if data:
                 keywords = data.get('keywords', [])
                 if keywords:

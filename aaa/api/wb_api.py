@@ -1,6 +1,6 @@
 import re
 import requests
-from model.model import Item, Feedback, Question
+from aaa.model.model import Item, Feedback, Question
 
 
 MAX_QUESTIONS_LOAD = 500

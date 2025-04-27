@@ -1,7 +1,7 @@
 import os
 from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
-from model.model import Item
+from aaa.model.model import Item
 
 SERVICE_ACCOUNT_FILE = 'google-credentials.json'
 SCOPES = [

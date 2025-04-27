@@ -54,7 +54,7 @@ def parse_datetime(dt_str: str) -> datetime:
     return datetime.fromisoformat(dt_str.replace('Z', '+00:00')) if dt_str else None
 
 
-def get_adverts_by_seller_id(seller: Seller):
+def get_adverts_by_seller(seller: Seller):
     return session.query(Advert).filter(Advert.seller_id == seller.id).all()
 
 

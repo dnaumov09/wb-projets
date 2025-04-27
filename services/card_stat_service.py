@@ -1,10 +1,12 @@
 import logging
 from datetime import datetime
-from api import wb_merchant_api
+
 from db.model.seller import Seller
 from db.model.card_stat import save_card_stat
 from db.model.settings import get_seller_settings, save_settings
 from db.model.card import get_seller_cards
+
+from wildberries.api import get_API
 
 def load_cards_stat(seller: Seller):
     settings = get_seller_settings(seller)
@@ -14,7 +16,7 @@ def load_cards_stat(seller: Seller):
     if not seller_cards:
         pass
             
-    data = wb_merchant_api.load_cards_stat(settings.cards_stat_last_updated if settings.cards_stat_last_updated else now, seller, seller_cards)
+    data = get_API(seller).seller_analytics.load_cards_stat(seller_cards, settings.cards_stat_last_updated if settings.cards_stat_last_updated else now)
     if data:
         saved_cards_stat = save_card_stat(data, now, seller)
         settings.cards_stat_last_updated = now

@@ -1,10 +1,9 @@
 from dotenv import load_dotenv
 load_dotenv()
 
-import logging_settings
-from services import scheduler
+import utils.logging_settings as logging_settings
+import scheduler
 from bot import bot
-from server import api
 
 def main():
     scheduler.start_scheduler()
