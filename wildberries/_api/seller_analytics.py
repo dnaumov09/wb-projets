@@ -2,12 +2,12 @@ from typing import Optional, Dict, Any, List, Union
 from datetime import datetime, time
 
 from utils.util import rate_limited
-from wildberries._api.base import BaseAPI, BaseAPIEndpoints
+from wildberries._api.base import BaseAPIClient, BaseAPIEndpoints
 
 from db.model.card import Card
 
 
-class SellerAnalyticsAPI(BaseAPI):
+class SellerAnalyticsAPI(BaseAPIClient):
 
     class Endpoints(BaseAPIEndpoints):
 

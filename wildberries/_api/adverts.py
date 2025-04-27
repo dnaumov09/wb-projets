@@ -2,12 +2,12 @@ from typing import Optional, Dict, Any, List, Union
 from datetime import datetime
 
 from utils.util import rate_limited
-from wildberries._api.base import BaseAPI, BaseAPIEndpoints
+from wildberries._api.base import BaseAPIClient, BaseAPIEndpoints
 
 from db.model.advert import Advert
 
 
-class AdvertAPI(BaseAPI):
+class AdvertAPI(BaseAPIClient):
 
     class Endpoints(BaseAPIEndpoints):
 

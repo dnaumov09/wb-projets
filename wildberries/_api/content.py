@@ -1,8 +1,8 @@
 from utils.util import rate_limited
-from wildberries._api.base import BaseAPI, BaseAPIEndpoints
+from wildberries._api.base import BaseAPIClient, BaseAPIEndpoints
 
 
-class ContentAPI(BaseAPI):
+class ContentAPI(BaseAPIClient):
 
     class Endpoints(BaseAPIEndpoints):
 

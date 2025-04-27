@@ -13,6 +13,7 @@ class BaseAPIException(Exception):
 
 class BaseAPIClient:
     def __init__(self, seller: Seller, timeout: int = 20):
+        self.seller = seller
         self.timeout = timeout
         self.session = requests.Session()
         self.session.headers.update({
@@ -53,8 +54,3 @@ class BaseAPIEndpoints:
     @classmethod
     def url(base_url: str, version: str, path: str) -> str:
         return f"{base_url}/{version}/{path}"
-    
-
-class BaseAPI:
-    def __init__(self, client: BaseAPIClient):
-        self.client = client

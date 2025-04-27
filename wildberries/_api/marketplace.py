@@ -1,7 +1,7 @@
-from wildberries._api.base import BaseAPI, BaseAPIEndpoints
+from wildberries._api.base import BaseAPIClient, BaseAPIEndpoints
 
 
-class MarketplaceAPI(BaseAPI):
+class MarketplaceAPI(BaseAPIClient):
 
     class Endpoints(BaseAPIEndpoints):
 
