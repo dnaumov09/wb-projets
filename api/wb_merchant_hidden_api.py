@@ -10,7 +10,8 @@ import requests
 
 
 class MerchantHiddenAPIEndpoints:
-    SUPPLIES_STATUS_URL = "https://seller-supply.wildberries.ru/ns/sm-supply/supply-manager/api/v1/supply/getAcceptanceCosts"
+    ACCEPTANCE_COSTS = "https://seller-supply.wildberries.ru/ns/sm-supply/supply-manager/api/v1/supply/getAcceptanceCosts"
+    LIST_SUPPLIES = "https://seller-supply.wildberries.ru/ns/sm-supply/supply-manager/api/v1/supply/listSupplies"
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -72,7 +73,7 @@ class WBHiddenAPI:
                 "searchById": search_by_id,
             },
         }
-        data = self._post(f"{SUPPLY_MANAGER_BASE_URL}/supply/listSupplies", payload)
+        data = self._post(f"{MerchantHiddenAPIEndpoints.LIST_SUPPLIES}", payload)
         return data["result"]["data"] or []
 
     def get_acceptance_costs(
