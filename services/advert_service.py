@@ -86,12 +86,13 @@ def load_keywords_stat(seller: Seller):
         date_to = min(date_from + timedelta(6), now)
         for advert in adverts:
             data = wb_merchant_api.load_keywords_stat(seller, advert, date_from, date_to)
-            keywords = data.get('keywords', [])
-            if keywords:
-                data_to_save.append({
-                    'advert_id': advert.advert_id,
-                    'stat': keywords
-                })
+            if data:
+                keywords = data.get('keywords', [])
+                if keywords:
+                    data_to_save.append({
+                        'advert_id': advert.advert_id,
+                        'stat': keywords
+                    })
         date_from = date_to + timedelta(days=1)
         
     if not data_to_save:
