@@ -29,21 +29,21 @@ class SellerAnalyticsAPI(BaseAPIClient):
             "groupByBarcode": True,
             "groupBySize": True
         }
-        result = self.client.request('GET', SellerAnalyticsAPI.Endpoints.CREATE_WAREHOUSE_REMAINS_TASK, params=params, data_key='data')
+        result = self.request('GET', SellerAnalyticsAPI.Endpoints.CREATE_WAREHOUSE_REMAINS_TASK, params=params, data_key='data')
         return result.get('taskId') if result else None
     
 
     @rate_limited(calls=1, period=5)
     def check_warehouse_remains_task_status(self, task_id: str) -> str:
         url = SellerAnalyticsAPI.Endpoints.CHECK_WAREHOUSE_REMAINS_TASK_STATUS.format(task_id=task_id)
-        result = self.client.request('GET', url, data_key='data')
+        result = self.request('GET', url, data_key='data')
         return result.get('status') if result else None
     
 
     @rate_limited(calls=1, period=61)
     def download_warehouse_remains_report(self, task_id: str) -> Optional[Union[Dict[str, Any], List[Dict[str, Any]]]]:
         url = SellerAnalyticsAPI.Endpoints.DOWNLOAD_WAREHOUSE_REMAIN_REPORT.format(task_id=task_id)
-        return self.client.request('GET', url)
+        return self.request('GET', url)
     
 
     @rate_limited(calls=3, period=61)
@@ -57,4 +57,4 @@ class SellerAnalyticsAPI(BaseAPIClient):
             "period": {"begin": begin_date, "end": end_date},
             "aggregationLevel": "day"
         }
-        return self.client.request('POST', SellerAnalyticsAPI.Endpoints.CARD_STAT_DAILY, json_payload=payload, data_key='data')
+        return self.request('POST', SellerAnalyticsAPI.Endpoints.CARD_STAT_DAILY, json_payload=payload, data_key='data')

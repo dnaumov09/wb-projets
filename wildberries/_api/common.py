@@ -12,4 +12,4 @@ class CommonAPI(BaseAPIClient):
 
 
     def load_seller_info(self):
-        return self.client.request('GET', CommonAPI.Endpoints.SELLER_INFO)
+        return self.request('GET', CommonAPI.Endpoints.SELLER_INFO)

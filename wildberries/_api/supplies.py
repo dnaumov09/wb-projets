@@ -11,4 +11,4 @@ class SuppliesAPI(BaseAPIClient):
 
 
     def load_wb_warehouses(self):
-        return self.client.request('GET', SuppliesAPI.Endpoints.WAREHOUSES)
+        return self.request('GET', SuppliesAPI.Endpoints.WAREHOUSES)

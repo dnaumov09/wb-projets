@@ -32,7 +32,7 @@ class AdvertAPI(BaseAPIClient):
         if not advert_ids:
             return None
         
-        return self.client.request('POST', AdvertAPI.Endpoints.PROMOTION_ADVERTS, json_payload=list(advert_ids))
+        return self.request('POST', AdvertAPI.Endpoints.PROMOTION_ADVERTS, json_payload=list(advert_ids))
 
 
     @rate_limited(calls=5, period=1)
@@ -48,7 +48,7 @@ class AdvertAPI(BaseAPIClient):
                 }
             })
         
-        return self.client.request('POST', AdvertAPI.Endpoints.FULLSTAT, json_payload=payload)
+        return self.request('POST', AdvertAPI.Endpoints.FULLSTAT, json_payload=payload)
     
 
     @rate_limited(calls=4, period=1)
@@ -57,7 +57,7 @@ class AdvertAPI(BaseAPIClient):
             "id": advert.advert_id
         }
 
-        return self.client.request('GET', AdvertAPI.Endpoints.AUTO_STAT_WORDS, params=params)
+        return self.request('GET', AdvertAPI.Endpoints.AUTO_STAT_WORDS, params=params)
 
 
     @rate_limited(calls=4, period=1)
@@ -68,7 +68,7 @@ class AdvertAPI(BaseAPIClient):
             'to': date_to.strftime("%Y-%m-%d")
         }
         
-        return self.client.request('GET', AdvertAPI.Endpoints.STAT_KEYWORDS, params=params)
+        return self.request('GET', AdvertAPI.Endpoints.STAT_KEYWORDS, params=params)
 
 
     @rate_limited(calls=4, period=1)
@@ -86,4 +86,4 @@ class AdvertAPI(BaseAPIClient):
             ]
         }
                 
-        return self.client.request('PATCH', AdvertAPI.Endpoints.BIDS, json_payload=payload)
+        return self.request('PATCH', AdvertAPI.Endpoints.BIDS, json_payload=payload)

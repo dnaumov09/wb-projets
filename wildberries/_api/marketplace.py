@@ -11,4 +11,4 @@ class MarketplaceAPI(BaseAPIClient):
 
 
     def load_wb_offices(self):
-        return self.client.request('GET', MarketplaceAPI.Endpoints.OFFICES)
+        return self.request('GET', MarketplaceAPI.Endpoints.OFFICES)

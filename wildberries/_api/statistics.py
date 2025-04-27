@@ -24,7 +24,7 @@ class StatisticsAPI(BaseAPIClient):
             "dateFrom": last_updated.strftime("%Y-%m-%dT%H:%M:%S"), 
             "flag": 0
         }
-        return self.client.request('GET', StatisticsAPI.Endpoints.ORDERS, params=params)
+        return self.request('GET', StatisticsAPI.Endpoints.ORDERS, params=params)
     
 
     @rate_limited(calls=1, period=61)
@@ -33,7 +33,7 @@ class StatisticsAPI(BaseAPIClient):
             "dateFrom": last_updated.strftime("%Y-%m-%dT%H:%M:%S"), 
             "flag": 0
         }
-        return self.client.request('GET', StatisticsAPI.Endpoints.SALES, params=params)
+        return self.request('GET', StatisticsAPI.Endpoints.SALES, params=params)
 
 
     @rate_limited(calls=1, period=61)
@@ -41,7 +41,7 @@ class StatisticsAPI(BaseAPIClient):
         params = {
             "dateFrom": last_updated.strftime("%Y-%m-%dT%H:%M:%S.%f"),
         }
-        return self.client.request(method='GET', url=StatisticsAPI.Endpoints.INCOMES, params=params)
+        return self.request(method='GET', url=StatisticsAPI.Endpoints.INCOMES, params=params)
 
 
     @rate_limited(calls=1, period=61)
@@ -50,4 +50,4 @@ class StatisticsAPI(BaseAPIClient):
             "dateFrom": date_from.strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "dateTo": date_to.strftime("%Y-%m-%dT%H:%M:%S.%f")
         }
-        return self.client.request(method='GET', url=StatisticsAPI.Endpoints.FINANCIAL_REPORT, params=params)
+        return self.request(method='GET', url=StatisticsAPI.Endpoints.FINANCIAL_REPORT, params=params)

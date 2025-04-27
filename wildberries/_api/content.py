@@ -19,4 +19,4 @@ class ContentAPI(BaseAPIClient):
                 "filter": {"withPhoto": -1}
             }
         }
-        return self.client.request('POST', ContentAPI.Endpoints.CARDS_LIST, json_payload=payload)
+        return self.request('POST', ContentAPI.Endpoints.CARDS_LIST, json_payload=payload)
