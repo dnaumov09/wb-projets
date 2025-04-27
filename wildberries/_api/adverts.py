@@ -23,7 +23,7 @@ class AdvertAPI(BaseAPIClient):
 
     @rate_limited(calls=5, period=1)
     def load_adverts(self) -> Optional[Union[Dict[str, Any], List[Dict[str, Any]]]]:
-        count_response = self.client.request('GET', AdvertAPI.Endpoints.PROMOTION_COUNT)
+        count_response = self.request('GET', AdvertAPI.Endpoints.PROMOTION_COUNT)
 
         if not count_response or 'adverts' not in count_response:
             return None
