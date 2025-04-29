@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, DateTime, Index
+from sqlalchemy import ForeignKey, DateTime, Index, Enum as PgEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from db.base import Base, session
 from db.model.card import Card
@@ -52,11 +52,11 @@ class Order(Base):
     price_with_disc: Mapped[float] = mapped_column(nullable=False) #Цена со скидкой продавца (= totalPrice * (1 - discountPercent/100))
     is_cancel: Mapped[bool] = mapped_column(nullable=False)
     cancel_date: Mapped[datetime] = mapped_column(DateTime, nullable=True)
-    order_type: Mapped[str] = mapped_column(nullable=False) #Тип заказа
+    order_type: Mapped[str] = mapped_column(nullable=True) #Тип заказа
     sticker: Mapped[str] = mapped_column(nullable=True) #ID стикера
     g_number: Mapped[str] = mapped_column(nullable=True) #Номер заказа
     srid: Mapped[str] = mapped_column(nullable=True) #Уникальный ID заказа WB
-    status: Mapped[OrderStatus] = mapped_column(nullable=True)
+    status: Mapped[OrderStatus] = mapped_column(PgEnum(OrderStatus, native_enum=False), nullable=True)
 
 
 def define_existing_order_status(sticker: str = '', is_cancel: bool = False):

@@ -52,7 +52,7 @@ class Sale(Base):
     finished_price: Mapped[float] = mapped_column(nullable=False) #Оплачено с WB Кошелька
     price_with_disc: Mapped[float] = mapped_column(nullable=False) #К перечислению продавцу
     sale_id: Mapped[str] = mapped_column(nullable=False) #Номер продажи
-    order_type: Mapped[str] = mapped_column(nullable=False) #Тип заказа
+    order_type: Mapped[str] = mapped_column(nullable=True) #Тип заказа
     sticker: Mapped[str] = mapped_column(nullable=True) #ID стикера
     g_number: Mapped[str] = mapped_column(nullable=True) #Номер заказа
     srid: Mapped[str] = mapped_column(nullable=True) #Уникальный ID заказа WB

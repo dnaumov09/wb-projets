@@ -251,7 +251,7 @@ END;
 $$;
 
 
-DROP FUNCTION get_sales_returned_by_period(text);
+DROP FUNCTION IF EXISTS get_sales_returned_by_period(text);
 
 CREATE OR REPLACE FUNCTION get_sales_returned_by_period(period_type text)
  RETURNS TABLE(period timestamp without time zone, nm_id integer, count bigint, total_price double precision, avg_total_price double precision, avg_discount_percent double precision, avg_spp double precision, for_pay double precision, avg_for_pay double precision, finished_price double precision, avg_finished_price double precision, price_with_disc double precision, avg_price_with_disc double precision)
@@ -289,7 +289,7 @@ END;
 $$;
 
 
-DROP FUNCTION public.get_pipeline_by_period(text);
+DROP FUNCTION IF EXISTS public.get_pipeline_by_period(text);
 
 CREATE OR REPLACE FUNCTION public.get_pipeline_by_period(period_type text)
  RETURNS TABLE(period timestamp without time zone, nm_id integer, vendor_code varchar, open_card_count bigint, add_to_cart_count bigint, orders_count bigint, orders_sum double precision, sales_count bigint, sales_sum double precision, orders_cancelled_count bigint, orders_cancelled_sum double precision, sales_returned_count bigint, sales_returned_sum double precision)
@@ -354,7 +354,7 @@ END;
 $function$
 ;
 
-DROP FUNCTION get_financial_report_by_period(text);
+DROP FUNCTION IF EXISTS get_financial_report_by_period(text);
 CREATE OR REPLACE FUNCTION get_financial_report_by_period(period_type text)
  RETURNS TABLE(
  	date_from timestamp without time zone, -- От
@@ -399,7 +399,7 @@ END
 $$;
 
 
--- DROP FUNCTION get_financial_report_by_report_ids(report_ids int4[]);
+-- DROP FUNCTION IF EXISTS get_financial_report_by_report_ids(report_ids int4[]);
 -- CREATE OR REPLACE FUNCTION get_financial_report_by_report_ids(report_ids int4[])
 --  RETURNS TABLE(
 --  	nm_id int4,
@@ -438,7 +438,7 @@ $$;
 -- $$;
 
 
--- DROP FUNCTION public.get_financial_report_by_dates(timestamp, timestamp);
+-- DROP FUNCTION IF EXISTS public.get_financial_report_by_dates(timestamp, timestamp);
 -- CREATE OR REPLACE FUNCTION public.get_financial_report_by_dates(date_from timestamp, date_to timestamp)
 --  RETURNS TABLE(nm_id integer, quantity double precision, retail_amount double precision, ppvz_for_pay double precision, penalty double precision, additional_payment double precision, delivery_rub double precision, storage_fee double precision, acceptance double precision, deduction double precision)
 --  LANGUAGE plpgsql

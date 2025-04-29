@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, Session
 from db.base import Base, session
 
 
@@ -14,6 +14,11 @@ class Seller(Base):
     google_drive_folder_id: Mapped[str] = mapped_column(nullable=True)
     google_drive_stat_spreadsheet_id: Mapped[str] = mapped_column(nullable=True)
     google_drive_remains_spreadsheet_id: Mapped[str] = mapped_column(nullable=True)
+
+
+def create_seller(session: Session, seller: Seller):
+    session.add(seller)
+    session.commit()
 
 
 def update_seller_data(token: str, sid: str, name: str, trade_mark: str, google_drive_folder_id, google_drive_spreadsheet_id, google_drive_remains_spreadsheet_id):

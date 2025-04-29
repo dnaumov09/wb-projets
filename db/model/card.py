@@ -26,10 +26,14 @@ def get_card_by_nm_id(nm_id) -> Card:
 
 
 def save_cards(data, seller: Seller) -> list[Card]:
-    data = [{camel_to_snake(k): v for k, v in item.items()} for item in data.get("cards", [])]
+    data = [
+        {**{camel_to_snake(k): v for k, v in item.items()}, "seller_id": seller.id}
+        for item in data.get("cards", [])
+    ]
+
     return save_records(
         session=session,
         model=Card,
         data=data,
-        key_fields=['nm_id']
+        key_fields=['nm_id', 'seller_id']
         )
