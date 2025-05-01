@@ -1,9 +1,9 @@
 from datetime import datetime
 from typing import Iterable, Dict, Any
 
-from clickhouse.base import client
-
 from db.model.seller import Seller
+
+from admin.db_router import get_client
 
 ISO_Z_TO_UTC = "Z", "+00:00" 
 
@@ -28,10 +28,10 @@ def _iter_advert_rows(ads: Iterable[Dict[str, Any]], seller_id: int):
         )
 
 
-def save_adverts(ads: list[dict[str, Any]], seller: Seller) -> None:
-    client.execute("TRUNCATE TABLE adverts")
+def save_adverts(seller: Seller, ads: list[dict[str, Any]]) -> None:
+    get_client(seller).execute("TRUNCATE TABLE adverts")
 
-    client.execute(
+    get_client(seller).execute(
         """
         INSERT INTO adverts
         (advert_id, seller_id, create_time, start_time, end_time,
@@ -74,7 +74,8 @@ def _collect_dates(stat: Iterable[Dict[str, Any]]) -> set[str]:
     }
 
 
-def save_advert_stat(stat: list[dict[str, Any]]) -> None:
+def save_advert_stat(seller: Seller, stat: list[dict[str, Any]]) -> None:
+    client = get_client(seller)
     dates = _collect_dates(stat)
     
     client.execute(f"ALTER TABLE adverts_stat DELETE WHERE date IN %(dates)s", {"dates": list(dates)})

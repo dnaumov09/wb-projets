@@ -92,16 +92,16 @@ def get_sid_db_config(sid: str, db_type: str):
         with conn.cursor() as cur:
             cur.execute("""
                 SELECT 
-                    s.sid,
-                    sd.database_type,
-                    sd.host,
-                    sd.port,
-                    sd.name as dbname,
-                    du.username,
-                    du.password
-                FROM sellers s
-                    JOIN seller_databases sd ON sd.seller_sid = %s
-                    JOIN database_users du ON du.seller_sid = sd.seller_sid AND sd.database_type = %s
+                    s.sid, 
+                    sd.database_type, 
+                    sd.host, 
+                    sd.port, 
+                    sd.name as dbname, 
+                    du.username, 
+                    du.password from sellers s 
+                JOIN seller_databases sd ON sd.seller_sid = s.sid 
+                JOIN database_users du ON du.seller_sid  = sd.seller_sid AND sd.database_type = du.database_type 
+                WHERE s.sid = %s and sd.database_type = %s
             """, (sid, db_type))
             rows = cur.fetchone()
             columns = [desc[0] for desc in cur.description]

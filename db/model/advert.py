@@ -62,7 +62,7 @@ def get_adverts_by_seller(seller: Seller):
     return get_session(seller).query(Advert).filter(Advert.seller_id == seller.id).all()
 
 
-def save_adverts(data, seller: Seller) -> list[Advert]:
+def save_adverts(seller: Seller, data) -> list[Advert]:
     # Fetch all existing advert IDs from the database
     existing_adverts_list = get_session(seller).scalars(select(Advert).filter(Advert.seller_id == seller.id)).all()
     existing_adverts = {adv.advert_id: adv for adv in existing_adverts_list}

@@ -9,20 +9,3 @@ CLICKHOUSE_PASSWORD=os.getenv("CLICKHOUSE_PASSWORD")
 CLICKHOUSE_DBNAME=os.getenv("CLICKHOUSE_DBNAME")
 
 client = Client(host=CLICKHOUSE_HOST, port=CLICKHOUSE_PORT, user=CLICKHOUSE_USERNAME, password=CLICKHOUSE_PASSWORD, database=CLICKHOUSE_DBNAME)
-
-def update_schema():
-    # 1) Читаем содержимое файла
-    with open('./clickhouse/schema.sql', 'r', encoding='utf-8') as f:
-        sql_script = f.read()
-
-    # 2) Разбиваем на отдельные запросы по точке с запятой
-    queries = [q.strip() for q in sql_script.split(';') if q.strip()]
-
-    # 3) Выполняем каждый запрос
-    for query in queries:
-        print(f"Executing query:\n{query}")
-        result = client.execute(query)
-        print("Result:", result)
-
-
-# update_schema()

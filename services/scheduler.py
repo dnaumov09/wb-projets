@@ -146,10 +146,10 @@ def run_finances_updating():
 
 
 def run_all():
-    run_stat_updating()
-    run_stat_updating_background()
-    run_incomes_updating()
-    run_remains_updating()
-    run_finances_updating()
+    # run_stat_updating()
+    # run_stat_updating_background()
+    # run_incomes_updating()
+    # run_remains_updating()
+    # run_finances_updating()
     run_adverts_stat_updating()
     

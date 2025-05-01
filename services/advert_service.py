@@ -16,8 +16,8 @@ def load_adverts(seller: Seller):
     logging.info(f"[{seller.trade_mark}] Loading adverts")
     data = get_API(seller).adverts.load_adverts()
     if data:
-        adverts = save_adverts(data, seller)
-        # ch_ad.save_adverts(data, seller)
+        adverts = save_adverts(seller, data)
+        ch_ad.save_adverts(seller, data)
         # save_advert_bids(data)
         logging.info(f"[{seller.trade_mark}] Adverts saved ({len(adverts)})")
 
@@ -30,7 +30,7 @@ def load_adverts_stat(seller: Seller):
     data = get_API(seller).adverts.load_adverts_stat(adverts, settings.adverts_stat_last_updated if settings.adverts_stat_last_updated else now)
     if data:
         advert_stat, booster_stat = save_adverts_stat(seller, data)
-        ch_ad.save_advert_stat(data)
+        ch_ad.save_advert_stat(seller, data)
         settings.adverts_stat_last_updated = now
         save_settings(seller, settings)
         logging.info(f"[{seller.trade_mark}] Adverts stat saved (adverts stat: {len(advert_stat)}, booster stat: {len(booster_stat)})")
@@ -61,8 +61,8 @@ def load_keywords(seller: Seller):
                 "keywords": cluster_data.get('keywords', [])
             })
                     
-    ch_kw.save_keywords_clusters(clusters_to_save)
-    ch_kw.save_keywords_excluded(excluded_to_save)
+    ch_kw.save_keywords_clusters(seller, clusters_to_save)
+    ch_kw.save_keywords_excluded(seller, excluded_to_save)
             
     logging.info(f"[{seller.trade_mark}] Keywords saved")
 
@@ -98,7 +98,7 @@ def load_keywords_stat(seller: Seller):
     if not data_to_save:
         pass
     
-    ch_kw.save_keywords_stat(data_to_save)
+    ch_kw.save_keywords_stat(seller, data_to_save)
     settings.keywords_stat_last_updated = now
     save_settings(seller, settings)
     logging.info(f"[{seller.trade_mark}] Keywords stat saved")

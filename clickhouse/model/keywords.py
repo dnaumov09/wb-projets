@@ -1,10 +1,14 @@
 from datetime import datetime
 from typing import Iterable, Dict, Any
 
-from clickhouse.base import client
+from db.model.seller import Seller
+
+from admin.db_router import get_client
 
 
-def save_keywords_clusters(clusters):
+def save_keywords_clusters(seller: Seller, clusters):
+    client = get_client(seller)
+    
     cluster_items = [
         (item['advert_id'], item['name'], item['count'])
         for item in clusters
@@ -21,7 +25,9 @@ def save_keywords_clusters(clusters):
     client.execute('INSERT INTO keywords (advert_id, cluster, keyword) VALUES', keyword_items)
 
 
-def save_keywords_excluded(excluded):
+def save_keywords_excluded(seller: Seller, excluded):
+    client = get_client(seller)
+
     cluster_items = [
         (item['advert_id'], keyword)
         for item in excluded
@@ -56,11 +62,11 @@ def _collect_dates(kw_stat: Iterable[Dict[str, Any]]) -> set[str]:
     }
 
 
-def save_keywords_stat(stat):
+def save_keywords_stat(seller: Seller, stat):
+    client = get_client(seller)
     dates = _collect_dates(stat)
     
     client.execute(f"ALTER TABLE keywords_stat DELETE WHERE date IN %(dates)s", {"dates": list(dates)})
-
     client.execute(
         """
         INSERT INTO keywords_stat

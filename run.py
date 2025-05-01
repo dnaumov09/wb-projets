@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import utils.logging_settings as logging_settings
-import scheduler
+import services.scheduler as scheduler
 from bot import bot
 
 def main():
