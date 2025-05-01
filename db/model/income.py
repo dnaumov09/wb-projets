@@ -2,11 +2,12 @@ from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import PrimaryKeyConstraint
 
-from db.base import Base, session
-
 from db.model.seller import Seller
 from db.model.card import get_seller_cards
 from db.util import camel_to_snake, convert_date, save_records
+from db.base import Base
+
+from admin.db_router import get_session
 
 
 class Income(Base):
@@ -39,7 +40,7 @@ class Income(Base):
     buying_price = Column(Float, nullable=True, default=0)
 
 
-def save_incomes(data, seller: Seller):
+def save_incomes(seller: Seller, data):
     data = [
         {camel_to_snake(k): v for k, v in item.items()}
         for item in data
@@ -59,7 +60,7 @@ def save_incomes(data, seller: Seller):
         incomes_to_save.append(item)
 
     return save_records(
-        session=session,
+        session=get_session(seller),
         model=Income,
         data=incomes_to_save,
         key_fields=['income_id'])

@@ -1,11 +1,12 @@
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-
-from db.base import Base, session
 from db.model.card import Card
 from db.model.seller import Seller
 from db.util import save_records
+from db.base import Base
+
+from admin.db_router import get_session
 
 
 class Remains(Base):
@@ -25,28 +26,19 @@ class Remains(Base):
     quantity_warehouses_full: Mapped[int] = mapped_column(nullable=True)
 
 
-def save_remains(data) -> list[Remains]:
+def save_remains(seller: Seller, data) -> list[Remains]:
     result = save_records(
-        session=session,
+        session=get_session(seller),
         model=Remains,
         data=data,
         key_fields=['barcode'])
     return result[0] + result[1]
 
 
-def get_remains_by_seller_id(seller_id: int) -> list[Remains]:
+def get_remains_by_seller(seller: Seller) -> list[Remains]:
     return (
-        session.query(Remains)
+        get_session(seller).query(Remains)
         .join(Remains.card).join(Card.seller)
-        .filter(Card.seller_id == seller_id)
+        .filter(Card.seller_id == seller.id)
         .all()
-    )
-
-
-def get_remains_by_seller_id(seller_id: int) -> list[Remains]:
-    return (
-        session.query(Remains)
-            .join(Card, Card.nm_id == Remains.nm_id)
-            .join(Seller, Seller.id == Card.seller_id)
-            .filter(Seller.id == seller_id).all()
     )

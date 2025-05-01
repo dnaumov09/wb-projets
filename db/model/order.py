@@ -1,11 +1,16 @@
+from enum import Enum
+from datetime import datetime
+
 from sqlalchemy import ForeignKey, DateTime, Index, Enum as PgEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from db.base import Base, session
+
 from db.model.card import Card
-from datetime import datetime
-from enum import Enum
+
 from db.model.seller import Seller
 from db.util import convert_date, save_records, camel_to_snake
+from db.base import Base
+
+from admin.db_router import get_session
 
 
 class OrderStatus(Enum):
@@ -71,7 +76,7 @@ def define_existing_order_status(sticker: str = '', is_cancel: bool = False):
     return status if status else OrderStatus.UNDEFINED
 
 
-def save_orders(data, seller: Seller) -> list[Order]:
+def save_orders(seller: Seller, data) -> list[Order]:
     updated_data = []
     for item in data:
         item = {camel_to_snake(k): v for k, v in item.items()}
@@ -84,7 +89,7 @@ def save_orders(data, seller: Seller) -> list[Order]:
         updated_data.append(item)
     
     return save_records(
-        session=session,
+        session=get_session(seller),
         model=Order,
         data=updated_data,
         key_fields=['g_number', 'srid'])

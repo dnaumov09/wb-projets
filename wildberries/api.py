@@ -21,7 +21,7 @@ class SellerAPI():
 
 _api_list = {}
 def get_API(seller: Seller) -> SellerAPI:
-        if seller.id not in _api_list:
-            _api_list[seller.id] = SellerAPI(seller)
+        if seller.sid not in _api_list:
+            _api_list[seller.sid] = SellerAPI(seller)
 
-        return _api_list[seller.id]
+        return _api_list[seller.sid]

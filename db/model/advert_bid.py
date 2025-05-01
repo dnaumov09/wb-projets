@@ -1,14 +1,15 @@
-from sqlalchemy import ForeignKey, Column, Integer, Float, Enum, and_
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.schema import PrimaryKeyConstraint
-
 import enum
 
-from db.base import Base, session
-from db.model.advert import Advert, AdvertType
-from db.model.card import Card
+from sqlalchemy import ForeignKey, Column, Integer, Float, Enum
+from sqlalchemy.orm import relationship
+from sqlalchemy.schema import PrimaryKeyConstraint
+
+from db.model.advert import AdvertType
 from db.model.seller import Seller
 from db.util import save_records
+from db.base import Base
+
+from admin.db_router import get_session
 
 
 class BidType(enum.Enum):
@@ -35,7 +36,7 @@ class AdvertBid(Base):
     cpm = Column(Float)
 
 
-def save_advert_bids(data) -> list[AdvertBid]:
+def save_advert_bids(seller: Seller, data) -> list[AdvertBid]:
     updated_data = []
     for advert in data:
         if advert['type'] == AdvertType.AUTOMATIC.value:
@@ -65,16 +66,17 @@ def save_advert_bids(data) -> list[AdvertBid]:
                     })
     
     return save_records(
-        session=session,
+        session=get_session(seller),
         model=AdvertBid,
         data=updated_data,
         key_fields=['advert_id', 'nm_id', 'bid_type'])
 
 
-def get_advert_bid(advert_id, nm_id) -> AdvertBid:
-    return session.query(AdvertBid).filter(AdvertBid.advert_id != advert_id, AdvertBid.nm_id == nm_id).first()
+def get_advert_bid(seller: Seller, advert_id, nm_id) -> AdvertBid:
+    return get_session(seller).query(AdvertBid).filter(AdvertBid.advert_id != advert_id, AdvertBid.nm_id == nm_id).first()
 
 
-def update_advert_bid(advert_bid: AdvertBid) -> AdvertBid:
+def update_advert_bid(seller: Seller, advert_bid: AdvertBid) -> AdvertBid:
+    session = get_session(seller)
     session.add(advert_bid)
     session.commit()

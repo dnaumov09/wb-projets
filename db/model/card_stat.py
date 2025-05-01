@@ -1,10 +1,15 @@
+from datetime import datetime, time
+
 from sqlalchemy import ForeignKey, DateTime, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from db.base import Base, session
+
 from db.model.card import Card
 from db.model.seller import Seller
-from datetime import datetime, time
-from db.util import camel_to_snake, convert_date, save_records
+from db.util import save_records
+from db.base import Base
+
+from admin.db_router import get_session
+
 
 
 class CardStat(Base):
@@ -53,7 +58,7 @@ def save_card_stat(data, now: datetime, seller: Seller) -> list[CardStat]:
             })
 
     return save_records(
-        session=session,
+        session=get_session(seller),
         model=CardStat,
         data=cards_stat,
         key_fields=['begin', 'nm_id'])

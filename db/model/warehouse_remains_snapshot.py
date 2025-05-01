@@ -1,13 +1,16 @@
 from datetime import datetime
+
 from sqlalchemy import ForeignKey, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.schema import PrimaryKeyConstraint
 
-
-from db.base import Base, session
 from db.model.warehouse import Warehouse
 from db.model.warehouse_remains import WarehouseRemains
 from db.model.remains import Remains
+from db.model.seller import Seller
+from db.base import Base
+
+from admin.db_router import get_session
+
 
 
 class WarehouseRemainsSnapshot(Base):
@@ -30,7 +33,7 @@ class WarehouseRemainsSnapshot(Base):
         self.date = date
 
 
-def save_remains_snapshot(remains: list[WarehouseRemains]) -> list[WarehouseRemainsSnapshot]:
+def save_remains_snapshot(seller: Seller, remains: list[WarehouseRemains]) -> list[WarehouseRemainsSnapshot]:
     """Save a snapshot of WarehouseRemains at midnight (00:00) for the current day."""
     snapshot_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
 
@@ -45,5 +48,6 @@ def save_remains_snapshot(remains: list[WarehouseRemains]) -> list[WarehouseRema
         for r in remains
     ]
 
+    session = get_session(seller)
     session.bulk_insert_mappings(WarehouseRemainsSnapshot, snapshots_data)
     session.commit()

@@ -1,9 +1,11 @@
 from sqlalchemy import ForeignKey, Column, Integer, String, Float, Boolean, DateTime, Text, BigInteger
 from sqlalchemy.orm import relationship
 
-from db.base import Base, session
 from db.model.seller import Seller
+from db.base import Base
 from db.util import convert_date, save_records, camel_to_snake
+
+from admin.db_router import get_session
 
 # https://dev.wildberries.ru/openapi/financial-reports-and-accounting#tag/Finansovye-otchyoty/paths/~1api~1v5~1supplier~1reportDetailByPeriod/get
 class Realization(Base):
@@ -109,7 +111,7 @@ def save_realizations(data, seller: Seller):
         item['seller_id'] = seller.id
 
     return save_records(
-        session=session,
+        session=get_session(seller),
         model=Realization,
         data=data,
         key_fields=['rrd_id'])

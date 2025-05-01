@@ -1,7 +1,11 @@
 from sqlalchemy import Column, Integer, String, Float, Boolean
-from db.base import Base, session
 
 from db.util import camel_to_snake, save_records
+from db.model.seller import Seller
+from db.base import Base
+
+from admin.db_router import get_session
+
 
 class WBOffices(Base):
     __tablename__ = 'wb_offices'
@@ -17,10 +21,10 @@ class WBOffices(Base):
     selected = Column(Boolean)
 
 
-def save_wb_offices(data) -> list[WBOffices]:
+def save_wb_offices(seller: Seller, data) -> list[WBOffices]:
     data = [{camel_to_snake(k): v for k, v in item.items()} for item in data]
     return save_records(
-        session=session,
+        session=get_session(seller),
         model=WBOffices,
         data=data,
         key_fields=['id']

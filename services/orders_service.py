@@ -20,9 +20,9 @@ def load_orders(seller: Seller, background: bool = False):
     data = get_API(seller).statistics.load_orders(date_from)
             
     if data:
-        updates = save_orders(data, seller)
+        updates = save_orders(seller, data)
         settings.orders_last_updated = now
-        save_settings(settings)
+        save_settings(seller, settings)
         logging.info(f"[{seller.trade_mark}] Orders saved {len(data)}")
 
         if not background:

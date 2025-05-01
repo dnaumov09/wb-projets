@@ -1,13 +1,16 @@
+from enum import Enum
+from datetime import datetime
+
 from sqlalchemy import ForeignKey, DateTime, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from db.base import Base, session
+
 from db.model.card import Card
 from db.model.order import Order
-from datetime import datetime
-from enum import Enum
 from db.model.seller import Seller
-
 from db.util import camel_to_snake, convert_date, save_records
+from db.base import Base
+
+from admin.db_router import get_session
 
 
 class SaleStatus(Enum):
@@ -66,7 +69,7 @@ def define_existing_sale_status(price_with_disc: float) -> SaleStatus:
         return SaleStatus.RETURN
     
 
-def save_sales(data, seller: Seller) -> list[Order]:
+def save_sales(seller: Seller, data) -> list[Order]:
     updated_data = []
     for item in data:
         item = {camel_to_snake(k): v for k, v in item.items()}
@@ -79,7 +82,7 @@ def save_sales(data, seller: Seller) -> list[Order]:
         updated_data.append(item)
     
     return save_records(
-        session=session,
+        session=get_session(seller),
         model=Sale,
         data=updated_data,
         key_fields=['g_number', 'srid'])

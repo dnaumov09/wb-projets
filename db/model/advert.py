@@ -1,10 +1,14 @@
 import logging
-from sqlalchemy import ForeignKey, DateTime, select, Enum as PgEnum
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from db.base import Base, session
-from db.model.seller import Seller
 from enum import Enum
 from datetime import datetime
+
+from sqlalchemy import ForeignKey, DateTime, select, Enum as PgEnum
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from db.model.seller import Seller
+from db.base import Base
+
+from admin.db_router import get_session
 
 class AdvertType(Enum):
     IN_CATALOG = 4
@@ -55,12 +59,12 @@ def parse_datetime(dt_str: str) -> datetime:
 
 
 def get_adverts_by_seller(seller: Seller):
-    return session.query(Advert).filter(Advert.seller_id == seller.id).all()
+    return get_session(seller).query(Advert).filter(Advert.seller_id == seller.id).all()
 
 
 def save_adverts(data, seller: Seller) -> list[Advert]:
     # Fetch all existing advert IDs from the database
-    existing_adverts_list = session.scalars(select(Advert).filter(Advert.seller_id == seller.id)).all()
+    existing_adverts_list = get_session(seller).scalars(select(Advert).filter(Advert.seller_id == seller.id)).all()
     existing_adverts = {adv.advert_id: adv for adv in existing_adverts_list}
     
     # List of adverts that exist in DB but not in incoming data -> to archive
@@ -99,7 +103,7 @@ def save_adverts(data, seller: Seller) -> list[Advert]:
             # Collect for bulk insert
             new_adverts.append(Advert(**advert_fields))
 
-
+    session = get_session(seller)
     if new_adverts:
         session.bulk_save_objects(new_adverts)
 

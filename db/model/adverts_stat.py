@@ -1,11 +1,15 @@
 from datetime import datetime
 from enum import Enum
+
 from sqlalchemy import ForeignKey, DateTime, Index, select, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from db.base import Base, session
+
 from db.model.card import Card
 from db.model.advert import Advert, AdvertType, Status
 from db.model.seller import Seller
+from db.base import Base
+
+from admin.db_router import get_session
 
 
 class AppType(Enum):
@@ -59,7 +63,7 @@ class BoosterStat(Base):
     avg_position: Mapped[int] = mapped_column(nullable=False)
     
 
-def get_existing_stat(data):
+def get_existing_stat(seller, data):
     advert_ids = []
     dates = []
     app_types = []
@@ -78,7 +82,7 @@ def get_existing_stat(data):
     app_types = list(set(app_types))
     nm_ids = list(set(nm_ids))
     
-    existing_stat_list = session.scalars(select(AdvertsStat).filter(
+    existing_stat_list = get_session(seller).scalars(select(AdvertsStat).filter(
             AdvertsStat.advert_id.in_(advert_ids),
             AdvertsStat.date.in_(dates),
             AdvertsStat.app_type.in_(app_types),
@@ -87,7 +91,7 @@ def get_existing_stat(data):
     return {(stat.advert_id, stat.date, stat.app_type, stat.nm_id): stat for stat in existing_stat_list}
 
 
-def get_existing_booster_stat(data):
+def get_existing_booster_stat(seller: Seller, data):
     advert_ids = []
     dates = []
     nm_ids = []
@@ -101,7 +105,7 @@ def get_existing_booster_stat(data):
     dates = list(set(dates))
     nm_ids = list(set(nm_ids))
     
-    existing_stat_list = session.scalars(select(BoosterStat).filter(
+    existing_stat_list = get_session(seller).scalars(select(BoosterStat).filter(
             BoosterStat.advert_id.in_(advert_ids),
             BoosterStat.date.in_(dates),
             BoosterStat.nm_id.in_(nm_ids)
@@ -173,9 +177,9 @@ def parse_booster_stat(advert, existing_booster_stat):
     return new_booster_stat, existing_booster_stat_output
 
 
-def save_adverts_stat(data):
-    existing_stat = get_existing_stat(data)
-    existing_booster_stat = get_existing_booster_stat(data)
+def save_adverts_stat(seller: Seller, data):
+    existing_stat = get_existing_stat(seller, data)
+    existing_booster_stat = get_existing_booster_stat(seller, data)
     
     new_stat = []
     existing_stat_output = []
@@ -190,6 +194,7 @@ def save_adverts_stat(data):
         new_booster_stat.extend(advert_new_booster_stat)
         existing_booster_stat_output.extend(advert_existing_booster_stat_output)
 
+    session = get_session(seller)
     if new_stat:
         session.bulk_save_objects(new_stat)
 
@@ -221,4 +226,4 @@ def get_last_days_stat(seller: Seller, date_from: datetime):
         .group_by(AdvertsStat.advert_id, AdvertsStat.nm_id)
     )
 
-    return session.execute(stmt).all()
+    return get_session(seller).execute(stmt).all()

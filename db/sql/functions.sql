@@ -289,9 +289,9 @@ END;
 $$;
 
 
-DROP FUNCTION IF EXISTS public.get_pipeline_by_period(text);
+DROP FUNCTION IF EXISTS get_pipeline_by_period(text);
 
-CREATE OR REPLACE FUNCTION public.get_pipeline_by_period(period_type text)
+CREATE OR REPLACE FUNCTION get_pipeline_by_period(period_type text)
  RETURNS TABLE(period timestamp without time zone, nm_id integer, vendor_code varchar, open_card_count bigint, add_to_cart_count bigint, orders_count bigint, orders_sum double precision, sales_count bigint, sales_sum double precision, orders_cancelled_count bigint, orders_cancelled_sum double precision, sales_returned_count bigint, sales_returned_sum double precision)
  LANGUAGE plpgsql
 AS $function$
@@ -356,7 +356,7 @@ $function$
 
 DROP FUNCTION IF EXISTS get_financial_report_by_period(text);
 CREATE OR REPLACE FUNCTION get_financial_report_by_period(period_type text)
- RETURNS TABLE(
+RETURNS TABLE(
  	date_from timestamp without time zone, -- От
  	date_to timestamp without time zone, -- До
  	retail_price double precision, -- Цена розничная
@@ -369,7 +369,9 @@ CREATE OR REPLACE FUNCTION get_financial_report_by_period(period_type text)
  	storage_fee double precision, -- Стоимость хранения
  	acceptance double precision, -- Стоимость платной приёмки
  	deduction double precision, -- Прочие удержания/выплаты
- 	ttl_for_pay double precision) -- Итоговая сумма выплаты
+ 	ttl_for_pay double precision, -- Итоговая сумма выплаты
+    buying_price double precision, 
+    profit double precision) 
  LANGUAGE plpgsql
 AS $$
 BEGIN

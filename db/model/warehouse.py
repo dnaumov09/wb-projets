@@ -1,5 +1,10 @@
 from sqlalchemy.orm import Mapped, mapped_column
-from db.base import Base, session
+
+from db.model.seller import Seller
+from db.base import Base
+
+from admin.db_router import get_session
+
 
 class Warehouse(Base):
     __tablename__ = 'warehouses'
@@ -11,7 +16,8 @@ class Warehouse(Base):
         self.name = name
 
 
-def check_warehouse(name):
+def check_warehouse(seller: Seller, name):
+    session = get_session(seller)
     wh = session.query(Warehouse).filter(Warehouse.name == name).first()
 
     if wh is None:
@@ -22,5 +28,5 @@ def check_warehouse(name):
     return wh
 
 
-def get_warehouses():
-    return session.query(Warehouse).all()
+def get_warehouses(seller: Seller):
+    return get_session(seller).query(Warehouse).all()

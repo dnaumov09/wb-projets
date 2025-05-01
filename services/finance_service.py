@@ -19,7 +19,7 @@ def load_finances(seller: Seller):
             pass
         realizations = save_realizations(data, seller)
         settings.finances_last_updated = datetime.now()
-        save_settings(settings)
+        save_settings(seller, settings)
         logging.info(f"[{seller.trade_mark}] Financial report saved (rows: {len(realizations[0] + realizations[1])})")
 
 

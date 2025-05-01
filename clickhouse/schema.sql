@@ -16,7 +16,7 @@ ENGINE = MergeTree()
 ORDER BY keyword;
 
 
-CREATE TABLE keywords_stat (
+CREATE TABLE IF NOT EXISTS keywords_stat (
     advert_id UInt32,
     date Date,
     keyword String,

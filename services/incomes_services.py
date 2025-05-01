@@ -15,7 +15,7 @@ def load_incomes(seller: Seller):
     data = get_API(seller).statistics.load_incomes(settings.incomes_last_updated if settings.incomes_last_updated else now)
 
     if data:
-        updates = save_incomes(data, seller)
+        updates = save_incomes(seller, data)
         settings.incomes_last_updated = now
-        save_settings(settings)
+        save_settings(seller, settings)
         logging.info(f"[{seller.trade_mark}] Incomes saved {len(updates[0] + updates[1])}")

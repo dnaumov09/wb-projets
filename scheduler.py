@@ -4,10 +4,6 @@ import time
 from datetime import datetime
 from threading import Thread
 
-from db.model.seller import get_seller
-
-from wildberries import api as wb_api
-
 from bot import notification_service
 from services import (
     remains_service,
@@ -22,8 +18,14 @@ from services import (
     supplies_service
 )
 
+from admin.db_api import get_sellers
 
-SELLER = get_seller(1)
+sellers = get_sellers()
+
+SELLER = next((s for s in sellers if s.sid == 'cd079a55-56e9-454f-bb41-cdb030894913'), None)
+
+if SELLER:
+    SELLER.id = 1
 
 
 def _run_schedule():
@@ -91,7 +93,7 @@ def _run_daily_task():
     run_remains_updating()
     run_incomes_updating()
     run_stat_updating_background()
-    reporting_service.update_pipeline_data()
+    # reporting_service.update_pipeline_data()
 
 
 def run_remains_updating():

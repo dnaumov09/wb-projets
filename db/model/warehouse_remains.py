@@ -1,14 +1,16 @@
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from db.base import Base, session
 from sqlalchemy.schema import PrimaryKeyConstraint
 
-
-from db.model.warehouse import Warehouse, check_warehouse
+from db.model.warehouse import Warehouse
 from db.model.remains import Remains
 from db.model.seller import Seller
 from db.model.card import Card
-from db.util import camel_to_snake, save_records
+from db.util import save_records
+from db.base import Base
+
+from admin.db_router import get_session
+
 
 class WarehouseRemains(Base):
     __tablename__ = 'warehouse_remains'
@@ -26,20 +28,20 @@ class WarehouseRemains(Base):
     quantity: Mapped[int] = mapped_column(nullable=True)
 
 
-def save_warehouse_remains(data):
+def save_warehouse_remains(seller: Seller, data):
     result = save_records(
-        session=session, 
+        session=get_session(seller), 
         model=WarehouseRemains, 
         data=data, 
         key_fields=['warehouse_id', 'remains_id'])
     return result[0] + result[1]
 
 
-def get_warehouse_remains_by_seller_id(seller_id: int):
+def get_warehouse_remains(seller: Seller):
     return (
-        session.query(WarehouseRemains)
+        get_session(seller).query(WarehouseRemains)
             .join(Remains, Remains.barcode == WarehouseRemains.remains_id)
             .join(Card, Card.nm_id == Remains.nm_id)
             .join(Seller, Seller.id == Card.seller_id)
-            .filter(Seller.id == seller_id).all()
+            .filter(Seller.id == seller.id).all()
     )

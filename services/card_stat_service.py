@@ -12,7 +12,7 @@ def load_cards_stat(seller: Seller):
     settings = get_seller_settings(seller)
     logging.info(f"[{seller.trade_mark}] Loading cards stat")
     now = datetime.now()
-    seller_cards = get_seller_cards(seller.id)
+    seller_cards = get_seller_cards(seller)
     if not seller_cards:
         pass
             
@@ -20,6 +20,6 @@ def load_cards_stat(seller: Seller):
     if data:
         saved_cards_stat = save_card_stat(data, now, seller)
         settings.cards_stat_last_updated = now
-        save_settings(settings)
+        save_settings(seller, settings)
         logging.info(f"[{seller.trade_mark}] Cards stat saved {len(saved_cards_stat)}")
                 

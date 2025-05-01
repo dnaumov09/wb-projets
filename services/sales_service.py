@@ -21,9 +21,9 @@ def load_sales(seller: Seller, background: bool = False):
     data = get_API(seller).statistics.load_sales(date_from)
 
     if data:
-        updates = save_sales(data, seller)
+        updates = save_sales(seller, data)
         settings.sales_last_updated = now
-        save_settings(settings)
+        save_settings(seller, settings)
         logging.info(f"[{seller.trade_mark}] Sales saved {len(updates[0] + updates[1])}")
 
         if not background:

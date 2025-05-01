@@ -3,12 +3,12 @@ from sqlalchemy import DateTime, Boolean
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from db.base import Base, session
 
 from db.model.seller import Seller
+from db.base import Base
 
+from admin.db_router import get_session
 
-SETTINGS_ID = 1
 
 
 class SellerSettings(Base):
@@ -42,9 +42,10 @@ class SellerSettings(Base):
 
 
 def get_seller_settings(seller: Seller):
-    return session.query(SellerSettings).filter(SellerSettings.seller_id == seller.id).first()
+    return get_session(seller).query(SellerSettings).filter(SellerSettings.seller_id == seller.id).first()
 
 
-def save_settings(settings: SellerSettings):
+def save_settings(seller: Seller, settings: SellerSettings):
+    session = get_session(seller)
     session.add(settings)
     session.commit()

@@ -22,7 +22,7 @@ sales_status_messages = {
         SaleStatus.RETURN: "❌ <b>Клиент вернул заказ</b>"
     }
 
-admins_to_notify = [user for user in get_admins() if user.receive_orders]
+admins_to_notify = []
 
 
 def notify_updated_orders(orders: list[Order]):

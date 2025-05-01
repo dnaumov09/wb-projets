@@ -1,5 +1,5 @@
-DROP VIEW IF EXISTS public.financial_report;
-CREATE OR REPLACE VIEW public.financial_report
+DROP VIEW IF EXISTS financial_report;
+CREATE OR REPLACE VIEW financial_report
 AS SELECT 
 	r.rr_dt,
 	r.realizationreport_id,

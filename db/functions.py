@@ -6,7 +6,10 @@ from enum import Enum
 from typing import List, Tuple
 
 from sqlalchemy import select, func, Integer, Float, String
-from db.base import session
+
+from db.model.seller import Seller
+
+from admin.db_router import get_session
 
 
 class Period(Enum):
@@ -16,6 +19,7 @@ class Period(Enum):
 
 
 def get_stat_by_period(
+    seller: Seller,
     tvf_name: str,
     columns: List[Tuple[str, type]],
     period: Period,
@@ -36,7 +40,7 @@ def get_stat_by_period(
     else:
         stmt = select(table)
 
-    return session.execute(stmt).mappings().all()
+    return get_session(seller).execute(stmt).mappings().all()
 
 
 def get_cards_stat_by_period(period: Period, is_aggregated: bool = False):

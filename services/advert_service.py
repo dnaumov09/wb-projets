@@ -17,7 +17,7 @@ def load_adverts(seller: Seller):
     data = get_API(seller).adverts.load_adverts()
     if data:
         adverts = save_adverts(data, seller)
-        ch_ad.save_adverts(data, seller)
+        # ch_ad.save_adverts(data, seller)
         # save_advert_bids(data)
         logging.info(f"[{seller.trade_mark}] Adverts saved ({len(adverts)})")
 
@@ -29,10 +29,10 @@ def load_adverts_stat(seller: Seller):
     adverts = get_adverts_by_seller(seller)
     data = get_API(seller).adverts.load_adverts_stat(adverts, settings.adverts_stat_last_updated if settings.adverts_stat_last_updated else now)
     if data:
-        advert_stat, booster_stat = save_adverts_stat(data)
+        advert_stat, booster_stat = save_adverts_stat(seller, data)
         ch_ad.save_advert_stat(data)
         settings.adverts_stat_last_updated = now
-        save_settings(settings)
+        save_settings(seller, settings)
         logging.info(f"[{seller.trade_mark}] Adverts stat saved (adverts stat: {len(advert_stat)}, booster stat: {len(booster_stat)})")
 
 
@@ -100,7 +100,7 @@ def load_keywords_stat(seller: Seller):
     
     ch_kw.save_keywords_stat(data_to_save)
     settings.keywords_stat_last_updated = now
-    save_settings(settings)
+    save_settings(seller, settings)
     logging.info(f"[{seller.trade_mark}] Keywords stat saved")
 
 

@@ -6,14 +6,11 @@ from db.model.warehouse import get_warehouses
 from db.model.remains import save_remains
 from db.model.warehouse_remains_snapshot import save_remains_snapshot
 from db.model.card import get_seller_cards
-from db.model.warehouse_remains import save_warehouse_remains, get_warehouse_remains_by_seller_id
+from db.model.warehouse_remains import save_warehouse_remains, get_warehouse_remains
 from db.model.warehouse import check_warehouse
 from db.util import camel_to_snake
 
 from wildberries.api import get_API
-
-
-warehouses = get_warehouses()
 
 
 NOT_WAREHOUSES = {
@@ -44,7 +41,7 @@ def load_remains(seller: Seller):
         for item in data
     ]
 
-    seller_nm_ids = [r.nm_id for r in get_seller_cards(seller.id)]
+    seller_nm_ids = [r.nm_id for r in get_seller_cards(seller)]
     remains_keys = [ "nm_id", "brand", "subject_name", "vendor_code", "barcode", "tech_size", "volume" ]
 
     remains = []
@@ -63,18 +60,18 @@ def load_remains(seller: Seller):
                 warehouse_remains.append(
                     {
                         'remains_id': r.get('barcode'),
-                        'warehouse_id': check_warehouse(wh_name).id,
+                        'warehouse_id': check_warehouse(seller, wh_name).id,
                         'quantity': wh.get('quantity')
                     }
                 )
         
-    remains = save_remains(remains)
-    warehouse_remains = save_warehouse_remains(warehouse_remains)
+    remains = save_remains(seller, remains)
+    warehouse_remains = save_warehouse_remains(seller, warehouse_remains)
     logging.info(f"[{seller.trade_mark}] Remains saved {len(warehouse_remains)}")
 
 
 def create_remains_snapshot(seller: Seller):
     logging.info(f"[{seller.trade_mark}] Creating remains snapshot")
-    remains = get_warehouse_remains_by_seller_id(seller.id)
-    save_remains_snapshot(remains)
+    remains = get_warehouse_remains(seller)
+    save_remains_snapshot(seller, remains)
     logging.info(f"[{seller.trade_mark}] Remains snapshot created")

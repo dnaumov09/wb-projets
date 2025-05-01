@@ -1,7 +1,10 @@
 from sqlalchemy import ForeignKey, Column, String, Boolean, Integer
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from db.base import Base, session
+from sqlalchemy.orm import relationship
+
 from db.model.seller import Seller
+from db.base import Base
+
+from admin.db_router import get_session
 
 class User(Base):
     __tablename__ = 'users'
@@ -15,13 +18,13 @@ class User(Base):
     seller = relationship("Seller")
 
 
-def get_user(chat_id: int) -> User:
-    return session.query(User).get(chat_id)
+def get_user(seller: Seller, chat_id: int) -> User:
+    return get_session(seller).query(User).get(chat_id)
 
 
-def get_admins() -> list[User]:
-    return session.query(User).all()
+def get_admins(seller: Seller) -> list[User]:
+    return get_session(seller).query(User).all()
 
 
 def get_seller_users(seller: Seller):
-    return session.query(User).where(User.seller_id == seller.id).all()
+    return get_session(seller).query(User).where(User.seller_id == seller.id).all()
