@@ -11,3 +11,8 @@ def rate_limited(calls: int, period: int):
             return func(*args, **kwargs)
         return wrapper
     return decorator
+
+
+def chunked(iterable, size):
+    for i in range(0, len(iterable), size):
+        yield iterable[i:i + size]

@@ -7,6 +7,8 @@ from db.model.seller import Seller
 
 from wildberries.api import get_API
 
+from utils.util import chunked
+
 
 def load_finances(seller: Seller):
     settings = get_seller_settings(seller)
@@ -17,7 +19,11 @@ def load_finances(seller: Seller):
         data = get_API(seller).statistics.load_financial_report(last_monday, last_sunday)
         if not data:
             pass
-        realizations = save_realizations(data, seller)
+        
+        realizations = []
+        for chunk in chunked(data, 10000):
+            realizations.append(save_realizations(chunk, seller))
+
         settings.finances_last_updated = datetime.now()
         save_settings(seller, settings)
         logging.info(f"[{seller.trade_mark}] Financial report saved (rows: {len(realizations[0] + realizations[1])})")

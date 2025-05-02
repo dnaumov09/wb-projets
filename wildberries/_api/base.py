@@ -44,11 +44,16 @@ class BaseAPIClient:
             data = resp.json()
             return data.get(data_key) if data_key else data
         except requests.RequestException as e:
-            logging.error(f"[{self.seller.trade_mark}] API {method} request failed at {url}: {e}")
-            notify_error(self.seller, f"API {method} request failed at {url}:\n{e}")
+            self.print_log(e, method, url)
+            notify_error(self.seller, f"API {method} request failed at {url} (details in log)")
             raise BaseAPIException(seller=self.seller, method=method, url=url, message=e)
             # return None
 
+
+    def print_log(self, e: requests.RequestException, method: str, url: str):
+        status_code = e.response.status_code
+        error = e.response.json()
+        logging.error(f"[{self.seller.trade_mark}] API {method} request failed with status code {status_code} at {url}: {error}")
 
 class BaseAPIEndpoints:
     @classmethod

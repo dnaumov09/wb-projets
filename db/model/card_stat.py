@@ -38,24 +38,25 @@ class CardStat(Base):
 
 def save_card_stat(data, now: datetime, seller: Seller) -> list[CardStat]:
     cards_stat = []
-    for item in data:
-        nm_id = item.get("nmID")
-        for day in item.get('history'):
-            begin = datetime.strptime(day.get('dt'), "%Y-%m-%d")
-            end = datetime.combine(begin, time.max) if begin < datetime.combine(now, time.min) else now
-            cards_stat.append({
-                "begin": begin,
-                "end": end,
-                "nm_id": nm_id,
-                "open_card_count": day.get('openCardCount', 0),
-                "add_to_cart_count": day.get('addToCartCount', 0),
-                "orders_count": day.get('ordersCount', 0),
-                "orders_sum_rub": day.get('ordersSumRub', 0),
-                "buyouts_count": day.get('buyoutsCount', 0),
-                "buyouts_sum_rub": day.get('buyoutsSumRub', 0),
-                "cancel_count": day.get('cancelCount', 0),
-                "cancel_sum_rub": day.get('cancelSumRub', 0)
-            })
+    for items in data:
+        for item in items:
+            nm_id = item.get("nmID")
+            for day in item.get('history'):
+                begin = datetime.strptime(day.get('dt'), "%Y-%m-%d")
+                end = datetime.combine(begin, time.max) if begin < datetime.combine(now, time.min) else now
+                cards_stat.append({
+                    "begin": begin,
+                    "end": end,
+                    "nm_id": nm_id,
+                    "open_card_count": day.get('openCardCount', 0),
+                    "add_to_cart_count": day.get('addToCartCount', 0),
+                    "orders_count": day.get('ordersCount', 0),
+                    "orders_sum_rub": day.get('ordersSumRub', 0),
+                    "buyouts_count": day.get('buyoutsCount', 0),
+                    "buyouts_sum_rub": day.get('buyoutsSumRub', 0),
+                    "cancel_count": day.get('cancelCount', 0),
+                    "cancel_sum_rub": day.get('cancelSumRub', 0)
+                })
 
     return save_records(
         session=get_session(seller),

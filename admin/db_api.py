@@ -106,17 +106,26 @@ def get_sid_db_config(sid: str, db_type: str):
             rows = cur.fetchone()
             columns = [desc[0] for desc in cur.description]
             return dict(zip(columns, rows))
+        
+
+BLOOMSTORM_SID = 'cd079a55-56e9-454f-bb41-cdb030894913'
+def get_my_seller():
+    return next(
+        (seller for seller in get_sellers() if seller.sid == BLOOMSTORM_SID),
+        None
+    )
 
 
 def get_sellers() -> list[Seller]:
     with admin_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute('SELECT s.sid, s.name, s.trade_mark, s.token FROM sellers s')
+            cur.execute('SELECT s.sid, s.name, s.trade_mark, s.token FROM sellers s WHERE s.active = true')
             rows = cur.fetchall()
 
     sellers = []
     for row in rows:
         seller = Seller()
+        seller.id = 1
         seller.sid = row[0]
         seller.name = row[1]
         seller.trade_mark = row[2]
