@@ -1,6 +1,7 @@
 import logging
 import schedule
 import time
+import threading
 from datetime import datetime
 from threading import Thread
 
@@ -75,8 +76,13 @@ def _run_every_minute_task():
 
 def _run_every_5minutes_task():
     for seller in get_sellers():
-        run_stat_updating(seller)
-        run_adverts_stat_updating(seller)
+        t = threading.Thread(target=_run_thread_every_5minutes_task, args=(seller,))
+        t.start()
+
+
+def _run_thread_every_5minutes_task(seller: Seller):
+    run_stat_updating(seller)
+    run_adverts_stat_updating(seller)
 
 
 def _run_daily_task():
