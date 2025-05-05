@@ -1,5 +1,5 @@
 import requests
-import logging
+import json
 from typing import Optional, Dict, Any, List, Union, Literal
 
 from db.model.seller import Seller
@@ -7,8 +7,8 @@ from bot.notification_service import notify_error
 
 
 class BaseAPIException(Exception):
-    def __init__(self, seller: Seller, method: str, url: str, message: str="Undefined exception"):
-        super().__init__(f"[{seller.trade_mark}] API {method} request failed at {url}: {message}")
+    def __init__(self, seller: Seller, method: str, status_code: str, url: str, message: str):
+        super().__init__(f"[{seller.trade_mark}] API {method} ({url}) error {status_code}:\n{message}")
 
 
 class BaseAPIClient:
@@ -44,16 +44,14 @@ class BaseAPIClient:
             data = resp.json()
             return data.get(data_key) if data_key else data
         except requests.RequestException as e:
-            self.print_log(e, method, url)
-            notify_error(self.seller, f"API {method} request failed at {url} (details in log)")
-            raise BaseAPIException(seller=self.seller, method=method, url=url, message=e)
-            # return None
-
-
-    def print_log(self, e: requests.RequestException, method: str, url: str):
-        status_code = e.response.status_code
-        error = e.response.json()
-        logging.error(f"[{self.seller.trade_mark}] API {method} request failed with status code {status_code} at {url}: {error}")
+            # notify_error(self.seller, f"API {method} request failed with code {e.response.status_code} at {url}:\n{e.response.json()}")
+            raise BaseAPIException(
+                seller=self.seller,
+                method=method,
+                status_code=e.response.status_code,
+                url=url,
+                message=json.dumps(e.response.json(), indent=4)
+            )
 
 class BaseAPIEndpoints:
     @classmethod

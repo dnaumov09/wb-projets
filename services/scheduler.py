@@ -51,7 +51,7 @@ def _schedule_jobs():
 
     # Multiple times a day for adverts stat updating
     # for time_point in ["00:00", "09:00", "12:00", "15:00", "18:00", "21:00"]:
-        # schedule.every().day.at(time_point).do()
+        # schedule.every().day.at(time_point).do(my_func)
 
 
 def _run_precise_minute_tasks():
@@ -86,12 +86,17 @@ def _run_thread_every_5minutes_task(seller: Seller):
 
 
 def _run_daily_task():
-    """Task that runs every day at 03:00 seconds."""
     for seller in get_sellers():
-        run_incomes_updating(seller)
-        run_remains_updating(seller)
-        run_remains_snpshot_updating(seller)
-        run_stat_updating_background(seller)
+        t = threading.Thread(target=_run_thread_daily_task, args=(seller,))
+        t.start()
+
+
+def _run_thread_daily_task(seller: Seller):
+    run_incomes_updating(seller)
+    run_remains_updating(seller)
+    run_remains_snpshot_updating(seller)
+    run_stat_updating_background(seller)
+    run_keywords_stat_updating(seller)
 
 
 def run_stat_updating(seller: Seller):
@@ -116,6 +121,12 @@ def run_adverts_stat_updating(seller: Seller):
     logging.info('scheduler.run_adverts_stat_updating() - started')
     advert_service.load_adverts(seller)
     advert_service.load_adverts_stat(seller)
+    logging.info('scheduler.run_adverts_stat_updating() - done')
+
+
+def run_keywords_stat_updating(seller: Seller):
+    """Update adverts and their statistics."""
+    logging.info('scheduler.run_adverts_stat_updating() - started')
     advert_service.load_keywords(seller)
     advert_service.load_keywords_stat(seller)
     logging.info('scheduler.run_adverts_stat_updating() - done')
