@@ -11,13 +11,27 @@ from clickhouse.model import adverts as ch_ad
 
 from wildberries.api import get_API
 
+from utils.util import chunked
+
 
 def load_adverts(seller: Seller):
     logging.info(f"[{seller.trade_mark}] Loading adverts")
     data = get_API(seller).adverts.load_adverts()
-    if data:
-        adverts = save_adverts(seller, data)
-        ch_ad.save_adverts(seller, data)
+
+    if not data or 'adverts' not in data:
+        return []
+        
+    advert_ids = [advert['advertId'] for group in data['adverts'] for advert in group['advert_list']]
+    if not advert_ids:
+        return []
+        
+    receaved_adverts = []
+    for advert_ids_chunked in chunked(advert_ids, 50):
+        receaved_adverts.extend(get_API(seller).adverts.load_adverts_info(advert_ids_chunked))
+    
+    if receaved_adverts:
+        adverts = save_adverts(seller, receaved_adverts)
+        ch_ad.save_adverts(seller, receaved_adverts)
         # save_advert_bids(data)
         logging.info(f"[{seller.trade_mark}] Adverts saved ({len(adverts)})")
 

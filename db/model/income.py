@@ -46,7 +46,7 @@ def save_incomes(seller: Seller, data):
         for item in data
     ]
 
-    seller_nm_ids = [r.nm_id for r in get_seller_cards(seller.id)]
+    seller_nm_ids = [r.nm_id for r in get_seller_cards(seller)]
 
     incomes_to_save = []
     for item in data:
@@ -63,4 +63,4 @@ def save_incomes(seller: Seller, data):
         session=get_session(seller),
         model=Income,
         data=incomes_to_save,
-        key_fields=['income_id'])
+        key_fields=['income_id', 'barcode'])

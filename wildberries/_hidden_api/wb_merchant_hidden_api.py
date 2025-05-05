@@ -93,7 +93,7 @@ class WBHiddenAPI:
                 "supplyId": supply_id,
             },
         }
-        return self._post(MerchantHiddenAPIEndpoints.SUPPLIES_STATUS_URL, payload)
+        return self._post(MerchantHiddenAPIEndpoints.ACCEPTANCE_COSTS, payload)
     
 
 _client: WBHiddenAPI | None = None 

@@ -108,7 +108,7 @@ def get_sid_db_config(sid: str, db_type: str):
             return dict(zip(columns, rows))
         
 
-BLOOMSTORM_SID = 'cd079a55-56e9-454f-bb41-cdb030894913'
+BLOOMSTORM_SID = '99037851-767d-401b-b3a3-eced8db12ebe'
 def get_my_seller():
     return next(
         (seller for seller in get_sellers() if seller.sid == BLOOMSTORM_SID),

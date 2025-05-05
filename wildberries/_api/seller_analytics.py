@@ -50,7 +50,6 @@ class SellerAnalyticsAPI(BaseAPIClient):
     def load_cards_stat(self, seller_cards: list[Card], last_updated: datetime) -> Optional[Union[Dict[str, Any], List[Dict[str, Any]]]]:
         begin_date = datetime.combine(last_updated, time.min).strftime("%Y-%m-%d")
         end_date = datetime.now().strftime("%Y-%m-%d")
-
         nm_ids = [card.nm_id for card in seller_cards]
         payload = {
             "nmIDs": nm_ids,

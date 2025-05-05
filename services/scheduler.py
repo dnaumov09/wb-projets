@@ -11,15 +11,14 @@ from services import (
     cards_service,
     orders_service,
     sales_service,
-    reporting_service,
     advert_service,
     finance_service,
     incomes_services,
     supplies_service
 )
 
-from admin.db_api import get_sellers, Seller
-sellers = get_sellers()
+from admin.db_api import get_sellers, get_my_seller, Seller
+SELLER = get_my_seller()
 
 
 def _run_schedule():
@@ -41,9 +40,6 @@ def start_scheduler():
 
 def _schedule_jobs():
     """Set up all scheduled jobs."""
-    
-    # Daily jobs # поменять на понедельники
-    schedule.every().monday.at("11:00").do(run_finances_updating)
     
     # Daily jobs
     schedule.every().day.at("23:59").do(notification_service.notyfy_pipeline)
@@ -74,22 +70,22 @@ def _run_precise_minute_tasks():
 
 
 def _run_every_minute_task():
-    for seller in sellers:
-        supplies_service.get_supplies_offices_status(seller)
+    supplies_service.get_supplies_offices_status(SELLER)
+
 
 def _run_every_5minutes_task():
-    for seller in sellers:
+    for seller in get_sellers():
         run_stat_updating(seller)
         run_adverts_stat_updating(seller)
 
 
 def _run_daily_task():
     """Task that runs every day at 03:00 seconds."""
-    for seller in sellers:
-        run_remains_updating(seller)
+    for seller in get_sellers():
         run_incomes_updating(seller)
+        run_remains_updating(seller)
+        run_remains_snpshot_updating(seller)
         run_stat_updating_background(seller)
-    # reporting_service.update_pipeline_data()
 
 
 def run_stat_updating(seller: Seller):
@@ -119,13 +115,18 @@ def run_adverts_stat_updating(seller: Seller):
     logging.info('scheduler.run_adverts_stat_updating() - done')
 
 
-
 def run_remains_updating(seller: Seller):
     """Update remains data and related reports."""
     logging.info('scheduler.run_remains_updating() - started')
     remains_service.load_remains(seller)
-    remains_service.create_remains_snapshot(seller)
     logging.info('scheduler.run_remains_updating() - done')
+
+
+def run_remains_snpshot_updating(seller: Seller):
+    """Update remains data and related reports."""
+    logging.info('scheduler.run_remains_snpshot_updating() - started')
+    remains_service.create_remains_snapshot(seller)
+    logging.info('scheduler.run_remains_snpshot_updating() - done')
 
 
 def run_incomes_updating(seller: Seller):
@@ -142,13 +143,13 @@ def run_finances_updating(seller: Seller):
     logging.info('scheduler.run_finances_updating() - done')
 
 
-def run_all(seller: Seller):
-    for s in sellers:
-        if sellers and seller.sid == s.sid:
-            run_stat_updating(s)
-            run_stat_updating_background(s)
-            run_incomes_updating(s)
-            run_remains_updating(s)
-            run_finances_updating(s)
-            run_adverts_stat_updating(s)
+def run_all():
+    card_stat_service.load_cards_stat(SELLER)
+    run_stat_updating(SELLER)
+    run_stat_updating_background(SELLER)
+    run_incomes_updating(SELLER)
+    run_remains_updating(SELLER)
+    run_remains_snpshot_updating(SELLER)
+    run_finances_updating(SELLER)
+    run_adverts_stat_updating(SELLER)
     

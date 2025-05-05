@@ -20,7 +20,7 @@ def load_cards_stat(seller: Seller):
             
     data = []
     for cards_chunked in chunked(seller_cards, 20):
-        data.append(
+        data.extend(
             get_API(seller).seller_analytics.load_cards_stat(cards_chunked, settings.cards_stat_last_updated if settings.cards_stat_last_updated else now)
         )
     if data:

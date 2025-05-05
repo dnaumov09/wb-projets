@@ -6,6 +6,8 @@ from wildberries._api.base import BaseAPIClient, BaseAPIEndpoints
 
 from db.model.advert import Advert
 
+from utils.util import chunked
+
 
 class AdvertAPI(BaseAPIClient):
 
@@ -22,17 +24,13 @@ class AdvertAPI(BaseAPIClient):
 
 
     @rate_limited(calls=5, period=1)
-    def load_adverts(self) -> Optional[Union[Dict[str, Any], List[Dict[str, Any]]]]:
-        count_response = self.request('GET', AdvertAPI.Endpoints.PROMOTION_COUNT)
-
-        if not count_response or 'adverts' not in count_response:
-            return None
-        
-        advert_ids = {advert['advertId'] for group in count_response['adverts'] for advert in group['advert_list']}
-        if not advert_ids:
-            return None
-        
+    def load_adverts_info(self, advert_ids: list[int]):
         return self.request('POST', AdvertAPI.Endpoints.PROMOTION_ADVERTS, json_payload=list(advert_ids))
+    
+
+    @rate_limited(calls=5, period=1)
+    def load_adverts(self) -> Optional[Union[Dict[str, Any], List[Dict[str, Any]]]]:
+        return self.request('GET', AdvertAPI.Endpoints.PROMOTION_COUNT)
 
 
     @rate_limited(calls=5, period=1)

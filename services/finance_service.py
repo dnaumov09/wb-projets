@@ -22,11 +22,14 @@ def load_finances(seller: Seller):
         
         realizations = []
         for chunk in chunked(data, 10000):
-            realizations.append(save_realizations(chunk, seller))
+            r = save_realizations(chunk, seller)
+            realizations.append(r[0])
+            realizations.append(r[1])
+            
 
         settings.finances_last_updated = datetime.now()
         save_settings(seller, settings)
-        logging.info(f"[{seller.trade_mark}] Financial report saved (rows: {len(realizations[0] + realizations[1])})")
+        logging.info(f"[{seller.trade_mark}] Financial report saved (rows: {len(realizations)})")
 
 
 def get_last_sunday_235959999999():
