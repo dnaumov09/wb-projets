@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import DateTime, Boolean
+from sqlalchemy import DateTime, Boolean, String
 
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -12,6 +12,8 @@ from admin.db_router import get_session
 
 class SellerSettings(Base):
     __tablename__ = 'seller_settings'
+
+    sid: Mapped[bool] = mapped_column(String, nullable=False, primary_key=True)
 
     load_cards_stat: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     cards_stat_last_updated: Mapped[datetime] = mapped_column(DateTime, nullable=True)
