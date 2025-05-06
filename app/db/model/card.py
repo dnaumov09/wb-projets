@@ -26,7 +26,7 @@ def get_card_by_nm_id(seller: Seller, nm_id) -> Card:
 
 def save_cards(seller: Seller, data) -> list[Card]:
     data = [
-        {**{camel_to_snake(k): v for k, v in item.items()}, "seller_id": seller.id}
+        {**{camel_to_snake(k): v for k, v in item.items()}}
         for item in data.get("cards", [])
     ]
 

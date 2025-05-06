@@ -221,8 +221,6 @@ def get_last_days_stat(seller: Seller, date_from: datetime):
         .where(Advert.status.in_([Status.ONGOING, Status.PAUSED]))
         # Фильтр по типам: AUTOMATIC (8) и AUCTION (9)
         .where(Advert.advert_type.in_([AdvertType.AUTOMATIC, AdvertType.AUCTION]))
-        # .where(Advert.advert_id == 23376017)
-        .where(Advert.seller_id == seller.id)
         .group_by(AdvertsStat.advert_id, AdvertsStat.nm_id)
     )
 

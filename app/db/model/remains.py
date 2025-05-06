@@ -36,9 +36,4 @@ def save_remains(seller: Seller, data) -> list[Remains]:
 
 
 def get_remains_by_seller(seller: Seller) -> list[Remains]:
-    return (
-        get_session(seller).query(Remains)
-        .join(Remains.card).join(Card.seller)
-        .filter(Card.seller_id == seller.id)
-        .all()
-    )
+    return get_session(seller).query(Remains).all()

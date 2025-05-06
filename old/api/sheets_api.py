@@ -79,7 +79,7 @@ def create_seller_folder(trade_mark: str, seller: Seller) -> str:
     if folder_id is None:
         stat_spreadsheet_id = None
         remains_spreadsheet_id = None
-        folder_id = create_folder(f"{trade_mark} ({seller.id})", [WB_FOLDER_ID])
+        folder_id = create_folder(f"{trade_mark}", [WB_FOLDER_ID])
     
     if stat_spreadsheet_id is None:
         stat_spreadsheet_id = create_stat_spreadsheet(folder_id)

@@ -86,7 +86,6 @@ def save_adverts(seller: Seller, data) -> list[Advert]:
             'status': Status(advert_data.get('status')),
             'advert_type': AdvertType(advert_data.get('type')),
             'payment_type': PaymentType(advert_data.get('paymentType')),
-            'seller_id': seller.id,
             'search_pluse_state': advert_data.get('searchPluseState', None)
         }
 

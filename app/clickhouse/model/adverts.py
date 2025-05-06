@@ -9,11 +9,10 @@ ISO_Z_TO_UTC = "Z", "+00:00"
 def _parse_iso(ts: str) -> datetime:
     return datetime.fromisoformat(ts.replace(*ISO_Z_TO_UTC))
 
-def _iter_advert_rows(ads: Iterable[Dict[str, Any]], seller_id: int):
+def _iter_advert_rows(ads: Iterable[Dict[str, Any]]):
     for item in ads:
         yield (
             item["advertId"],
-            seller_id,
             _parse_iso(item["createTime"]),
             _parse_iso(item["startTime"]),
             _parse_iso(item["endTime"]),
@@ -33,12 +32,12 @@ def save_adverts(seller: Seller, ads: list[dict[str, Any]]) -> None:
     get_client(seller).execute(
         """
         INSERT INTO adverts
-        (advert_id, seller_id, create_time, start_time, end_time,
+        (advert_id, create_time, start_time, end_time,
          change_time, name, daily_budget, search_pluse_state,
          advert_type, status, payment_type)
         VALUES
         """,
-        _iter_advert_rows(ads, seller.id),
+        _iter_advert_rows(ads),
     )
 
 

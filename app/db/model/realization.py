@@ -105,7 +105,6 @@ def save_realizations(data, seller: Seller):
                 item[key] = convert_date(item[key], fmt)
             else:
                 item[key] = None
-        item['seller_id'] = seller.id
 
     return save_records(
         session=get_session(seller),
