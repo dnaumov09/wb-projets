@@ -118,10 +118,14 @@ def get_status():
     try: 
         supplies = client.get_supplies()
         for supply in supplies:
-            result.append({
-                'supply': supply,
-                'acceptance_costs': client.get_acceptance_costs(date_from, date_to, supply['preorderId'])['result']['costs']
-            })
+            response = client.get_acceptance_costs(date_from, date_to, supply['preorderId'])
+            if 'result' in response and 'costs' in response['result']:
+                result.append({
+                    'supply': supply,
+                    'acceptance_costs': response['result']['costs']
+                })
+            else:
+                print(response)
         return result
     finally:
         client._s.close()

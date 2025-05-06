@@ -5,7 +5,7 @@ BASE_API = f"http://176.53.163.92:3000/api"
 SESSION_ENDPOINT = f"{BASE_API}/session"
 USER_ENDPOINT = f"{BASE_API}/user"
 CARD_ENDPOINT = f"{BASE_API}/card"
-DASHBOARD_ENDPOINT = 
+# DASHBOARD_ENDPOINT = 
 
 ADMIN_USERNAME = "dnaumov09@gmail.com"
 ADMIN_PASSWORD = "newPass5"
@@ -78,11 +78,11 @@ def clone_dashboard(dash):
         "name": f"{dash['name']} (Copy)",
         "description": dash.get("description", "")
     }
-    res = requests.post(f"{METABASE_URL}/api/dashboard", json=payload, headers=headers)
+    res = requests.post(f"{BASE_API}/api/dashboard", json=payload, headers=headers)
     res.raise_for_status()
     new_dash = res.json()
     # Copy cards into dashboard
-    cards_res = requests.get(f"{METABASE_URL}/api/dashboard/{dash['id']}/cards", headers=headers)
+    cards_res = requests.get(f"{BASE_API}/api/dashboard/{dash['id']}/cards", headers=headers)
     for card in cards_res.json():
         card_config = {
             "cardId": card["card"]["id"],
@@ -92,7 +92,7 @@ def clone_dashboard(dash):
             "row": card["row"]
         }
         add_res = requests.post(
-            f"{METABASE_URL}/api/dashboard/{new_dash['id']}/cards",
+            f"{BASE_API}/api/dashboard/{new_dash['id']}/cards",
             json=card_config, headers=headers
         )
         add_res.raise_for_status()

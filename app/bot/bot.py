@@ -7,14 +7,14 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.types import Message
 
-from aaa.feedbacks_handler import router as feedbacks_router
+# from ...old.feedbacks_handler import router as feedbacks_router
 from bot.stat_handler import router as stat_router
 from bot.security_handler import AuthorizationMiddleware
 
 bot = Bot(token=os.getenv('TG_BOT_TOKEN'), default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp = Dispatcher()
 
-dp.include_router(feedbacks_router) 
+# dp.include_router(feedbacks_router) 
 dp.include_router(stat_router)
 dp.message.middleware(AuthorizationMiddleware())
 
@@ -23,17 +23,18 @@ asyncio.set_event_loop(loop)
 
 
 START_TEXT = ( 
-    '📊 <b>Привет! Добро пожаловать в бота статистики Wildberries!</b>'
-    '\n\n'
-    'Я помогу тебе следить за динамикой заказов и продаж твоего магазина на Wildberries.'
-    '\n\n\n'
-    '🔍 <b>Что я умею:</b>'
-    '\n\n'
-    '📈 Показывать динамику заказов, продаж и отказов'
-    '\n\n'
-    '🔔 Присылать уведомления о новых заказах, продажах и отказах'
-    '\n\n\n'
-    'Выбери нужный раздел, чтобы получить данные. 🚀'
+    'Hi!'
+    # '📊 <b>Привет! Добро пожаловать в бота статистики Wildberries!</b>'
+    # '\n\n'
+    # 'Я помогу тебе следить за динамикой заказов и продаж твоего магазина на Wildberries.'
+    # '\n\n\n'
+    # '🔍 <b>Что я умею:</b>'
+    # '\n\n'
+    # '📈 Показывать динамику заказов, продаж и отказов'
+    # '\n\n'
+    # '🔔 Присылать уведомления о новых заказах, выкупах и отказах'
+    # '\n\n\n'
+    # 'Выбери нужный раздел, чтобы получить данные. 🚀'
 )
 
 

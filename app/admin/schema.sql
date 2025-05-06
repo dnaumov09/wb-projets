@@ -7,7 +7,20 @@ CREATE TABLE sellers (
 	name varchar NULL,
 	trade_mark varchar NULL,
 	"token" varchar NULL,
+    active boolean NOT NULL DEFAULT FALSE,
 	CONSTRAINT sellers_pkey PRIMARY KEY (sid)
+);
+
+CREATE TABLE seller_users (
+    id BIGINT,
+    seller_sid VARCHAR NOT NULL,
+    first_name VARCHAR,
+    last_name VARCHAR,
+    tg_chat_id BIGINT,
+    receave_sales BOOLEAN NOT NULL DEFAULT FALSE,
+    receave_supplies_statuses BOOLEAN NOT NULL DEFAULT FALSE,
+    FOREIGN KEY (seller_sid) REFERENCES sellers(sid),
+    CONSTRAINT seller_users_pkey PRIMARY KEY (id, seller_sid)
 );
 
 CREATE TABLE seller_databases (

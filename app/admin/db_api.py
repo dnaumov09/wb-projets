@@ -108,8 +108,8 @@ def get_sid_db_config(sid: str, db_type: str):
             return dict(zip(columns, rows))
         
 
-BLOOMSTORM_SID = '99037851-767d-401b-b3a3-eced8db12ebe'
 def get_my_seller():
+    BLOOMSTORM_SID = 'cd079a55-56e9-454f-bb41-cdb030894913'
     return next(
         (seller for seller in get_sellers() if seller.sid == BLOOMSTORM_SID),
         None
@@ -132,6 +132,25 @@ def get_sellers() -> list[Seller]:
         seller.token = row[3]
         sellers.append(seller)
     return sellers
+
+
+def get_seller_users(sid: str) -> dict:
+    with admin_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(f"SELECT * FROM seller_users WHERE seller_sid = %s", (sid,))
+            rows = cur.fetchall()
+    columns = [desc[0] for desc in cur.description]
+    result = [dict(zip(columns, row)) for row in rows]
+    return result
+
+
+def get_users_by_tg_chat_id(tg_chat_id: int) -> dict:
+    with admin_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(f"SELECT * FROM seller_users WHERE tg_chat_id = %s", (tg_chat_id,))
+            result = cur.fetchone()
+    columns = [desc[0] for desc in cur.description]
+    return dict(zip(columns, result))
 
 
 def save_seller(seller_info: dict, databases: list[dict]):

@@ -16,12 +16,17 @@ RU_MONTHS = [
 ]
 
 
-@router.message(Command('pipeline'))
+@router.message(Command('ping'))
 async def cmd_pipeline(message: Message):
-    await message.answer((
-        '📈 <b>Динамика продаж</b>'
-        '\n\n' + build_pipeline_data()
-    ))
+    await message.answer('OK')
+
+
+# @router.message(Command('pipeline'))
+# async def cmd_pipeline(message: Message):
+#     await message.answer((
+#         '📈 <b>Динамика продаж</b>'
+#         '\n\n' + build_pipeline_data()
+#     ))
     
 
 

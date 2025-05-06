@@ -3,8 +3,9 @@ from datetime import datetime
 
 from db.model.order import Order, OrderStatus
 from db.model.sale import Sale, SaleStatus
-from db.model.user import get_admins, get_seller_users
 from db.model.seller import Seller
+
+from admin.db_api import get_seller_users
 
 from bot.stat_handler import build_pipeline_data
 
@@ -116,7 +117,7 @@ def notify_new_supply_slot(seller: Seller, date: datetime, warehouse_name: str, 
     )
     print(text)
 
-    users = get_seller_users(seller)
+    users = get_seller_users(seller.sid)
     for user in users:
-        if user.receive_supplies_info:
-            send_message(chat_id=user.tg_chat_id, text=text)
+        if user['receive_supplies_statuses']:
+            send_message(chat_id=user['tg_chat_id'], text=text)
