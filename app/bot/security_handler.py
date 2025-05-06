@@ -4,7 +4,7 @@ from aiogram import BaseMiddleware
 from aiogram.dispatcher.flags import get_flag
 from aiogram.types import Message, TelegramObject
 
-from admin.db_api import get_users_by_tg_chat_id
+from admin.services import get_user_by_tg_chat_id
 
 
 class AuthorizationMiddleware(BaseMiddleware):
@@ -14,7 +14,7 @@ class AuthorizationMiddleware(BaseMiddleware):
             event: TelegramObject,
             data: Dict[str, Any],
     ) -> Any:
-        if get_users_by_tg_chat_id(event.chat.id):
+        if get_user_by_tg_chat_id(event.chat.id):
             return await handler(event, data)
         else:
             return None

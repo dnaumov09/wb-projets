@@ -2,7 +2,7 @@ from datetime import datetime
 from wildberries import hidden_api
 from bot import notification_service
 
-from db.model.seller import Seller
+from admin.model import Seller
 
 # To keep track of the previous coefficients
 _previous_statuses = []

@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS database_users;
 DROP TABLE IF EXISTS seller_databases;
+DROP TABLE IF EXISTS seller_users;
 DROP TABLE IF EXISTS sellers;
 
 CREATE TABLE sellers (
@@ -17,8 +18,8 @@ CREATE TABLE seller_users (
     first_name VARCHAR,
     last_name VARCHAR,
     tg_chat_id BIGINT,
-    receave_sales BOOLEAN NOT NULL DEFAULT FALSE,
-    receave_supplies_statuses BOOLEAN NOT NULL DEFAULT FALSE,
+    receive_sales BOOLEAN NOT NULL DEFAULT FALSE,
+    receive_supplies_statuses BOOLEAN NOT NULL DEFAULT FALSE,
     FOREIGN KEY (seller_sid) REFERENCES sellers(sid),
     CONSTRAINT seller_users_pkey PRIMARY KEY (id, seller_sid)
 );

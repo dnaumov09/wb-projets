@@ -87,145 +87,79 @@ def create_schema(databases: list[dict]):
 
 
 # --- Admin DB Operations
-def get_sid_db_config(sid: str, db_type: str):
-    with admin_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute("""
-                SELECT 
-                    s.sid, 
-                    sd.database_type, 
-                    sd.host, 
-                    sd.port, 
-                    sd.name as dbname, 
-                    du.username, 
-                    du.password from sellers s 
-                JOIN seller_databases sd ON sd.seller_sid = s.sid 
-                JOIN database_users du ON du.seller_sid  = sd.seller_sid AND sd.database_type = du.database_type 
-                WHERE s.sid = %s and sd.database_type = %s
-            """, (sid, db_type))
-            rows = cur.fetchone()
-            columns = [desc[0] for desc in cur.description]
-            return dict(zip(columns, rows))
-        
+# def save_seller(seller_info: dict, databases: list[dict]):
+#     logging.info('--- Saving seller to admin database')
+#     with admin_connection() as conn:
+#         with conn.cursor() as cur:
+#             query, values = create_insert_query(
+#                 'sellers',
+#                 ('sid', 'name', 'trade_mark', 'token', 'active'),
+#                 (seller_info['sid'], seller_info['name'], seller_info['tradeMark'], seller_info['token'], True)
+#             )
+#             cur.execute(query, values)
 
-def get_my_seller():
-    BLOOMSTORM_SID = 'cd079a55-56e9-454f-bb41-cdb030894913'
-    return next(
-        (seller for seller in get_sellers() if seller.sid == BLOOMSTORM_SID),
-        None
-    )
+#             for db in databases:
+#                 cur.execute(*create_insert_query(
+#                     'seller_databases',
+#                     ('host', 'port', 'name', 'seller_sid', 'database_type'),
+#                     (db['cluster']['host'], db['cluster']['port'], db['instance']['name'],
+#                      seller_info['sid'], db['cluster_type'].name)
+#                 ))
+#                 cur.execute(*create_insert_query(
+#                     'database_users',
+#                     ('username', 'password', 'seller_sid', 'database_type'),
+#                     (db['user']['username'], db['user']['password'], seller_info['sid'], db['cluster_type'].name)
+#                 ))
+#         conn.commit()
 
 
-def get_sellers() -> list[Seller]:
-    with admin_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute('SELECT s.sid, s.name, s.trade_mark, s.token FROM sellers s WHERE s.active = true')
-            rows = cur.fetchall()
+# def fill_data(seller_info: dict, db: dict):
+#     logging.info('--- Filling data')
+#     with admin_connection() as conn:
+#         with conn.cursor() as cur:
+#             seller_id = 1  # TODO: remove hardcoded ID
+#             cur.execute("""
+#                 INSERT INTO seller (id, sid, name, trade_mark, token)
+#                 VALUES (%s, %s, %s, %s, %s)
+#                 """, (
+#                     seller_id,
+#                     seller_info['sid'],
+#                     seller_info['name'],
+#                     seller_info['tradeMark'],
+#                     seller_info['token']
+#                     ))
 
-    sellers = []
-    for row in rows:
-        seller = Seller()
-        seller.id = 1
-        seller.sid = row[0]
-        seller.name = row[1]
-        seller.trade_mark = row[2]
-        seller.token = row[3]
-        sellers.append(seller)
-    return sellers
+#             week_ago = datetime.now() - timedelta(days=6)
 
-
-def get_seller_users(sid: str) -> dict:
-    with admin_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(f"SELECT * FROM seller_users WHERE seller_sid = %s", (sid,))
-            rows = cur.fetchall()
-    columns = [desc[0] for desc in cur.description]
-    result = [dict(zip(columns, row)) for row in rows]
-    return result
-
-
-def get_users_by_tg_chat_id(tg_chat_id: int) -> dict:
-    with admin_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(f"SELECT * FROM seller_users WHERE tg_chat_id = %s", (tg_chat_id,))
-            result = cur.fetchone()
-    columns = [desc[0] for desc in cur.description]
-    return dict(zip(columns, result))
-
-
-def save_seller(seller_info: dict, databases: list[dict]):
-    logging.info('--- Saving seller to admin database')
-    with admin_connection() as conn:
-        with conn.cursor() as cur:
-            query, values = create_insert_query(
-                'sellers',
-                ('sid', 'name', 'trade_mark', 'token', 'active'),
-                (seller_info['sid'], seller_info['name'], seller_info['tradeMark'], seller_info['token'], True)
-            )
-            cur.execute(query, values)
-
-            for db in databases:
-                cur.execute(*create_insert_query(
-                    'seller_databases',
-                    ('host', 'port', 'name', 'seller_sid', 'database_type'),
-                    (db['cluster']['host'], db['cluster']['port'], db['instance']['name'],
-                     seller_info['sid'], db['cluster_type'].name)
-                ))
-                cur.execute(*create_insert_query(
-                    'database_users',
-                    ('username', 'password', 'seller_sid', 'database_type'),
-                    (db['user']['username'], db['user']['password'], seller_info['sid'], db['cluster_type'].name)
-                ))
-        conn.commit()
-
-
-def fill_data(seller_info: dict, db: dict):
-    logging.info('--- Filling data')
-    with admin_connection() as conn:
-        with conn.cursor() as cur:
-            seller_id = 1  # TODO: remove hardcoded ID
-            cur.execute("""
-                INSERT INTO seller (id, sid, name, trade_mark, token)
-                VALUES (%s, %s, %s, %s, %s)
-                """, (
-                    seller_id,
-                    seller_info['sid'],
-                    seller_info['name'],
-                    seller_info['tradeMark'],
-                    seller_info['token']
-                    ))
-
-            week_ago = datetime.now() - timedelta(days=6)
-
-            cur.execute("""
-                INSERT INTO seller_settings (
-                    seller_id, load_cards_stat, cards_stat_last_updated,
-                    load_orders, orders_last_updated,
-                    load_sales, sales_last_updated,
-                    load_adverts_stat, adverts_stat_last_updated,
-                    keywords_stat_last_updated,
-                    load_finances, finances_last_updated,
-                    load_remains, load_imcomes,
-                    incomes_last_updated, update_pipeline_data
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                """, (
-                    seller_id,
-                    True, week_ago,
-                    True, week_ago,
-                    True, week_ago,
-                    True, week_ago,
-                    week_ago,
-                    True, week_ago,
-                    True, True,
-                    week_ago, True
-            ))
-        conn.commit()
+#             cur.execute("""
+#                 INSERT INTO seller_settings (
+#                     seller_id, load_cards_stat, cards_stat_last_updated,
+#                     load_orders, orders_last_updated,
+#                     load_sales, sales_last_updated,
+#                     load_adverts_stat, adverts_stat_last_updated,
+#                     keywords_stat_last_updated,
+#                     load_finances, finances_last_updated,
+#                     load_remains, load_imcomes,
+#                     incomes_last_updated, update_pipeline_data
+#                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+#                 """, (
+#                     seller_id,
+#                     True, week_ago,
+#                     True, week_ago,
+#                     True, week_ago,
+#                     True, week_ago,
+#                     week_ago,
+#                     True, week_ago,
+#                     True, True,
+#                     week_ago, True
+#             ))
+#         conn.commit()
 
 
 # --- Main Initialization Entry Point
 def init_databases(seller_info: dict, databases: list[dict]):
     logging.info('✨ Initialising databases...')
-    save_seller(seller_info, databases)
+    # save_seller(seller_info, databases)
     create_schema(databases)
-    fill_data(seller_info, databases[0])
+    # fill_data(seller_info, databases[0])
     logging.info('🎉 Databases initialised')

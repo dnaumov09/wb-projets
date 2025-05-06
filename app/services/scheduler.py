@@ -18,8 +18,10 @@ from services import (
     supplies_service
 )
 
-from admin.db_api import get_sellers, get_my_seller, Seller
-SELLER = get_my_seller()
+
+from admin.model import Seller
+from admin.services import get_all_sellers, get_my_seller
+MY_SELLER = get_my_seller()
 
 
 def _run_schedule():
@@ -71,11 +73,11 @@ def _run_precise_minute_tasks():
 
 
 def _run_every_minute_task():
-    supplies_service.get_supplies_offices_status(SELLER)
+    supplies_service.get_supplies_offices_status(MY_SELLER)
 
 
 def _run_every_5minutes_task():
-    for seller in get_sellers():
+    for seller in get_all_sellers():
         t = threading.Thread(target=_run_thread_every_5minutes_task, args=(seller,))
         t.start()
 
@@ -86,7 +88,7 @@ def _run_thread_every_5minutes_task(seller: Seller):
 
 
 def _run_daily_task():
-    for seller in get_sellers():
+    for seller in get_all_sellers():
         t = threading.Thread(target=_run_thread_daily_task, args=(seller,))
         t.start()
 
@@ -161,12 +163,12 @@ def run_finances_updating(seller: Seller):
 
 
 def run_all():
-    card_stat_service.load_cards_stat(SELLER)
-    run_stat_updating(SELLER)
-    run_stat_updating_background(SELLER)
-    run_incomes_updating(SELLER)
-    run_remains_updating(SELLER)
-    run_remains_snpshot_updating(SELLER)
-    run_finances_updating(SELLER)
-    run_adverts_stat_updating(SELLER)
+    # card_stat_service.load_cards_stat(MY_SELLER)
+    # run_stat_updating(MY_SELLER)
+    # run_stat_updating_background(MY_SELLER)
+    # run_incomes_updating(MY_SELLER)
+    # run_remains_updating(MY_SELLER)
+    # run_remains_snpshot_updating(MY_SELLER)
+    # run_finances_updating(MY_SELLER)
+    run_adverts_stat_updating(MY_SELLER)
     

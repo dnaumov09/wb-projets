@@ -6,8 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from clickhouse_driver import Client
 
-from admin.db_api import get_sid_db_config
-from db.model.seller import Seller
+from .model import Seller
 
 
 class Database(Enum):
@@ -15,14 +14,14 @@ class Database(Enum):
     CLICKHOUSE = 'CLICKHOUSE'
 
 
-@lru_cache(maxsize=128)
 def _get_db_connection(seller: Seller, database: Database):
-    config = get_sid_db_config(seller.sid, database.name)
+    db = next((db for db in seller.databases if db.database_type == database.name), None)
+    usr = next((usr for usr in seller.db_users if usr.database_type == database.name), None)
     if database == Database.POSTGRES:
         #POSTGRES SESSION
         db_url = (
-            f"postgresql+psycopg2://{config['username']}:{config['password']}"
-            f"@{config['host']}:{config['port']}/{config['dbname']}"
+            f"postgresql+psycopg2://{usr.username}:{usr.password}"
+            f"@{db.host}:{db.port}/{db.name}"
         )
         engine = create_engine(db_url, echo=False)
         Session = sessionmaker(bind=engine)
@@ -30,18 +29,19 @@ def _get_db_connection(seller: Seller, database: Database):
     else:
         #CLICKHOUSE CLIENT
         return Client(
-            host=config['host'], 
-            port=config['port'], 
-            user=config['username'], 
-            password=config['password'], 
-            database=config['dbname']
+            host=db.host, 
+            port=db.port, 
+            database=db.name,
+            user=usr.username, 
+            password=usr.password
         )
-        
     
 
+@lru_cache
 def get_session(seller: Seller) -> Session:
     return _get_db_connection(seller, Database.POSTGRES)
 
 
+@lru_cache
 def get_client(seller: Seller) -> Client:
     return _get_db_connection(seller, Database.CLICKHOUSE)
