@@ -56,7 +56,7 @@ def parse_datetime(dt_str: str) -> datetime:
 
 
 def get_adverts_by_seller(seller: Seller):
-    return get_session(seller).query(Advert).filter(Advert.seller_id == seller.id).all()
+    return get_session(seller).query(Advert).all()
 
 
 def save_adverts(seller: Seller, data) -> list[Advert]:
