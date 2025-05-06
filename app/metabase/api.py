@@ -78,11 +78,11 @@ def clone_dashboard(dash):
         "name": f"{dash['name']} (Copy)",
         "description": dash.get("description", "")
     }
-    res = requests.post(f"{BASE_API}/api/dashboard", json=payload, headers=headers)
+    res = requests.post(f"{BASE_API}/api/dashboard", json=payload, headers=HEADERS)
     res.raise_for_status()
     new_dash = res.json()
     # Copy cards into dashboard
-    cards_res = requests.get(f"{BASE_API}/api/dashboard/{dash['id']}/cards", headers=headers)
+    cards_res = requests.get(f"{BASE_API}/api/dashboard/{dash['id']}/cards", headers=HEADERS)
     for card in cards_res.json():
         card_config = {
             "cardId": card["card"]["id"],
@@ -93,7 +93,7 @@ def clone_dashboard(dash):
         }
         add_res = requests.post(
             f"{BASE_API}/api/dashboard/{new_dash['id']}/cards",
-            json=card_config, headers=headers
+            json=card_config, headers=HEADERS
         )
         add_res.raise_for_status()
     print(f"✅ Cloned dashboard: {dash['name']}")
