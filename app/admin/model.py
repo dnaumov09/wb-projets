@@ -5,26 +5,10 @@ from sqlalchemy import (
 )
 
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.orm import relationship, sessionmaker, Mapped
 
 # Base class for declarative models
 Base = declarative_base()
-
-# ---------- Sellers Table ----------
-class Seller(Base):
-    __tablename__ = 'sellers'
-
-    sid = Column(String, primary_key=True)
-    name = Column(String, nullable=True)
-    trade_mark = Column(String, nullable=True)
-    token = Column(String, nullable=True)
-    active = Column(Boolean, nullable=False, default=False)
-    id = 1
-
-    # Relationships
-    users = relationship("SellerUser", back_populates="seller", cascade="all, delete-orphan")
-    databases = relationship("SellerDatabase", back_populates="seller", cascade="all, delete-orphan")
-    db_users = relationship("DatabaseUser", back_populates="seller", cascade="all, delete-orphan")
 
 
 # ---------- Seller Users Table ----------
@@ -68,6 +52,24 @@ class DatabaseUser(Base):
 
     # Relationships
     seller = relationship("Seller", back_populates="db_users")
+
+
+
+# ---------- Sellers Table ----------
+class Seller(Base):
+    __tablename__ = 'sellers'
+
+    sid = Column(String, primary_key=True)
+    name = Column(String, nullable=True)
+    trade_mark = Column(String, nullable=True)
+    token = Column(String, nullable=True)
+    active = Column(Boolean, nullable=False, default=False)
+    id = 1
+
+    # Relationships
+    users: Mapped[list[SellerUser]] = relationship("SellerUser", back_populates="seller", cascade="all, delete-orphan")
+    databases: Mapped[list[SellerDatabase]] = relationship("SellerDatabase", back_populates="seller", cascade="all, delete-orphan")
+    db_users: Mapped[list[DatabaseUser]] = relationship("DatabaseUser", back_populates="seller", cascade="all, delete-orphan")
 
 
 # ---------- Database Configuration ----------

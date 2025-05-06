@@ -115,7 +115,6 @@ def notify_new_supply_slot(seller: Seller, date: datetime, warehouse_name: str, 
         '\n'
         f'Приёмка: {acceptance_cost} ₽'
     )
-    print(text)
 
     for user in seller.users:
         if user.receive_supplies_statuses:
