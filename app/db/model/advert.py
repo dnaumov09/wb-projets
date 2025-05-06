@@ -2,12 +2,12 @@ import logging
 from enum import Enum
 from datetime import datetime
 
-from sqlalchemy import ForeignKey, DateTime, select, Enum as PgEnum
+from sqlalchemy import DateTime, select, Enum as PgEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from db.model.seller import Seller
 from db.base import Base
 
+from admin.model import Seller
 from admin.db_router import get_session
 
 class AdvertType(Enum):
@@ -37,9 +37,6 @@ class Advert(Base):
     __tablename__ = 'adverts'
 
     advert_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=False)
-
-    seller_id: Mapped[int] = mapped_column(ForeignKey('sellers.id'), nullable=False)
-    seller: Mapped[Seller] = relationship("Seller")
 
     create_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     start_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
