@@ -1,18 +1,15 @@
 from sqlalchemy import ForeignKey, Column, Integer, String, Float, Boolean, DateTime, Text, BigInteger
 from sqlalchemy.orm import relationship
 
-from db.model.seller import Seller
 from db.base import Base
 from db.util import convert_date, save_records, camel_to_snake
 
+from admin.model import Seller
 from admin.db_router import get_session
 
 # https://dev.wildberries.ru/openapi/financial-reports-and-accounting#tag/Finansovye-otchyoty/paths/~1api~1v5~1supplier~1reportDetailByPeriod/get
 class Realization(Base):
     __tablename__ = 'realizations'
-
-    seller_id = Column(Integer, ForeignKey('sellers.id'))
-    seller = relationship("Seller")
     
     realizationreport_id = Column(Integer)                                  # Номер отчёта
     date_from = Column(DateTime)                                            # Дата начала отчётного периода
