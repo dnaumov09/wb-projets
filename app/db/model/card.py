@@ -3,9 +3,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from db.base import Base
 from db.util import camel_to_snake, save_records
-from db.model.seller import Seller
 
-
+from admin.model import Seller
 from admin.db_router import get_session
 
 class Card(Base):
