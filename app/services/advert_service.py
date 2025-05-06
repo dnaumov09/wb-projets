@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime, timedelta
 
-from db.model.seller import Seller
 from db.model.advert import AdvertType, save_adverts, get_adverts_by_seller
 from db.model.adverts_stat import save_adverts_stat
 from db.model.settings import get_seller_settings, save_settings
@@ -9,9 +8,13 @@ from db.model.settings import get_seller_settings, save_settings
 from clickhouse.model import keywords as ch_kw
 from clickhouse.model import adverts as ch_ad
 
+from admin.model import Seller
+
 from wildberries.api import get_API
 
 from utils.util import chunked
+
+
 
 
 def load_adverts(seller: Seller):

@@ -1,14 +1,14 @@
 import time
 import logging
 
-from db.model.seller import Seller
-from db.model.warehouse import get_warehouses
 from db.model.remains import save_remains
 from db.model.warehouse_remains_snapshot import save_remains_snapshot
 from db.model.card import get_cards
 from db.model.warehouse_remains import save_warehouse_remains, get_warehouse_remains
 from db.model.warehouse import check_warehouse
 from db.util import camel_to_snake
+
+from admin.model import Seller
 
 from wildberries.api import get_API
 

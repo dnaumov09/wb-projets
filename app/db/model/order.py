@@ -5,11 +5,10 @@ from sqlalchemy import ForeignKey, DateTime, Index, Enum as PgEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from db.model.card import Card
-
-from db.model.seller import Seller
 from db.util import convert_date, save_records, camel_to_snake
 from db.base import Base
 
+from admin.model import Seller
 from admin.db_router import get_session
 
 

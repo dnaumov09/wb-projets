@@ -2,7 +2,8 @@ import requests
 import json
 from typing import Optional, Dict, Any, List, Union, Literal
 
-from db.model.seller import Seller
+from admin.model import Seller
+
 from bot.notification_service import notify_error
 
 

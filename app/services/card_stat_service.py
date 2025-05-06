@@ -1,10 +1,11 @@
 import logging
 from datetime import datetime
 
-from db.model.seller import Seller
 from db.model.card_stat import save_card_stat
 from db.model.settings import get_seller_settings, save_settings
 from db.model.card import get_cards
+
+from admin.model import Seller
 
 from utils.util import chunked
 

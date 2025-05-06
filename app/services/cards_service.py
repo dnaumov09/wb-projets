@@ -1,7 +1,8 @@
 import logging
 
-from db.model.seller import Seller
 from db.model.card import save_cards
+
+from admin.model import Seller
 
 from wildberries.api import get_API
 

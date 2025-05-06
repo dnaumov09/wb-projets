@@ -4,7 +4,8 @@ from datetime import datetime, timedelta
 from bot.notification_service import notify_updated_sales
 from db.model.settings import get_seller_settings, save_settings
 from db.model.sale import save_sales
-from db.model.seller import Seller
+
+from admin.model import Seller
 
 from wildberries.api import get_API
 

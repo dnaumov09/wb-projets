@@ -8,7 +8,7 @@ from clickhouse_driver import Client
 from alembic.config import Config
 from alembic import command
 
-from db.model.seller import Seller
+
 from admin.timeweb_api import Cluster
 
 # --- Config

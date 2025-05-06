@@ -5,7 +5,8 @@ from wildberries._api.marketplace import MarketplaceAPI
 from wildberries._api.seller_analytics import SellerAnalyticsAPI
 from wildberries._api.statistics import StatisticsAPI
 from wildberries._api.supplies import SuppliesAPI
-from db.model.seller import Seller
+
+from admin.model import Seller
 
 
 class SellerAPI():

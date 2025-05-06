@@ -1,21 +1,17 @@
 from datetime import datetime
 from sqlalchemy import DateTime, Boolean
 
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
-from db.model.seller import Seller
 from db.base import Base
 
+from admin.model import Seller
 from admin.db_router import get_session
 
 
 
 class SellerSettings(Base):
     __tablename__ = 'seller_settings'
-
-    seller_id: Mapped[int] = mapped_column(ForeignKey('sellers.id'), primary_key=True, nullable=False)
-    seller: Mapped[Seller] = relationship("Seller")
 
     load_cards_stat: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     cards_stat_last_updated: Mapped[datetime] = mapped_column(DateTime, nullable=True)
@@ -42,7 +38,7 @@ class SellerSettings(Base):
 
 
 def get_seller_settings(seller: Seller):
-    return get_session(seller).query(SellerSettings).filter(SellerSettings.seller_id == seller.id).first()
+    return get_session(seller).query(SellerSettings).first()
 
 
 def save_settings(seller: Seller, settings: SellerSettings):

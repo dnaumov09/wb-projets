@@ -4,11 +4,11 @@ from sqlalchemy.schema import PrimaryKeyConstraint
 
 from db.model.warehouse import Warehouse
 from db.model.remains import Remains
-from db.model.seller import Seller
 from db.model.card import Card
 from db.util import save_records
 from db.base import Base
 
+from admin.model import Seller
 from admin.db_router import get_session
 
 
@@ -38,10 +38,4 @@ def save_warehouse_remains(seller: Seller, data):
 
 
 def get_warehouse_remains(seller: Seller):
-    return (
-        get_session(seller).query(WarehouseRemains)
-            .join(Remains, Remains.barcode == WarehouseRemains.remains_id)
-            .join(Card, Card.nm_id == Remains.nm_id)
-            .join(Seller, Seller.id == Card.seller_id)
-            .filter(Seller.id == seller.id).all()
-    )
+    return get_session(seller).query(WarehouseRemains).all()

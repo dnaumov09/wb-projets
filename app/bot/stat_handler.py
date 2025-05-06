@@ -4,7 +4,7 @@ from datetime import timedelta
 import locale
 
 from aiogram.types import Message
-from db.functions import get_pipeline_statistics, get_date_ranges
+# from db.functions import get_pipeline_statistics, get_date_ranges
 
 router = Router()
 
@@ -31,16 +31,17 @@ async def cmd_pipeline(message: Message):
 
 
 def build_pipeline_data() -> str:
-    date_ranges = get_date_ranges()
-    pipeline_stats = get_pipeline_statistics(is_aggregated=True)
+    # date_ranges = get_date_ranges()
+    # pipeline_stats = get_pipeline_statistics(is_aggregated=True)
     
-    result = ''
-    for period_name, data in pipeline_stats.items():
-        header = format_period_name(period_name, date_ranges)
-        result += f"<b>{header}</b>\n"
-        result += (format_stat_data(period_name, data[0]) if data else '---\n') + '\n'
+    # result = ''
+    # for period_name, data in pipeline_stats.items():
+    #     header = format_period_name(period_name, date_ranges)
+    #     result += f"<b>{header}</b>\n"
+    #     result += (format_stat_data(period_name, data[0]) if data else '---\n') + '\n'
     
-    return result
+    # return result
+    return ''
 
 #fro detailed
 # for row in data:

@@ -4,10 +4,10 @@ from sqlalchemy import ForeignKey, DateTime, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from db.model.card import Card
-from db.model.seller import Seller
 from db.util import save_records
 from db.base import Base
 
+from admin.model import Seller
 from admin.db_router import get_session
 
 

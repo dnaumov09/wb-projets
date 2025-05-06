@@ -6,9 +6,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from db.model.warehouse import Warehouse
 from db.model.warehouse_remains import WarehouseRemains
 from db.model.remains import Remains
-from db.model.seller import Seller
 from db.base import Base
 
+from admin.model import Seller
 from admin.db_router import get_session
 
 

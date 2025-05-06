@@ -5,10 +5,10 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.schema import PrimaryKeyConstraint
 
 from db.model.advert import AdvertType
-from db.model.seller import Seller
 from db.util import save_records
 from db.base import Base
 
+from admin.model import Seller
 from admin.db_router import get_session
 
 

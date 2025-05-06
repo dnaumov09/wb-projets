@@ -61,7 +61,7 @@ def get_adverts_by_seller(seller: Seller):
 
 def save_adverts(seller: Seller, data) -> list[Advert]:
     # Fetch all existing advert IDs from the database
-    existing_adverts_list = get_session(seller).scalars(select(Advert).filter(Advert.seller_id == seller.id)).all()
+    existing_adverts_list = get_session(seller).scalars(select(Advert)).all()
     existing_adverts = {adv.advert_id: adv for adv in existing_adverts_list}
     
     # List of adverts that exist in DB but not in incoming data -> to archive

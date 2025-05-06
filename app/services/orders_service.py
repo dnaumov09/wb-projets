@@ -2,9 +2,11 @@ import logging
 from datetime import datetime, timedelta
 
 from bot.notification_service import notify_updated_orders
-from db.model.seller import Seller
+
 from db.model.order import save_orders
 from db.model.settings import get_seller_settings, save_settings
+
+from admin.model import Seller
 
 from wildberries.api import get_API
 

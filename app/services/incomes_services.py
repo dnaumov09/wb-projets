@@ -3,7 +3,8 @@ from datetime import datetime
 
 from db.model.income import save_incomes
 from db.model.settings import get_seller_settings, save_settings
-from db.model.seller import Seller
+
+from admin.model import Seller
 
 from wildberries.api import get_API
 

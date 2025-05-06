@@ -1,8 +1,7 @@
 from datetime import datetime
 from typing import Iterable, Dict, Any
 
-from db.model.seller import Seller
-
+from admin.model import Seller
 from admin.db_router import get_client
 
 

@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Mapped, mapped_column
 
-from db.model.seller import Seller
 from db.base import Base
 
+from admin.model import Seller
 from admin.db_router import get_session
 
 

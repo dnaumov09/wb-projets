@@ -1,9 +1,9 @@
 from sqlalchemy import Column, Integer, String, Boolean
 
 from db.util import camel_to_snake, save_records
-from db.model.seller import Seller
 from db.base import Base
 
+from admin.model import Seller
 from admin.db_router import get_session
 
 
