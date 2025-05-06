@@ -5,7 +5,7 @@ from db.model.seller import Seller
 from db.model.warehouse import get_warehouses
 from db.model.remains import save_remains
 from db.model.warehouse_remains_snapshot import save_remains_snapshot
-from db.model.card import get_seller_cards
+from db.model.card import get_cards
 from db.model.warehouse_remains import save_warehouse_remains, get_warehouse_remains
 from db.model.warehouse import check_warehouse
 from db.util import camel_to_snake
@@ -41,7 +41,7 @@ def load_remains(seller: Seller):
         for item in data
     ]
 
-    seller_nm_ids = [r.nm_id for r in get_seller_cards(seller)]
+    seller_nm_ids = [r.nm_id for r in get_cards(seller)]
     remains_keys = [ "nm_id", "brand", "subject_name", "vendor_code", "barcode", "tech_size", "volume" ]
 
     remains = []

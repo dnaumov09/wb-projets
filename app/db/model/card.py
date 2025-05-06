@@ -16,12 +16,9 @@ class Card(Base):
     title: Mapped[str] = mapped_column(nullable=False)
     vendor_code: Mapped[str] = mapped_column(nullable=True)
 
-    seller_id: Mapped[int] = mapped_column(ForeignKey('sellers.id'), nullable=True)
-    seller: Mapped[Seller] = relationship("Seller")
 
-
-def get_seller_cards(seller: Seller) -> list[Card]:
-    return get_session(seller).query(Card).filter(Card.seller_id == seller.id).all()
+def get_cards(seller: Seller) -> list[Card]:
+    return get_session(seller).query(Card).all()
 
 
 def get_card_by_nm_id(seller: Seller, nm_id) -> Card:
@@ -38,5 +35,5 @@ def save_cards(seller: Seller, data) -> list[Card]:
         session=get_session(seller),
         model=Card,
         data=data,
-        key_fields=['nm_id', 'seller_id']
+        key_fields=['nm_id']
         )

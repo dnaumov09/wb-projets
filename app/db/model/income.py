@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.schema import PrimaryKeyConstraint
 
 from db.model.seller import Seller
-from db.model.card import get_seller_cards
+from db.model.card import get_cards
 from db.util import camel_to_snake, convert_date, save_records
 from db.base import Base
 
@@ -46,7 +46,7 @@ def save_incomes(seller: Seller, data):
         for item in data
     ]
 
-    seller_nm_ids = [r.nm_id for r in get_seller_cards(seller)]
+    seller_nm_ids = [r.nm_id for r in get_cards(seller)]
 
     incomes_to_save = []
     for item in data:

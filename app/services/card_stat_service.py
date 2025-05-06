@@ -4,7 +4,7 @@ from datetime import datetime
 from db.model.seller import Seller
 from db.model.card_stat import save_card_stat
 from db.model.settings import get_seller_settings, save_settings
-from db.model.card import get_seller_cards
+from db.model.card import get_cards
 
 from utils.util import chunked
 
@@ -14,7 +14,7 @@ def load_cards_stat(seller: Seller):
     settings = get_seller_settings(seller)
     logging.info(f"[{seller.trade_mark}] Loading cards stat")
     now = datetime.now()
-    seller_cards = get_seller_cards(seller)
+    seller_cards = get_cards(seller)
     if not seller_cards:
         pass
             
