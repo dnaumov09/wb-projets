@@ -64,12 +64,12 @@ def create_insert_query(table: str, columns: tuple, values: tuple):
 def create_schema(databases: list[dict]):
     for db in databases:
         cluster_type = db['cluster_type']
-        host, port = db['cluster']['host'], db['cluster']['port']
+        host = db['cluster']['host']
+        port = db['cluster']['port']
         name = db['instance']['name']
         username, password = db['user']['username'], db['user']['password']
 
         logging.info(f'--- Creating schema for {cluster_type.name.lower()} {host}:{port}/{name}')
-
         if cluster_type == Cluster.POSTGRES:
             alembic_cfg = Config(ALEMBIC_CONFIG_PATH)
             alembic_cfg.set_main_option(
@@ -77,11 +77,11 @@ def create_schema(databases: list[dict]):
                 f"postgresql+psycopg2://{username}:{password}@{host}:{port}/{name}"
             )
             command.upgrade(alembic_cfg, "head")
-
             with psycopg2.connect(host=host, port=port, dbname=name, user=username, password=password) as conn:
                 with conn.cursor() as cursor:
                     run_sql_file_pg(PG_VIEWS_SQL, cursor)
                     run_sql_file_pg(PG_FUNCTIONS_SQL, cursor)
+
         elif cluster_type == Cluster.CLICKHOUSE:
             run_sql_file_ch(CH_SCHEMA, host, port, name, username, password)
 
