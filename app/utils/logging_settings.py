@@ -21,7 +21,7 @@ class Formatter(logging.Formatter):
 
 
 def set_loggers_level(level):
-    logging.getLogger(__name__).setLevel(level)
+    logging.getLogger().setLevel(level)
     
     # for not main loggers
     if level < logging.WARNING:
