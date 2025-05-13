@@ -9,11 +9,12 @@ from admin.model import Seller
 _previous_statuses = []
 def get_supplies_offices_status(seller: Seller):
     global _previous_statuses
+
     try:
         new_statuses = hidden_api.get_status()
     except hidden_api.HiddenAPIException as e:
-        logging.error(e)
-        new_statuses = []
+        logging.error(f"Hidden API {e.method} ({e.url}) error {e.status_code}:\n{e.message}")
+        return
     
     for new_supply in new_statuses:
         for new_acceptance in new_supply.get('acceptance_costs', []):
@@ -38,4 +39,3 @@ def get_supplies_offices_status(seller: Seller):
     
     # Update the previous statuses to the current ones for the next check
     _previous_statuses = new_statuses
-    return _previous_statuses

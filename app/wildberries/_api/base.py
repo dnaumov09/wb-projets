@@ -8,7 +8,12 @@ from bot.notification_service import notify_error
 
 
 class BaseAPIException(Exception):
-    def __init__(self, seller: Seller, method: str, status_code: str, url: str, message: str):
+    def __init__(self, seller: Seller, method: str, status_code: int, url: str, message: str):
+        self.seller = seller
+        self.method = method
+        self.status_code = status_code
+        self.url = url
+        self.message = message
         super().__init__(f"[{seller.trade_mark}] API {method} ({url}) error {status_code}:\n{message}")
 
 

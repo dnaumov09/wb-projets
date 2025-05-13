@@ -16,7 +16,11 @@ class MerchantHiddenAPIEndpoints:
 
 
 class HiddenAPIException(Exception):
-    def __init__(self, method: str, status_code: str, url: str, message: str):
+    def __init__(self, method: str, status_code: int, url: str, message: str):
+        self.method = method
+        self.status_code = status_code
+        self.url = url
+        self.message = message
         super().__init__(f"Hidden API {method} ({url}) error {status_code}:\n{message}")
 
 

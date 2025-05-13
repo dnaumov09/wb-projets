@@ -5,6 +5,7 @@ from wildberries._api.marketplace import MarketplaceAPI
 from wildberries._api.seller_analytics import SellerAnalyticsAPI
 from wildberries._api.statistics import StatisticsAPI
 from wildberries._api.supplies import SuppliesAPI
+from wildberries._api.base import BaseAPIException
 
 from admin.model import Seller
 
