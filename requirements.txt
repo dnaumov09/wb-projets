@@ -17,4 +17,4 @@ fastapi
 uvicorn
 clickhouse-driver
 numpy
-colorlog
+colorama
