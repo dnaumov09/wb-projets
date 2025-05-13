@@ -15,7 +15,7 @@ DATE_FORMAT = '%d-%m-%Y %H:%M:%S'
 class Formatter(logging.Formatter):
     def format(self, record):
         timestamp = self.formatTime(record, self.datefmt)
-        color = self.LEVEL_COLORS.get(record.levelno, "")
+        color = LEVEL_COLORS.get(record.levelno, "")
         levelname = f"[{record.levelname}]"
         return f"{color}{levelname:<10} {timestamp}:    {record.getMessage()}{Style.RESET_ALL}"
 
