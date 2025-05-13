@@ -17,7 +17,7 @@ class Formatter(logging.Formatter):
         timestamp = self.formatTime(record, self.datefmt)
         color = LEVEL_COLORS.get(record.levelno, "")
         levelname = f"[{record.levelname}]"
-        return f"{color}{levelname:<10} {timestamp}:    {record.getMessage()}{Style.RESET_ALL}"
+        return f"{color}{levelname:<10} {timestamp}:     {record.getMessage()}{Style.RESET_ALL}"
 
 
 def set_loggers_level(level):
