@@ -1,6 +1,7 @@
 from __future__ import annotations
 from functools import lru_cache
 import os
+import json
 
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
@@ -12,6 +13,11 @@ import requests
 class MerchantHiddenAPIEndpoints:
     ACCEPTANCE_COSTS = "https://seller-supply.wildberries.ru/ns/sm-supply/supply-manager/api/v1/supply/getAcceptanceCosts"
     LIST_SUPPLIES = "https://seller-supply.wildberries.ru/ns/sm-supply/supply-manager/api/v1/supply/listSupplies"
+
+
+class HiddenAPIException(Exception):
+    def __init__(self, method: str, status_code: str, url: str, message: str):
+        super().__init__(f"Hidden API {method} ({url}) error {status_code}:\n{message}")
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -53,9 +59,12 @@ class WBHiddenAPI:
             })
 
     def _post(self, url: str, payload: Dict[str, Any]) -> Dict[str, Any]:
-        resp = self._s.post(url, json=payload, timeout=self._timeout)
-        resp.raise_for_status()
-        return resp.json()
+        try:
+            resp = self._s.post(url, json=payload, timeout=self._timeout)
+            resp.raise_for_status()
+            return resp.json()
+        except requests.ConnectTimeout as e:
+            raise HiddenAPIException('POST', e.response.status_code, url, message=json.dumps(e.response.json(), indent=4))
 
     # ──────────────────────────────────────────────────────────────────────
     # Public API
@@ -74,6 +83,7 @@ class WBHiddenAPI:
             },
         }
         data = self._post(f"{MerchantHiddenAPIEndpoints.LIST_SUPPLIES}", payload)
+
         return data["result"]["data"] or []
 
     def get_acceptance_costs(

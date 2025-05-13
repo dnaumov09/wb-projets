@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from wildberries import hidden_api
 from bot import notification_service
@@ -8,7 +9,11 @@ from admin.model import Seller
 _previous_statuses = []
 def get_supplies_offices_status(seller: Seller):
     global _previous_statuses
-    new_statuses = hidden_api.get_status()
+    try:
+        new_statuses = hidden_api.get_status()
+    except hidden_api.HiddenAPIException as e:
+        logging.error(e)
+        new_statuses = []
     
     for new_supply in new_statuses:
         for new_acceptance in new_supply.get('acceptance_costs', []):

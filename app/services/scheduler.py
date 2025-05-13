@@ -163,12 +163,11 @@ def run_finances_updating(seller: Seller):
 
 
 def run_all():
-    # card_stat_service.load_cards_stat(MY_SELLER)
-    # run_stat_updating(MY_SELLER)
-    # run_stat_updating_background(MY_SELLER)
-    # run_incomes_updating(MY_SELLER)
-    # run_remains_updating(MY_SELLER)
-    # run_remains_snpshot_updating(MY_SELLER)
-    # run_finances_updating(MY_SELLER)
+    run_stat_updating(MY_SELLER)
+    run_stat_updating_background(MY_SELLER)
+    run_incomes_updating(MY_SELLER)
+    run_remains_updating(MY_SELLER)
+    run_remains_snpshot_updating(MY_SELLER)
+    run_finances_updating(MY_SELLER)
     run_adverts_stat_updating(MY_SELLER)
     
