@@ -9,24 +9,27 @@ from admin.model import Seller
 
 from utils.util import chunked
 
-from wildberries.api import get_API
+from wildberries.api import get_API, BaseAPIException
 
 def load_cards_stat(seller: Seller):
-    settings = get_seller_settings(seller)
-    logging.info(f"[{seller.trade_mark}] Loading cards stat")
-    now = datetime.now()
-    seller_cards = get_cards(seller)
-    if not seller_cards:
-        pass
-            
-    data = []
-    for cards_chunked in chunked(seller_cards, 20):
-        data.extend(
-            get_API(seller).seller_analytics.load_cards_stat(cards_chunked, settings.cards_stat_last_updated if settings.cards_stat_last_updated else now)
-        )
-    if data:
-        saved_cards_stat = save_card_stat(data, now, seller)
-        settings.cards_stat_last_updated = now
-        save_settings(seller, settings)
-        logging.info(f"[{seller.trade_mark}] Cards stat saved {len(saved_cards_stat)}")
+    try:
+        settings = get_seller_settings(seller)
+        logging.info(f"[{seller.trade_mark}] Loading cards stat")
+        now = datetime.now()
+        seller_cards = get_cards(seller)
+        if not seller_cards:
+            pass
+                
+        data = []
+        for cards_chunked in chunked(seller_cards, 20):
+            data.extend(
+                get_API(seller).seller_analytics.load_cards_stat(cards_chunked, settings.cards_stat_last_updated if settings.cards_stat_last_updated else now)
+            )
+        if data:
+            saved_cards_stat = save_card_stat(data, now, seller)
+            settings.cards_stat_last_updated = now
+            save_settings(seller, settings)
+            logging.info(f"[{seller.trade_mark}] Cards stat saved {len(saved_cards_stat)}")
+    except BaseAPIException as e:
+        logging.error(f"Hidden API {e.method} ({e.url}) error {e.status_code}:\n{e.message}")
                 

@@ -10,7 +10,7 @@ from clickhouse.model import adverts as ch_ad
 
 from admin.model import Seller
 
-from wildberries.api import get_API
+from wildberries.api import get_API, BaseAPIException
 
 from utils.util import chunked
 
@@ -18,25 +18,28 @@ from utils.util import chunked
 
 
 def load_adverts(seller: Seller):
-    logging.info(f"[{seller.trade_mark}] Loading adverts")
-    data = get_API(seller).adverts.load_adverts()
+    try:
+        logging.info(f"[{seller.trade_mark}] Loading adverts")
+        data = get_API(seller).adverts.load_adverts()
 
-    if not data or 'adverts' not in data:
-        return []
+        if not data or 'adverts' not in data:
+            return []
+            
+        advert_ids = [advert['advertId'] for group in data['adverts'] for advert in group['advert_list']]
+        if not advert_ids:
+            return []
+            
+        receaved_adverts = []
+        for advert_ids_chunked in chunked(advert_ids, 50):
+            receaved_adverts.extend(get_API(seller).adverts.load_adverts_info(advert_ids_chunked))
         
-    advert_ids = [advert['advertId'] for group in data['adverts'] for advert in group['advert_list']]
-    if not advert_ids:
-        return []
-        
-    receaved_adverts = []
-    for advert_ids_chunked in chunked(advert_ids, 50):
-        receaved_adverts.extend(get_API(seller).adverts.load_adverts_info(advert_ids_chunked))
-    
-    if receaved_adverts:
-        adverts = save_adverts(seller, receaved_adverts)
-        ch_ad.save_adverts(seller, receaved_adverts)
-        # save_advert_bids(data)
-        logging.info(f"[{seller.trade_mark}] Adverts saved ({len(adverts)})")
+        if receaved_adverts:
+            adverts = save_adverts(seller, receaved_adverts)
+            ch_ad.save_adverts(seller, receaved_adverts)
+            # save_advert_bids(data)
+            logging.info(f"[{seller.trade_mark}] Adverts saved ({len(adverts)})")
+    except BaseAPIException as e:
+        logging.error(f"Hidden API {e.method} ({e.url}) error {e.status_code}:\n{e.message}")
 
 
 def load_adverts_stat(seller: Seller):
@@ -54,71 +57,77 @@ def load_adverts_stat(seller: Seller):
 
 
 def load_keywords(seller: Seller):
-    logging.info(f"[{seller.trade_mark}] Loading keywords")
-    adverts = get_adverts_by_seller(seller)
+    try:
+        logging.info(f"[{seller.trade_mark}] Loading keywords")
+        adverts = get_adverts_by_seller(seller)
 
-    clusters_to_save = []
-    excluded_to_save = []
+        clusters_to_save = []
+        excluded_to_save = []
 
-    for advert in adverts:
-        if advert.advert_type != AdvertType.AUTOMATIC:
-            continue
-        data = get_API(seller).adverts.load_adverts_stat_words(advert)
-            
-        excluded_to_save.append({
-            "advert_id": advert.advert_id,
-            "keywords": data.get('excluded', []),
-        })
-
-        for cluster_data in data.get('clusters', []):
-            clusters_to_save.append({
+        for advert in adverts:
+            if advert.advert_type != AdvertType.AUTOMATIC:
+                continue
+            data = get_API(seller).adverts.load_adverts_stat_words(advert)
+                
+            excluded_to_save.append({
                 "advert_id": advert.advert_id,
-                "name": cluster_data.get('cluster'),
-                "count": cluster_data.get('count'),
-                "keywords": cluster_data.get('keywords', [])
+                "keywords": data.get('excluded', []),
             })
-                    
-    ch_kw.save_keywords_clusters(seller, clusters_to_save)
-    ch_kw.save_keywords_excluded(seller, excluded_to_save)
-            
-    logging.info(f"[{seller.trade_mark}] Keywords saved")
+
+            for cluster_data in data.get('clusters', []):
+                clusters_to_save.append({
+                    "advert_id": advert.advert_id,
+                    "name": cluster_data.get('cluster'),
+                    "count": cluster_data.get('count'),
+                    "keywords": cluster_data.get('keywords', [])
+                })
+                        
+        ch_kw.save_keywords_clusters(seller, clusters_to_save)
+        ch_kw.save_keywords_excluded(seller, excluded_to_save)
+                
+        logging.info(f"[{seller.trade_mark}] Keywords saved")
+    except BaseAPIException as e:
+        logging.error(f"Hidden API {e.method} ({e.url}) error {e.status_code}:\n{e.message}")
 
 
 def load_keywords_stat(seller: Seller):
-    settings = get_seller_settings(seller)
-    valid_types = {AdvertType.AUCTION, AdvertType.AUTOMATIC}
+    try:
+        settings = get_seller_settings(seller)
+        valid_types = {AdvertType.AUCTION, AdvertType.AUTOMATIC}
 
-    logging.info(f"[{seller.trade_mark}] Loading keywords stat")
+        logging.info(f"[{seller.trade_mark}] Loading keywords stat")
 
-    adverts = get_adverts_by_seller(seller)
-    adverts = [
-        advert for advert in adverts
-        if advert.advert_type in valid_types
-    ]  
-    
-    now = datetime.now()
-    date_from = settings.keywords_stat_last_updated
-    data_to_save = []
-    while date_from < now:
-        date_to = min(date_from + timedelta(6), now)
-        for advert in adverts:
-            data = get_API(seller).adverts.load_keywords_stat(advert, date_from, date_to)
-            if data:
-                keywords = data.get('keywords', [])
-                if keywords:
-                    data_to_save.append({
-                        'advert_id': advert.advert_id,
-                        'stat': keywords
-                    })
-        date_from = date_to + timedelta(days=1)
+        adverts = get_adverts_by_seller(seller)
+        adverts = [
+            advert for advert in adverts
+            if advert.advert_type in valid_types
+        ]  
         
-    if not data_to_save:
-        pass
-    
-    ch_kw.save_keywords_stat(seller, data_to_save)
-    settings.keywords_stat_last_updated = now
-    save_settings(seller, settings)
-    logging.info(f"[{seller.trade_mark}] Keywords stat saved")
+        now = datetime.now()
+        date_from = settings.keywords_stat_last_updated
+        data_to_save = []
+        while date_from < now:
+            date_to = min(date_from + timedelta(6), now)
+            for advert in adverts:
+                data = get_API(seller).adverts.load_keywords_stat(advert, date_from, date_to)
+                if data:
+                    keywords = data.get('keywords', [])
+                    if keywords:
+                        data_to_save.append({
+                            'advert_id': advert.advert_id,
+                            'stat': keywords
+                        })
+            date_from = date_to + timedelta(days=1)
+            
+        if not data_to_save:
+            pass
+        
+        ch_kw.save_keywords_stat(seller, data_to_save)
+        settings.keywords_stat_last_updated = now
+        save_settings(seller, settings)
+        logging.info(f"[{seller.trade_mark}] Keywords stat saved")
+    except BaseAPIException as e:
+        logging.error(f"Hidden API {e.method} ({e.url}) error {e.status_code}:\n{e.message}")
 
 
 

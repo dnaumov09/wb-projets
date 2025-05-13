@@ -6,31 +6,34 @@ from db.model.realization import save_realizations
 
 from admin.model import Seller
 
-from wildberries.api import get_API
+from wildberries.api import get_API, BaseAPIException
 
 from utils.util import chunked
 
 
 def load_finances(seller: Seller):
-    settings = get_seller_settings(seller)
-    if settings.load_finances:
-        logging.info(f"[{seller.trade_mark}] Loading financial report")
-        last_monday = get_monday_000000000000(settings.finances_last_updated)
-        last_sunday = get_last_sunday_235959999999()
-        data = get_API(seller).statistics.load_financial_report(last_monday, last_sunday)
-        if not data:
-            pass
-        
-        realizations = []
-        for chunk in chunked(data, 10000):
-            r = save_realizations(chunk, seller)
-            realizations.append(r[0])
-            realizations.append(r[1])
+    try:
+        settings = get_seller_settings(seller)
+        if settings.load_finances:
+            logging.info(f"[{seller.trade_mark}] Loading financial report")
+            last_monday = get_monday_000000000000(settings.finances_last_updated)
+            last_sunday = get_last_sunday_235959999999()
+            data = get_API(seller).statistics.load_financial_report(last_monday, last_sunday)
+            if not data:
+                pass
             
+            realizations = []
+            for chunk in chunked(data, 10000):
+                r = save_realizations(chunk, seller)
+                realizations.append(r[0])
+                realizations.append(r[1])
+                
 
-        settings.finances_last_updated = datetime.now()
-        save_settings(seller, settings)
-        logging.info(f"[{seller.trade_mark}] Financial report saved (rows: {len(realizations)})")
+            settings.finances_last_updated = datetime.now()
+            save_settings(seller, settings)
+            logging.info(f"[{seller.trade_mark}] Financial report saved (rows: {len(realizations)})")
+    except BaseAPIException as e:
+        logging.error(f"Hidden API {e.method} ({e.url}) error {e.status_code}:\n{e.message}")
 
 
 def get_last_sunday_235959999999():

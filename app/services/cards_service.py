@@ -8,8 +8,8 @@ from wildberries.api import get_API, BaseAPIException
 
 
 def load_cards(seller: Seller):
-    logging.info(f"[{seller.trade_mark}] Loading cards")
     try:
+        logging.info(f"[{seller.trade_mark}] Loading cards")
         data = get_API(seller).content.load_seller_cards()
         cards = save_cards(seller, data)
         logging.info(f"[{seller.trade_mark}] Cards saved {len(cards[0] + cards[1])}")
