@@ -6,6 +6,7 @@ import json
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 from datetime import datetime, timedelta
+from wildberries.hidden_api import HiddenAPIException
 
 import requests
 
@@ -67,7 +68,7 @@ class WBHiddenAPI:
             resp = self._s.post(url, json=payload, timeout=self._timeout)
             resp.raise_for_status()
             return resp.json()
-        except requests.ConnectTimeout as e:
+        except (requests.ConnectTimeout, requests.exceptions.ReadTimeout) as e:
             raise HiddenAPIException('POST', e.response.status_code, url, message=json.dumps(e.response.json(), indent=4))
 
     # ──────────────────────────────────────────────────────────────────────
@@ -140,6 +141,6 @@ def get_status():
                 })
             else:
                 print(response)
-        return result
+        return 
     finally:
         client._s.close()
