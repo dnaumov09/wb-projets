@@ -138,10 +138,6 @@ def get_status():
                     'supply': supply,
                     'acceptance_costs': response['result']['costs']
                 })
-            else:
-                print(response)
-        return 
-    except Exception as e:
-        raise
+        return result
     finally:
         client._s.close()
