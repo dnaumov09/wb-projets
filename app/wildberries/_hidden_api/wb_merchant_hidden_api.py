@@ -6,7 +6,6 @@ import json
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 from datetime import datetime, timedelta
-from wildberries.hidden_api import HiddenAPIException
 
 import requests
 
@@ -142,5 +141,7 @@ def get_status():
             else:
                 print(response)
         return 
+    except Exception as e:
+        raise
     finally:
         client._s.close()
