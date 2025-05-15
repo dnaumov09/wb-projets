@@ -17,9 +17,14 @@ class Formatter(logging.Formatter):
 
     def format(self, record):
         timestamp = self.formatTime(record, self.datefmt)
+        if record.levelname == 'INFO':
+            message = f"{Style.RESET_ALL}{timestamp}:    {record.getMessage()}"
+        else: 
+            message = f"{timestamp}:    {record.getMessage()}{Style.RESET_ALL}"
+
         color = self.LEVEL_COLORS.get(record.levelno, "")
         levelname = f"[{record.levelname}]"
-        return f"{color}{levelname:<10} {timestamp}:     {record.getMessage()}{Style.RESET_ALL}"
+        return f"{color}{levelname:<10} {message}"
 
 
 def set_orher_loggers_level(level):
