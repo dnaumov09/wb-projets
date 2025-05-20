@@ -68,7 +68,8 @@ class WBHiddenAPI:
             resp.raise_for_status()
             return resp.json()
         except (requests.ConnectTimeout, requests.exceptions.ReadTimeout) as e:
-            raise HiddenAPIException('POST', 504, url, message=json.dumps(e.response.json(), indent=4))
+            message = json.dumps(e.response.json(), indent=4) if e.response else str(e)
+            raise HiddenAPIException('POST', 504, url, message=message)
 
     # ──────────────────────────────────────────────────────────────────────
     # Public API

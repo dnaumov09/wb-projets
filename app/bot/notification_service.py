@@ -98,21 +98,17 @@ def notify_error(seller: Seller, text: str):
     ))
 
 
-def notify_new_supply_slot(seller: Seller, date: datetime, warehouse_name: str, supply_id: str, coefficient: int, acceptance_cost: float):
+def notify_new_supply_slot(seller: Seller, date: datetime, warehouse_name: str, supply_id: str, coefficient: int, acceptance_cost: float, real: bool):
     dt_day = date.strftime("%A")
     dt_day = dt_day[0].upper() + dt_day[1:]
     dt_date = date.strftime("%d.%m, %Y")
 
-    text=(
-        f'🗓️ <b>Новый слот для поставки №{supply_id}:</b>'
-        '\n\n'
-        f'<b>{dt_day} - {dt_date}</b>'
-        '\n'
-        f'Склад: {warehouse_name}'
-        '\n'
-        '\n'
-        f'Коэф. логистики: {coefficient}'
-        '\n'
+    text = (
+        ('🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥\n\n' if real else '') +
+        f'🗓️ <b>Новый слот для поставки{" №" + str(supply_id) if real else ""}:</b>\n\n'
+        f'<b>{dt_day} - {dt_date}</b>\n'
+        f'Склад: {warehouse_name}\n\n'
+        f'Коэф. логистики: {coefficient}\n'
         f'Приёмка: {acceptance_cost} ₽'
     )
 
