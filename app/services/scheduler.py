@@ -68,8 +68,8 @@ def _run_precise_minute_tasks():
     _run_every_minute_task()
 
     # Run every 5 minutes task if aligned
-    if now.minute % 5 == 0:
-        _run_every_5minutes_task()
+    # if now.minute % 5 == 0:
+        # _run_every_5minutes_task()
 
 
 def _run_every_minute_task():

@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 
 from services.supplies_service import get_current_statuses
 
-
+from utils.logging_settings import get_uvicorn_log_config
 
 
 app = FastAPI()
@@ -21,7 +21,8 @@ def run_server():
     config = uvicorn.Config(
         app=app,
         host="0.0.0.0",
-        port=8000
+        port=8000,
+        log_config=get_uvicorn_log_config()
     )
     server = uvicorn.Server(config)
     server.run()

@@ -25,9 +25,11 @@ class Formatter(logging.Formatter):
         color = self.LEVEL_COLORS.get(record.levelno, "")
         levelname = f"[{record.levelname}]"
         return f"{color}{levelname:<10} {message}"
+    
+formatter = Formatter(fmt=MESSAGE_FORMAT,datefmt='%d-%m-%Y %H:%M:%S')
 
 
-def set_orher_loggers_level(level):
+def set_orher_loggers_level(level, handler):
     # for not main loggers
     if level < logging.WARNING:
         level = logging.WARNING    
@@ -37,10 +39,39 @@ def set_orher_loggers_level(level):
 
 def init_logging(level: int = logging.INFO):
     handler = logging.StreamHandler()
-    handler.setFormatter(Formatter(fmt=MESSAGE_FORMAT,datefmt='%d-%m-%Y %H:%M:%S'))
+    handler.setFormatter(formatter)
     
     logger = logging.getLogger()
+    logger.handlers.clear()
     logger.addHandler(handler)
     logger.setLevel(level)
 
-    set_orher_loggers_level(level)
+    set_orher_loggers_level(level, handler)
+
+
+def get_uvicorn_log_config():
+    level = logging.getLogger().getEffectiveLevel()
+    level = logging.getLevelName(level)
+    return {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "custom": {
+                "()": formatter.__class__,
+                "fmt": formatter._fmt,
+                "datefmt": formatter.datefmt,
+            }
+        },
+        "handlers": {
+            "default": {
+                "formatter": "custom",
+                "class": "logging.StreamHandler",
+            },
+        },
+        "loggers": {
+            "uvicorn": {"handlers": ["default"], "level": level, "propagate": False},
+            "uvicorn.error": {"handlers": ["default"], "level": level, "propagate": False},
+            "uvicorn.access": {"handlers": ["default"], "level": level, "propagate": False},
+        },
+        "root": {"level": level, "handlers": ["default"]},
+    }
