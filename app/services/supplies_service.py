@@ -6,10 +6,15 @@ from bot import notification_service
 from admin.model import Seller
 
 # To keep track of the previous coefficients
-_previous_statuses = []
+CURRENT_STATUSES = []
+def get_current_statuses():
+    global CURRENT_STATUSES
+    return CURRENT_STATUSES
+
+
 def get_supplies_offices_status(seller: Seller):
     try:
-        global _previous_statuses
+        global CURRENT_STATUSES
         new_statuses = hidden_api.get_status()
         for new_supply in new_statuses:
             for new_acceptance in new_supply.get('acceptance_costs', []):
@@ -17,7 +22,7 @@ def get_supplies_offices_status(seller: Seller):
                 new_coefficient = new_acceptance['coefficient']
                 
                 # Check for previous status for the same supply
-                previous_supply = next((item for item in _previous_statuses if item['supply']['preorderId'] == new_supply['supply']['preorderId']), None)
+                previous_supply = next((item for item in CURRENT_STATUSES if item['supply']['preorderId'] == new_supply['supply']['preorderId']), None)
                 
                 if previous_supply:
                     # Find the previous coefficient for this supply
@@ -35,7 +40,7 @@ def get_supplies_offices_status(seller: Seller):
                         )
         
         # Update the previous statuses to the current ones for the next check
-        _previous_statuses = new_statuses
+        CURRENT_STATUSES = new_statuses
     except hidden_api.HiddenAPIException as e:
         logging.error(f"Hidden API {e.method} ({e.url}) error {e.status_code}:\n{e.message}")
         return

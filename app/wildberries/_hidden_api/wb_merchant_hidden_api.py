@@ -13,6 +13,8 @@ import requests
 class MerchantHiddenAPIEndpoints:
     ACCEPTANCE_COSTS = "https://seller-supply.wildberries.ru/ns/sm-supply/supply-manager/api/v1/supply/getAcceptanceCosts"
     LIST_SUPPLIES = "https://seller-supply.wildberries.ru/ns/sm-supply/supply-manager/api/v1/supply/listSupplies"
+    CREATE_ONETIME_TOKEN = "https://antibot.wildberries.ru/api/v1/create-one-time-token"
+    PLAN_SUPPLY = "https://seller-supply.wildberries.ru/ns/sm/supply-manager/api/v1/plan/add"
 
 
 class HiddenAPIException(Exception):
@@ -142,3 +144,75 @@ def get_status():
         return result
     finally:
         client._s.close()
+
+
+
+HEADERS = {
+    "origin": "https://seller.wildberries.ru",
+    "referer": "https://seller.wildberries.ru/",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+    "content-type": "application/json",
+    "x-wb-antibot-key": "6633e2ada32248b7b0de6828bd1eb271",
+    "x-wb-antibot-sdk-version": "1.0.0"
+}
+
+
+import subprocess
+
+def solve_challenge(script_path, payload):
+    result = subprocess.check_output(
+        ["python", "solve_challenge.py", script_path, payload],
+        stderr=subprocess.STDOUT
+    )
+    return json.loads(result)
+
+
+def create_onetime_token(action: str, challenge=None, solution=None):
+        data = {
+            "action": action,
+            "userScope": {}
+        }
+        if challenge:
+            data["challenge"] = challenge
+        if solution:
+            data["solution"] = solution
+
+        response = requests.post(
+            "https://antibot.wildberries.ru/api/v1/create-one-time-token",
+            headers=HEADERS,
+            json=data
+        )
+        return response.json()
+
+
+def add_supply(supply_id: int, date: datetime):
+    # Step 1: Initial request
+    res1 = create_onetime_token("ADD_OR_UPDATE_SUPPLY")
+    challenge1 = res1["challenge"]
+    print()
+    print()
+    print()
+    print("Step 1: requesting challenge...")
+    print('=============== RESPONSE 1 ===============')
+    print()
+    print(json.dumps(res1, indent=4))
+    print()
+    print('==========================================')
+    print()
+    print()
+    print()
+
+    #Step 2
+    print("Step 2: solving fingerprint...")
+    sol1 = solve_challenge(challenge1["scriptPath"], challenge1["payload"])
+    res2 = create_onetime_token("ADD_OR_UPDATE_SUPPLY", challenge1, sol1)
+    challenge2 = res2["challenge"]
+    
+    print('=============== RESPONSE 1 ===============')
+    print()
+    print(json.dumps(res1, indent=4))
+    print()
+    print('==========================================')
+    print()
+    print()
+    print()

@@ -18,3 +18,4 @@ uvicorn
 clickhouse-driver
 numpy
 colorama
+jinja2

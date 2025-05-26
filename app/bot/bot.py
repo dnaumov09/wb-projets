@@ -43,8 +43,8 @@ def start_bot():
     loop.run_forever()
 
 
-def send_message(chat_id: int, text: str, disable_notifications: bool = False):
-    asyncio.run_coroutine_threadsafe(bot.send_message(chat_id=chat_id, text=text, disable_notification=disable_notifications), loop)
+def send_message(chat_id: int, text: str, disable_notifications: bool = False, reply_markup = None):
+    asyncio.run_coroutine_threadsafe(bot.send_message(chat_id=chat_id, text=text, disable_notification=disable_notifications, reply_markup=reply_markup), loop)
 
 
 @dp.message(CommandStart())

@@ -4,6 +4,8 @@ from datetime import datetime
 from db.model.order import Order, OrderStatus
 from db.model.sale import Sale, SaleStatus
 
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
 
 from admin.model import Seller
 
@@ -112,6 +114,12 @@ def notify_new_supply_slot(seller: Seller, date: datetime, warehouse_name: str, 
         f'Приёмка: {acceptance_cost} ₽'
     )
 
+    if real:
+        url = f"https://seller.wildberries.ru/supplies-management/all-supplies/supply-detail?preorderId=${supply_id}"
+        markup = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="К поставке", url=url)]])
+    else:
+        markup = None
+
     for user in seller.users:
         if user.receive_supplies_statuses:
-            send_message(chat_id=user.tg_chat_id, text=text)
+            send_message(chat_id=user.tg_chat_id, text=text, reply_markup=markup)

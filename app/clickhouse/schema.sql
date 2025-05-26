@@ -70,3 +70,18 @@ CREATE TABLE IF NOT EXISTS adverts_stat (
 ) 
 ENGINE = ReplacingMergeTree()
 ORDER BY (advert_id, date, nm_id, app_type);
+
+
+CREATE TABLE remains_forecast (
+    warehouse_id UInt32,
+    nm_id UInt32,
+    quantity UInt32,
+    last_week_sales_count UInt32,
+    avg_daily_sales Float32,
+    needed_quantity Float32,
+    days_until_stockout Float32,
+    reorder_needed Boolean,
+    reorder_quantity Float32
+)
+ENGINE = MergeTree()
+ORDER BY (warehouse_id, nm_id);

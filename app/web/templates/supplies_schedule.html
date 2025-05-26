@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>График поставок</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #888;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #eee;
+        }
+        td.available {
+            background-color: #d2ffd2;  /* мягкий зелёный */
+            font-weight: bold;
+        }
+        tr.available {
+            cursor: pointer;
+        }
+    </style>
+    <script>
+        function goToDetails(perorder_id) {
+            window.location.href = `https://seller.wildberries.ru/supplies-management/all-supplies/supply-detail?preorderId=${perorder_id}`;
+        }
+    </script>
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>Склад</th>
+                <th>Постаква</th>
+                {% for day in days %}
+                    <th>{{ day }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for key in schedule %}
+                {% set schedule_item = schedule[key] %}
+                {% set is_real = schedule_item['is_real'] %}
+                
+                {% for po_key, po_row in schedule_item['preorders'].items() %}
+                    <tr
+                        {% if is_real %}
+                            class="available"
+                            onclick="goToDetails({{ po_key }})" 
+                        {% endif %}
+                    >
+                        <td><b>
+                            {{ schedule_item['warehouse_name'] }}
+                        </b></td>
+                        <td>
+                            {% if is_real %}
+                                <b>{{ po_key }}</b>
+                            {% endif %}
+                        </td>
+                        {% for day in days %}
+                        {% set day_item = po_row[day] %}
+                        <td class="{% if day_item %} available {% endif %}">
+                            {% if day_item %}
+                                <br>
+                                К: {{ day_item['coefficient'] }}
+                                <br>
+                                ₽: {{ day_item['cost'] }}
+                            {% else %}
+                                -
+                            {%endif%}
+                        </td>
+                        {% endfor %}    
+                    </tr>
+                {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
