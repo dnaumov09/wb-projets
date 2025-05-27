@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Дашборд{% endblock %}
+
+{% block content %}
+<div class="w-full p-4">
+    <!-- 4 блока -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 w-full">
+        {% set metric = {
+            'title': 'Количество заказов (сегодня)',
+            'value': '130',
+            'change': -10.12,
+            'previous': 144
+        } %}
+        {% include "metric.html" %}
+        {% set metric = {
+            'title': 'Сумма заказов (сегодня)',
+            'value': '43 250',
+            'change': -10.09,
+            'previous': '48 805'
+        } %}
+        {% include "metric.html" %}
+        {% set metric = {
+            'title': 'Сумма заказов (сегодня)',
+            'value': '43 250',
+            'change': 10.09,
+            'previous': '48 805'
+        } %}
+        {% include "metric.html" %}
+        {% set metric = {
+            'title': 'Сумма заказов (сегодня)',
+            'value': '43 250',
+            'change': 10.09,
+            'previous': '48 805'
+        } %}
+        {% include "metric.html" %}
+    </div>
+
+    <!-- График -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+        <!-- Первый график -->
+        <div class="bg-white rounded-lg shadow-md p-4 w-full">
+            <h2 class="text-l font-bold text-metabaseDark mb-4">Заказы (еженедельно)</h2>
+            <canvas id="chart1" class="w-full h-48"></canvas>
+        </div>
+    
+        <!-- Второй график -->
+        <div class="bg-white rounded-lg shadow-md p-4 w-full">
+            <h2 class="text-l font-bold text-metabaseDark mb-4">Сумма заказов (еженедельно)</h2>
+            <canvas id="chart2" class="w-full h-48"></canvas>
+        </div>
+    </div>    
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
+<script>
+    const ctx1 = document.getElementById('chart1').getContext('2d');
+    const ctx2 = document.getElementById('chart2').getContext('2d');
+
+    const chartConfig = {
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    type: 'line',
+                    label: 'Сумма заказов (₽)',
+                    data: [],
+                    backgroundColor: 'rgba(80, 158, 227, 0.2)',
+                    borderColor: '#509EE3',
+                    borderWidth: 2,
+                    yAxisID: 'y',
+                    fill: true,
+                    tension: 0.3,
+                    datalabels: {
+                        display: false  // отключаем надписи для линии
+                    }
+                },
+                {
+                    type: 'bar',
+                    label: 'Количество заказов',
+                    data: [],
+                    backgroundColor: '#88BF4D',
+                    borderColor: '#88BF4D',
+                    borderWidth: 1,
+                    yAxisID: 'y1',
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'top',
+                        offset: 4,
+                        color: '#2D2D2D',
+                        font: {
+                            size: 10,
+                            weight: 'bold'
+                        }
+                    }
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            animation: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#2D2D2D',
+                        font: {
+                            size: 12
+                        }
+                    },
+                    datalabels: {
+                        display: (context) => context.dataset.type === 'bar',
+                        formatter: (value) => value,
+                        color: '#2D2D2D',
+                        font: {
+                            size: 10,
+                            weight: 'bold'
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    ticks: {
+                        color: '#2D2D2D'
+                    },
+                    grid: {
+                        color: '#F5F6F7'
+                    },
+                    beginAtZero: true
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    ticks: {
+                        color: '#2D2D2D'
+                    },
+                    grid: {
+                        drawOnChartArea: false
+                    },
+                    beginAtZero: true
+                },
+                x: {
+                    ticks: {
+                        color: '#2D2D2D'
+                    },
+                    grid: {
+                        color: '#F5F6F7'
+                    }
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
+    };
+
+    const myChart1 = new Chart(ctx1, chartConfig);
+    const myChart2 = new Chart(ctx2, chartConfig);
+
+    async function loadChartData() {
+        const response = await fetch('/api/orders');
+        const data = await response.json();
+
+        myChart1.data.labels = data.labels;
+        myChart1.data.datasets[0].data = data.orders_sum;
+        myChart1.data.datasets[1].data = data.orders_count;
+        myChart1.update();
+
+        myChart2.data.labels = data.labels;
+        myChart2.data.datasets[0].data = data.orders_sum;
+        myChart2.data.datasets[1].data = data.orders_count;
+        myChart2.update();
+    }
+
+    loadChartData();
+
+</script>
+{% endblock %}

@@ -1,47 +1,20 @@
-import uvicorn
-import threading
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
-from fastapi.exception_handlers import http_exception_handler
-from starlette.exceptions import HTTPException as StarletteHTTPException
-
 from datetime import datetime, timedelta
 
+from fastapi import APIRouter, Request, Depends
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
+
 from services.supplies_service import get_current_statuses
-
-from utils.logging_settings import get_uvicorn_log_config
-
-
-app = FastAPI()
-TEMPLATES = Jinja2Templates(directory='app/web/templates')
+from web.security import model
+from web.routers.auth import get_current_user
 
 
-def run_server():
-    config = uvicorn.Config(
-        app=app,
-        host="0.0.0.0",
-        port=8000,
-        log_config=get_uvicorn_log_config()
-    )
-    server = uvicorn.Server(config)
-    server.run()
+router = APIRouter()
+templates = Jinja2Templates(directory="app/web/templates")
 
 
-def start():
-    server_thread = threading.Thread(target=run_server, daemon=True)
-    server_thread.start()
-
-
-@app.exception_handler(StarletteHTTPException)
-async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException):
-    if exc.status_code == 404:
-        return TEMPLATES.TemplateResponse("404.html", {"request": request}, status_code=404)
-    return await http_exception_handler(request, exc)
-
-
-@app.get("/supplies", response_class=HTMLResponse)
-def get_supplies(request: Request):
+@router.get("/supplies", response_class=HTMLResponse)
+def get_supplies(request: Request, current_user: model.User = Depends(get_current_user)):
     today = datetime.now().date()
     days = [(today + timedelta(days=i)).strftime('%d.%m') for i in range(14)]
 
@@ -76,7 +49,7 @@ def get_supplies(request: Request):
         elif is_real and entry['is_real']:
             entry['preorders'][preorder_id] = dates
 
-    return TEMPLATES.TemplateResponse("supplies_schedule.html", {
+    return templates.TemplateResponse("supplies_schedule.html", {
         "request": request,
         "schedule": schedule_data,
         "days": days

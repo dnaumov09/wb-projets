@@ -19,3 +19,6 @@ clickhouse-driver
 numpy
 colorama
 jinja2
+python-jose 
+passlib[bcrypt]
+python-multipart

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Вход</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        metabaseBlue: '#509EE3',
+                        metabaseBlueHover: '#3B8DD3',
+                        metabaseDark: '#2D2D2D',
+                        metabaseGray: '#F5F6F7',
+                        metabaseRed: '#E36262'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-metabaseGray flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
+        <!-- <div class="mb-6 text-center">
+            <h1 class="text-2xl font-bold text-metabaseDark mt-2">Вход</h1>
+        </div> -->
+
+        {% if error %}
+        <div class="mb-4 p-3 bg-metabaseRed text-white text-sm rounded-md">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="post" action="/login" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-metabaseDark mb-1">Email</label>
+                <input type="email" name="email" required
+                       class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-metabaseBlue transition">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-metabaseDark mb-1">Пароль</label>
+                <input type="password" name="password" required
+                       class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-metabaseBlue transition">
+            </div>
+            <button type="submit"
+                    class="w-full bg-metabaseBlue text-white font-medium py-2 rounded-md hover:bg-metabaseBlueHover transition">
+                Войти
+            </button>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<div class="bg-white rounded-lg shadow-md p-4 w-full text-center">
+    <div class="text-metabaseDark text-sm font-medium mb-2">
+        {{ metric.title if metric and metric.title else 'Без названия' }}
+    </div>
+    <div class="text-4xl font-bold text-metabaseDark mb-1">
+        {{ metric.value if metric and metric.value is not none else '-' }}
+    </div>
+    <div class="flex items-center justify-center space-x-1 text-sm">
+        {% if metric and metric.change is not none %}
+            {% if metric.change < 0 %}
+            <svg class="w-4 h-4 text-metabaseRed" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+            <span class="text-metabaseRed font-semibold">{{ metric.change | abs }}%</span>
+            {% else %}
+            <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+            </svg>
+            <span class="text-green-500 font-semibold">{{ metric.change }}%</span>
+            {% endif %}
+        {% else %}
+            <span class="text-gray-400">Нет данных</span>
+        {% endif %}
+        {% if metric and metric.previous is not none %}
+        <span class="text-gray-400">• vs. previous: {{ metric.previous }}</span>
+        {% endif %}
+    </div>
+</div>
