@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 
@@ -8,6 +10,7 @@ from admin.db_router import get_session
 from admin.services import get_my_seller
 
 from web.routers.auth import get_current_user
+from services.supplies_service import get_current_statuses
 
 router = APIRouter(prefix='/api')
 
@@ -35,3 +38,45 @@ async def get_chart_data(current_user = Depends(get_current_user)):
         "orders_sum": orders_sum
     }
     return JSONResponse(content=data)
+
+
+@router.get("/supplies")
+async def get_supplies(current_user = Depends(get_current_user)):
+    today = datetime.now().date()
+    days = [(today + timedelta(days=i)).strftime('%d.%m') for i in range(14)]
+
+    schedule_data = {}
+    for entry in get_current_statuses():
+        supply = entry['supply']
+        warehouse_id = supply['warehouseId']
+        warehouse_name = supply['warehouseName']
+        is_real = supply['detailsQuantity'] > 1
+        preorder_id = supply['preorderId']
+
+        dates = {}
+        for item in entry['acceptance_costs']:
+            date_key = datetime.fromisoformat(item['date']).date().strftime('%d.%m')
+            coefficient = item.get('coefficient')
+            if coefficient is not None and coefficient > -1:
+                dates[date_key] = {
+                    'cost': item['cost'],
+                    'coefficient': coefficient,
+                }
+
+
+        entry = schedule_data.get(warehouse_id)
+        if not entry or (is_real and not entry['is_real']):
+            schedule_data[warehouse_id] = {
+                'warehouse_name': warehouse_name,
+                'is_real': is_real,
+                'preorders': {
+                    preorder_id: dates
+                }
+            }
+        elif is_real and entry['is_real']:
+            entry['preorders'][preorder_id] = dates
+
+    return JSONResponse(content={
+        'days': days,
+        'schedule': schedule_data
+    })

@@ -49,7 +49,7 @@ def _schedule_jobs():
     schedule.every().day.at("03:00").do(_run_daily_task)
 
     # Every minute at 00 seconds - checking inside the function to align tasks
-    schedule.every().minute.at(":00").do(_run_precise_minute_tasks)
+    schedule.every(30).seconds.do(_run_precise_minute_tasks)
 
     # Multiple times a day for adverts stat updating
     # for time_point in ["00:00", "09:00", "12:00", "15:00", "18:00", "21:00"]:

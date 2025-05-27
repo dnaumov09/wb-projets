@@ -9,45 +9,11 @@
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 text-sm">
-                <thead class="bg-metabaseBlue text-white">
-                    <tr>
-                        <th class="px-4 py-2 text-left font-semibold">Склад</th>
-                        <th class="px-4 py-2 text-left font-semibold">Поставка</th>
-                        {% for day in days %}
-                            <th class="px-4 py-2 text-center font-semibold">{{ day }}</th>
-                        {% endfor %}
-                    </tr>
+                <thead id="schedule-head" class="bg-metabaseBlue text-white">
+                    <!-- заголовки будут вставлены здесь -->
                 </thead>
-                <tbody class="divide-y divide-gray-100">
-                    {% for key in schedule %}
-                        {% set schedule_item = schedule[key] %}
-                        {% set is_real = schedule_item['is_real'] %}
-                        {% for po_key, po_row in schedule_item['preorders'].items() %}
-                            <tr class="{% if is_real %}hover:bg-metabaseGray cursor-pointer{% endif %}"
-                                {% if is_real %}
-                                    onclick="goToDetails({{ po_key }})"
-                                {% endif %}
-                            >
-                                <td class="px-4 py-2 font-medium text-metabaseDark">
-                                    {{ schedule_item['warehouse_name'] }}
-                                </td>
-                                <td class="px-4 py-2 text-metabaseDark">
-                                    {% if is_real %}
-                                        <span class="font-semibold">{{ po_key }}</span>
-                                    {% else %}-{% endif %}
-                                </td>
-                                {% for day in days %}
-                                    {% set day_item = po_row[day] %}
-                                    <td class="px-4 py-2 text-center {% if day_item %}bg-metabaseBlue/10 text-metabaseDark font-semibold rounded{% else %}text-gray-400{% endif %}">
-                                        {% if day_item %}
-                                            <div>К: {{ day_item['coefficient'] }}</div>
-                                            <div>₽: {{ day_item['cost'] }}</div>
-                                        {% else %}-{% endif %}
-                                    </td>
-                                {% endfor %}
-                            </tr>
-                        {% endfor %}
-                    {% endfor %}
+                <tbody id="schedule-body" class="divide-y divide-gray-100">
+                    <!-- данные будут вставлены здесь -->
                 </tbody>
             </table>
         </div>
@@ -55,8 +21,73 @@
 </section>
 
 <script>
-    function goToDetails(preorder_id) {
-        window.location.href = `https://seller.wildberries.ru/supplies-management/all-supplies/supply-detail?preorderId=${preorder_id}`;
+async function loadSupplyData() {
+    try {
+        const response = await fetch('/api/supplies');
+        const data = await response.json();
+
+        const thead = document.getElementById('schedule-head');
+        const tbody = document.getElementById('schedule-body');
+
+        // Сборка заголовка таблицы
+        thead.innerHTML = `
+            <tr>
+                <th class="px-4 py-2 text-left font-semibold">Склад</th>
+                <th class="px-4 py-2 text-left font-semibold">Поставка</th>
+                ${data.days.map(day => `<th class="px-4 py-2 text-center font-semibold">${day}</th>`).join('')}
+            </tr>
+        `;
+
+        // Сборка тела таблицы
+        tbody.innerHTML = '';
+
+        Object.entries(data.schedule).forEach(([warehouseId, warehouse]) => {
+            Object.entries(warehouse.preorders).forEach(([preorderId, days]) => {
+                const row = document.createElement('tr');
+                if (warehouse.is_real) {
+                    row.className = 'hover:bg-metabaseGray cursor-pointer';
+                    row.onclick = () => goToDetails(preorderId);
+                }
+
+                row.innerHTML = `
+                    <td class="px-4 py-2 font-medium text-metabaseDark">${warehouse.warehouse_name}</td>
+                    <td class="px-4 py-2 text-metabaseDark">${warehouse.is_real ? preorderId : '-'}</td>
+                    ${data.days.map(day => {
+                        const dayItem = days[day];
+                        if (dayItem) {
+                            if (warehouse.is_real) {
+                                return `<td class="px-4 py-2 text-center bg-metabaseGreen/20 text-metabaseDark font-semibold rounded">
+                                    <div>К: ${dayItem.coefficient}</div>
+                                    <div>₽: ${dayItem.cost}</div>
+                                </td>`;
+                            } else {
+                                return `<td class="px-4 py-2 text-center bg-metabaseBlue/20 text-metabaseDark font-semibold rounded">
+                                    <div>К: ${dayItem.coefficient}</div>
+                                    <div>₽: ${dayItem.cost}</div>
+                                </td>`;
+                            }
+                        } else {
+                            return `<td class="px-4 py-2 text-center text-gray-400">-</td>`;
+                        }
+                    }).join('')}
+                `;
+
+                tbody.appendChild(row);
+            });
+        });
+
+    } catch (error) {
+        console.error('Ошибка загрузки данных:', error);
     }
+}
+
+function goToDetails(preorder_id) {
+    window.location.href = `https://seller.wildberries.ru/supplies-management/all-supplies/supply-detail?preorderId=${preorder_id}`;
+}
+
+// Первичная загрузка
+loadSupplyData();
+// Автообновление каждые 10 секунд
+setInterval(loadSupplyData, 10000);
 </script>
 {% endblock %}

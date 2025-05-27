@@ -10,7 +10,7 @@ tailwind.config = {
                 metabaseTeal: '#6FD1B6',
                 metabaseDark: '#2D2D2D',
                 metabaseGray: '#F5F6F7',
-                metabaseRed: '#E36262'
+                metabaseGreen: '#88BF4D'
             }
         }
     }
