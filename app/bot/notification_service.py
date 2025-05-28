@@ -115,7 +115,7 @@ def notify_new_supply_slot(seller: Seller, date: datetime, warehouse_name: str, 
     )
 
     if real:
-        url = f"https://seller.wildberries.ru/supplies-management/all-supplies/supply-detail?preorderId=${supply_id}"
+        url = f"https://seller.wildberries.ru/supplies-management/all-supplies/supply-detail?preorderId={supply_id}"
         markup = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="К поставке", url=url)]])
     else:
         markup = None
