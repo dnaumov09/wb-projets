@@ -82,12 +82,13 @@ async function loadSupplyData() {
 }
 
 function goToDetails(preorder_id) {
-    window.location.href = `https://seller.wildberries.ru/supplies-management/all-supplies/supply-detail?preorderId=${preorder_id}`;
+    const url = `https://seller.wildberries.ru/supplies-management/all-supplies/supply-detail?preorderId=${preorder_id}`;
+    window.open(url, '_blank');
 }
 
 // Первичная загрузка
 loadSupplyData();
 // Автообновление каждые 10 секунд
-setInterval(loadSupplyData, 10000);
+// setInterval(loadSupplyData, 10000);
 </script>
 {% endblock %}

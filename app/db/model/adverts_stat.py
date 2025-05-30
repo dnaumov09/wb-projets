@@ -16,6 +16,7 @@ class AppType(Enum):
     WEBSITE = 1
     IOS = 32
     ANDROID = 64
+    UNDEFINED = 0
 
 
 class AdvertsStat(Base):

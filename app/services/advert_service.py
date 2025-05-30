@@ -1,20 +1,19 @@
 import logging
 from datetime import datetime, timedelta
 
-from db.model.advert import AdvertType, save_adverts, get_adverts_by_seller
+from db.model.advert import AdvertType, Status, save_adverts, get_adverts_by_seller, Advert, get_active_adverts_by_seller, update_adverts
 from db.model.adverts_stat import save_adverts_stat
 from db.model.settings import get_seller_settings, save_settings
+from db.model.advert_schedule import get_advert_schedule, AdvertSchedule, WeekDay
 
 from clickhouse.model import keywords as ch_kw
 from clickhouse.model import adverts as ch_ad
 
 from admin.model import Seller
 
-from wildberries.api import get_API, BaseAPIException
+from wildberries.api import get_API, BaseAPIException, SellerAPI
 
 from utils.util import chunked
-
-
 
 
 def load_adverts(seller: Seller):
@@ -131,114 +130,85 @@ def load_keywords_stat(seller: Seller):
 
 
 
+# ------ Автоматическое пополнение рекламных кампаний (расписание и бюджеты хранятся в Postgres)
+MIN_TOPUP_AMOUNT = 1000
+
+ONGOING_STATUSES = {Status.ONGOING}
+STARTABLE_STATUSES = {Status.READY, Status.PAUSED}
 
 
+def topup_adverts(seller: Seller):
+    now = datetime.now()
+    weekday = WeekDay(now.isoweekday() + 1) # так как запускается в scheduler в 23:55 прошедшего дня, то пополняем на след. день
+    api = get_API(seller)
+    adverts = _get_active_adverts(seller)
+    balance = api.adverts.get_balance()
+    
+    for advert in adverts:
+        today_schedule = get_advert_schedule(seller, advert.advert_id, weekday)
+        
+        if not _check_budget(today_schedule):
+            continue
+
+        toup_amount = max(today_schedule.max_daily_budget, MIN_TOPUP_AMOUNT)
+        balance_from = _get_balance_from(balance, toup_amount)
+        api.adverts.topup_advert(advert, toup_amount, balance_from)
 
 
+def process_adverts(seller: Seller):
+    now = datetime.now()
+    weekday = WeekDay(now.isoweekday())
+    api = get_API(seller)
+    adverts = _get_active_adverts(seller)
+
+    for advert in adverts:
+        print(advert.name)
+        today_schedule = get_advert_schedule(seller, advert.advert_id, weekday)
+        if not _check_schedule_and_budget(today_schedule, now):
+            if advert.status in ONGOING_STATUSES:
+                api.adverts.stop_advert(advert)
+                advert.status = Status.PAUSED
+            continue # не в расписании или нет дневного бюджета
+
+        if 'не пополн' in advert.name.lower():
+            continue # не пополняем - остановлена
+        
+        if advert.status in STARTABLE_STATUSES:
+            advert_budget = api.adverts.get_advert_budget(advert)
+            if advert_budget and advert_budget['total']:
+                api.adverts.start_advert(advert)
+                advert.status = Status.ONGOING
+    update_adverts(seller, adverts)
 
 
-
-# ------------------- Параметры для расчёта -------------------
-# TARGET_ROI = 3          # Целевой ROI (например, 3 = 300%)
-# DEAD_ZONE = 0.01          # Зона нечувствительности: ±5% от целевого ROI
-# MAX_ADJUST_STEP = 0.2     # Макс. изменение ставки за один шаг (±20%)
-# MIN_BID = 10.0            # Минимальная допустимая ставка
-# MAX_BID = 500.0           # Максимальная допустимая ставка
-# DAYS_BACK = 7             # Берём статистику за последние 7 дней
+# обновляем кампании и получаем только активные 
+def _get_active_adverts(seller: Seller) -> list[Advert]:
+    load_adverts(seller)
+    return get_active_adverts_by_seller(seller)
 
 
-# def get_current_bid(advert_id: int, nm_id: int):
-#     return get_advert_bid(advert_id, nm_id)
+# проверяем расписание
+def _check_schedule_and_budget(schedule: AdvertSchedule, now: datetime) -> bool:
+    if not schedule:
+        return False
+    if now.hour not in {int(h.strip()) for h in schedule.hours.split(',') if h.strip().isdigit()}:
+        return False
+    if not schedule.weekday_active:
+        return False
+
+    return True
 
 
-# def update_bid(seller: Seller, advert_id: int, nm_id: int, current_bid: AdvertBid, new_bid: float):
-#     logging.info(f"Updating bid: advert_id={advert_id}, nm_id={nm_id}, old_bid={current_bid.cpm}, new_bid={new_bid}")
-#     # current_bid.cpm = new_bid
-#     # update_advert_bid(current_bid)
-#     # wb_merchant_api.update_advert_bids(seller, [{
-#     #     'advert_id': advert_id, 
-#     #     'bids': [{
-#     #         'nm_id': nm_id,
-#     #         'bid': int(round(new_bid))
-#     #     }]
-#     # }])
+# проверяем есть ли доступный дневной бюджет
+def _check_budget(schedule: AdvertSchedule):
+    return schedule and schedule.max_daily_budget and schedule.max_daily_budget > 0
 
 
-# def calculate_roi(revenue: float, cost: float) -> float:
-#     """
-#     ROI = (revenue - cost) / cost
-#     Если cost <= 0, возвращаем 0.0, чтобы избежать деления на ноль.
-#     """
-#     if cost <= 0:
-#         return 0.0
-#     return (revenue - cost) / cost
-
-
-# def calculate_drr(revenue: float, cost: float) -> float:
-#     """
-#     ДРР = cost / revenue
-#     Если revenue <= 0, возвращаем 0.0, чтобы избежать деления на ноль.
-#     """
-#     if revenue <= 0:
-#         return 0.0
-#     return cost / revenue
-
-
-# def update_bids(seller: Seller, days_back: int = DAYS_BACK):
-#     """
-#     Функция, которая:
-#     1. Выгружает статистику за последние days_back дней.
-#     2. Агегирует её по (advert_id, nm_id).
-#     3. Считает ROAS.
-#     4. Сравнивает с целевым ROAS и корректирует ставку.
-#     5. Вызывает обновление ставки через update_bid.
-#     """
-
-#     now = datetime.now()
-#     date_from = now - timedelta(days=days_back)
-
-#     data = get_last_days_stat(seller, date_from)
-
-#     for row in data:
-#         advert_id = row.advert_id
-#         nm_id = row.nm_id
-#         total_cost = row.total_cost or 0.0
-#         total_revenue = row.total_revenue or 0.0
-
-#         # Считаем ROI
-#         roi = calculate_roi(total_revenue, total_cost)
-#         drr = calculate_drr(total_revenue, total_cost)
-#         logging.info(f"ДРР = {drr}")
-
-#         # Смотрим, на сколько % он отклоняется от TARGET_ROI
-#         # Пример: если ROI = 1.5, а TARGET_ROI=2.0 => roi_diff = (1.5 - 2.0)/2.0 = -0.25 (-25%)
-#         #         если ROI=3.0 => diff= (3.0-2.0)/2.0 = +0.5 (+50%)
-#         if TARGET_ROI == 0:
-#             roi_diff = 0.0
-#         else:
-#             roi_diff = (roi - TARGET_ROI) / TARGET_ROI
-
-#         # Текущая ставка
-#         current_bid = get_current_bid(advert_id, nm_id)
-
-#         # Зона нечувствительности (если отклонение меньше ±DEAD_ZONE, ничего не делаем)
-#         if abs(roi_diff) < DEAD_ZONE:
-#             continue
-
-#         # Коррекция ставки
-#         # Если roi_diff>0 => ROI выше целевого => можем повысить ставку
-#         # Если roi_diff<0 => ROI ниже целевого => снижаем ставку
-#         # Но не более чем на ±MAX_ADJUST_STEP
-#         if roi_diff > 0:
-#             corr_ratio = min(roi_diff, MAX_ADJUST_STEP)
-#         else:
-#             corr_ratio = max(roi_diff, -MAX_ADJUST_STEP)
-
-#         new_bid = current_bid.cpm * (1 + corr_ratio)
-
-#         # Ограничиваем ставку заданными границами
-#         new_bid = max(MIN_BID, min(new_bid, MAX_BID))
-
-#         # Проверяем, есть ли смысл обновлять (изменение > 0.01)
-#         if abs(new_bid - current_bid.cpm) > 0.01:
-#             update_bid(seller, advert_id, nm_id, current_bid, new_bid)
+# получаем баланс по разным типам счетов
+def _get_balance_from(balance, topup_amount):
+    return (
+        0 if balance.get('balance', 0) >= topup_amount else # счет
+        1 if balance.get('net', 0) - balance.get('balance', 0) >= topup_amount else # баланс
+        2 if balance.get('bonuses', 0) >= topup_amount else # бонусы
+        None
+    )

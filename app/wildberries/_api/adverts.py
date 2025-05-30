@@ -22,6 +22,13 @@ class AdvertAPI(BaseAPIClient):
         STAT_KEYWORDS = BaseAPIEndpoints.url.__func__(_BASE_URL, "v0", "stats/keywords")
         BIDS = BaseAPIEndpoints.url.__func__(_BASE_URL, "v0", "bids")
 
+        BALANCE = BaseAPIEndpoints.url.__func__(_BASE_URL, "v1", "balance")
+        SPENDINGS = BaseAPIEndpoints.url.__func__(_BASE_URL, "v1", "upd")
+        BUDGET = BaseAPIEndpoints.url.__func__(_BASE_URL, "v1", "budget")
+        START = BaseAPIEndpoints.url.__func__(_BASE_URL, "v0", "start")
+        PAUSE = BaseAPIEndpoints.url.__func__(_BASE_URL, "v0", "pause")
+        TOPUP = BaseAPIEndpoints.url.__func__(_BASE_URL, "v1", "budget/deposit")
+
 
     @rate_limited(calls=5, period=1)
     def load_adverts_info(self, advert_ids: list[int]):
@@ -85,3 +92,55 @@ class AdvertAPI(BaseAPIClient):
         }
                 
         return self.request('PATCH', AdvertAPI.Endpoints.BIDS, json_payload=payload)
+    
+
+    @rate_limited(calls=1, period=1)
+    def get_balance(self):
+        return self.request('GET',AdvertAPI.Endpoints.BALANCE)
+    
+
+    @rate_limited(calls=1, period=1)
+    def get_advert_budget(self, advert: Advert):
+        params = {
+            "id": advert.advert_id
+        }
+        return self.request('GET',AdvertAPI.Endpoints.BUDGET, params=params)
+    
+
+    @rate_limited(calls=1, period=1)
+    def get_today_spendings(self):
+        today = datetime.now().strftime("%Y-%m-%d")
+        params = {
+            "from": today,
+            "to": today
+        }
+        return self.request('GET',AdvertAPI.Endpoints.SPENDINGS, params=params)
+    
+
+    @rate_limited(calls=1, period=1)
+    def start_advert(self, advert: Advert):
+        params = {
+            "id": advert.advert_id
+        }
+        return self.request('GET',AdvertAPI.Endpoints.START, params=params)
+    
+
+    @rate_limited(calls=1, period=1)
+    def stop_advert(self, advert: Advert):
+        params = {
+            "id": advert.advert_id
+        }
+        return self.request('GET',AdvertAPI.Endpoints.PAUSE, params=params)
+    
+
+    @rate_limited(calls=1, period=1)
+    def topup_advert(self, advert: Advert, budget: int, from_balance: int):
+        params = {
+            "id": advert.advert_id
+        }
+        payload = {
+            "sum": budget,
+            "type": from_balance,
+            "return": True
+        }
+        return self.request('POST',AdvertAPI.Endpoints.TOPUP, params=params, json_payload=payload)

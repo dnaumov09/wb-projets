@@ -18,13 +18,13 @@ class Income(Base):
         PrimaryKeyConstraint('income_id', 'nm_id'),
     )
 
-    income_id = Column(Integer)
+    income_id = Column(Integer, nullable=False)
     number = Column(String)
     date = Column(DateTime)
     last_change_date = Column(DateTime)
     supplier_article = Column(String)
     tech_size = Column(String)
-    barcode = Column(String)
+    barcode = Column(String, nullable=False)
     quantity = Column(Integer)
     total_price = Column(Float)
     date_close = Column(DateTime)

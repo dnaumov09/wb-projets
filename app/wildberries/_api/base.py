@@ -46,9 +46,19 @@ class BaseAPIClient:
                 json=json_payload,
                 timeout=self.timeout
             )
-            resp.raise_for_status()
-            data = resp.json()
-            return data.get(data_key) if data_key else data
+            # Try to parse JSON, but handle cases where it's empty or missing
+            try:
+                data = resp.json()
+            except ValueError:
+                # No JSON content; return None if status is ok
+                return None
+
+            # If data_key is provided, return its value (which might be None if missing)
+            if data_key:
+                return data.get(data_key)
+
+            # If no data_key, but data exists, return data; else return None
+            return data if data else None
         except requests.RequestException as e:
             # notify_error(self.seller, f"API {method} request failed with code {e.response.status_code} at {url}:\n{e.response.json()}")
             raise BaseAPIException(

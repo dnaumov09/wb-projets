@@ -1,6 +1,7 @@
 import logging
 from enum import Enum
 from datetime import datetime
+from typing import List
 
 from sqlalchemy import DateTime, select, Enum as PgEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -55,11 +56,17 @@ def parse_datetime(dt_str: str) -> datetime:
     return datetime.fromisoformat(dt_str.replace('Z', '+00:00')) if dt_str else None
 
 
-def get_adverts_by_seller(seller: Seller):
+def get_adverts_by_seller(seller: Seller) -> List[Advert]:
     return get_session(seller).query(Advert).all()
 
 
-def save_adverts(seller: Seller, data) -> list[Advert]:
+def get_active_adverts_by_seller(seller: Seller) -> List[Advert]:
+    return get_session(seller).query(Advert).filter(
+        Advert.status.in_([Status.READY, Status.PAUSED, Status.ONGOING])
+    ).all()
+
+
+def save_adverts(seller: Seller, data) -> List[Advert]:
     # Fetch all existing advert IDs from the database
     existing_adverts_list = get_session(seller).scalars(select(Advert)).all()
     existing_adverts = {adv.advert_id: adv for adv in existing_adverts_list}
@@ -110,3 +117,8 @@ def save_adverts(seller: Seller, data) -> list[Advert]:
         logging.info(f"{adverts_to_archive}")
 
     return new_adverts + existing_adverts_output
+
+def update_adverts(seller:Seller, adverts: list[Advert]):
+    session = get_session(seller)
+    session.add_all(adverts)
+    session.commit()
