@@ -143,6 +143,3 @@ def save_advert_stat_hourly(seller: Seller, stat: list[dict[str, Any]], date: da
             """,
             insert_rows,
         )
-        print(f"✅ Добавлено {len(insert_rows)} записей за {date} час {hour}")
-    else:
-        print("⚠ Нет данных для вставки — пропускаем шаг")

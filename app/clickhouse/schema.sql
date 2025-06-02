@@ -91,6 +91,23 @@ ENGINE = ReplacingMergeTree()
 ORDER BY (advert_id, date, hour, nm_id, app_type);
 
 
+CREATE TABLE IF NOT EXISTS cards_stat_hourly (
+    nm_id UInt32,
+    date Date,
+    hour Int8,
+    open_card_count UInt32,
+    add_to_cart_count UInt32,
+    orders_count UInt32,
+    orders_sum_rub Float32,
+    buyouts_count UInt32,
+    buyouts_sum_rub UInt32,
+    cancel_count UInt32,
+    cancel_sum_rub Float32
+) 
+ENGINE = ReplacingMergeTree()
+ORDER BY (nm_id, date, hour);
+
+
 CREATE TABLE remains_forecast (
     warehouse_id UInt32,
     nm_id UInt32,
