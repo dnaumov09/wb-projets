@@ -23,7 +23,8 @@ CREATE TABLE IF NOT EXISTS keywords_stat (
     views UInt32,
     clicks UInt32,
     ctr Float32,
-    sum Float64
+    sum Float64,
+    hour Int8
 ) 
 ENGINE = ReplacingMergeTree()
 PARTITION BY (date)
@@ -66,10 +67,11 @@ CREATE TABLE IF NOT EXISTS adverts_stat (
     orders UInt32,
     shks UInt32,
     sum_price Float32,
-    app_type Int8
+    app_type Int8,
+    hour Int8
 ) 
 ENGINE = ReplacingMergeTree()
-ORDER BY (advert_id, date, nm_id, app_type);
+ORDER BY (advert_id, date, hour, nm_id, app_type);
 
 
 CREATE TABLE remains_forecast (

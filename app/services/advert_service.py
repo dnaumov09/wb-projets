@@ -48,8 +48,9 @@ def load_adverts_stat(seller: Seller):
     adverts = get_adverts_by_seller(seller)
     data = get_API(seller).adverts.load_adverts_stat(adverts, settings.adverts_stat_last_updated if settings.adverts_stat_last_updated else now)
     if data:
-        advert_stat, booster_stat = save_adverts_stat(seller, data)
+        ch_ad.save_advert_stat_hourly(seller, data)
         ch_ad.save_advert_stat(seller, data)
+        advert_stat, booster_stat = save_adverts_stat(seller, data)
         settings.adverts_stat_last_updated = now
         save_settings(seller, settings)
         logging.info(f"[{seller.trade_mark}] Adverts stat saved (adverts stat: {len(advert_stat)}, booster stat: {len(booster_stat)})")
@@ -162,7 +163,6 @@ def process_adverts(seller: Seller):
     adverts = _get_active_adverts(seller)
 
     for advert in adverts:
-        print(advert.name)
         today_schedule = get_advert_schedule(seller, advert.advert_id, weekday)
         if not _check_schedule_and_budget(today_schedule, now):
             if advert.status in ONGOING_STATUSES:

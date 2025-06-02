@@ -57,7 +57,7 @@ def _schedule_jobs():
     for time_str, func in daily_jobs:
         schedule.every().day.at(time_str).do(func)
 
-    schedule.every().hour.at(":00").do(run_topup_adverts)
+    schedule.every().hour.at(":00").do(run_process_adverts)
 
     for seconds in [":00", ":30"]:
         schedule.every().minute.at(seconds).do(run_minute_tasks)
@@ -78,7 +78,6 @@ def _run_every_minute_task():
 def _run_every_5minutes_task():
     for seller in get_all_sellers():
         executor.submit(safe_task, run_stat_updating, seller)
-        executor.submit(safe_task, run_adverts_stat_updating, seller)
 
 
 def run_daily_task():
@@ -104,13 +103,6 @@ def run_stat_updating_background(seller: Seller):
     orders_service.load_orders(seller, True)
     sales_service.load_sales(seller, True)
     logging.info('scheduler.run_stat_updating_background() - done')
-
-
-def run_adverts_stat_updating(seller: Seller):
-    logging.info('scheduler.run_adverts_stat_updating() - started')
-    advert_service.load_adverts(seller)
-    advert_service.load_adverts_stat(seller)
-    logging.info('scheduler.run_adverts_stat_updating() - done')
 
 
 def run_keywords_stat_updating(seller: Seller):
@@ -150,9 +142,11 @@ def run_topup_adverts():
     logging.info('scheduler.run_topup_adverts() - done')
 
 
-def run_process_adverts(seller: Seller):
+def run_process_adverts():
     logging.info('scheduler.run_process_adverts() - started')
-    advert_service.process_adverts(seller)
+    advert_service.load_adverts(MY_SELLER)
+    advert_service.load_adverts_stat(MY_SELLER)
+    advert_service.process_adverts(MY_SELLER)
     logging.info('scheduler.run_process_adverts() - done')
 
 
@@ -163,4 +157,4 @@ def run_all():
     run_remains_updating(MY_SELLER)
     run_remains_snapshot_updating(MY_SELLER)
     run_finances_updating(MY_SELLER)
-    run_adverts_stat_updating(MY_SELLER)
+    run_process_adverts(MY_SELLER)
