@@ -67,8 +67,8 @@ def run_minute_tasks():
     now = datetime.now()
     _run_every_minute_task()
 
-    # if now.minute % 5 == 0:
-        # _run_every_5minutes_task()
+    if now.minute % 5 == 0:
+        _run_every_5minutes_task()
 
 
 def _run_every_minute_task():
