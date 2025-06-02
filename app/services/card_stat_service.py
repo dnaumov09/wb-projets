@@ -1,9 +1,9 @@
 import logging
 from datetime import datetime
 
-from db.model.card_stat import save_card_stat
 from db.model.settings import get_seller_settings, save_settings
 from db.model.card import get_cards
+from clickhouse.model import cards as ch_cards
 
 from admin.model import Seller
 
@@ -26,10 +26,12 @@ def load_cards_stat(seller: Seller):
                 get_API(seller).seller_analytics.load_cards_stat(cards_chunked, settings.cards_stat_last_updated if settings.cards_stat_last_updated else now)
             )
         if data:
-            saved_cards_stat = save_card_stat(data, now, seller)
+            # saved_cards_stat = save_card_stat(data, now, seller)
+            ch_cards.save_cards_stat_hourly(seller, data, now.date(), now.hour - 1)
+            ch_cards.save_cards_stat(seller, data)
             settings.cards_stat_last_updated = now
             save_settings(seller, settings)
-            logging.info(f"[{seller.trade_mark}] Cards stat saved {len(saved_cards_stat)}")
+            logging.info(f"[{seller.trade_mark}] Cards stat saved")
     except BaseAPIException as e:
         logging.error(f"Hidden API {e.method} ({e.url}) error {e.status_code}:\n{e.message}")
                 

@@ -57,7 +57,7 @@ def _schedule_jobs():
     for time_str, func in daily_jobs:
         schedule.every().day.at(time_str).do(func)
 
-    schedule.every().hour.at(":00").do(run_process_adverts)
+    schedule.every().hour.at(":00").do(run_stat_updating)
 
     for seconds in [":00", ":30"]:
         schedule.every().minute.at(seconds).do(run_minute_tasks)
@@ -76,32 +76,24 @@ def _run_every_minute_task():
 
 
 def _run_every_5minutes_task():
-    executor.submit(safe_task, run_stat_updating, MY_SELLER)
+    executor.submit(safe_task, run_orders_and_sales_updating, MY_SELLER)
 
 
 def run_daily_task():
     for seller in get_all_sellers():
+        executor.submit(safe_task, run_orders_and_sales_updating, seller, True)
         executor.submit(safe_task, run_incomes_updating, seller)
         executor.submit(safe_task, run_remains_updating, seller)
         executor.submit(safe_task, run_remains_snapshot_updating, seller)
-        executor.submit(safe_task, run_stat_updating_background, seller)
         executor.submit(safe_task, run_keywords_stat_updating, seller)
 
 
-def run_stat_updating(seller: Seller):
-    logging.info('scheduler.run_stat_updating() - started')
+def run_orders_and_sales_updating(seller: Seller, background: bool = False):
+    logging.info('scheduler.run_orders_and_sales_updating() - started')
     cards_service.load_cards(seller)
-    card_stat_service.load_cards_stat(seller)
-    orders_service.load_orders(seller)
-    sales_service.load_sales(seller)
-    logging.info('scheduler.run_stat_updating() - done')
-
-
-def run_stat_updating_background(seller: Seller):
-    logging.info('scheduler.run_stat_updating_background() - started')
-    orders_service.load_orders(seller, True)
-    sales_service.load_sales(seller, True)
-    logging.info('scheduler.run_stat_updating_background() - done')
+    orders_service.load_orders(seller, background)
+    sales_service.load_sales(seller, background)
+    logging.info('scheduler.run_orders_and_sales_updating() - done')
 
 
 def run_keywords_stat_updating(seller: Seller):
@@ -124,7 +116,7 @@ def run_remains_snapshot_updating(seller: Seller):
 
 
 def run_incomes_updating(seller: Seller):
-    logging.info('scheduler.run_incomes_updating() - started')
+    logging.info('scheduler.update_incomes() - started')
     incomes_services.load_incomes(seller)
     logging.info('scheduler.run_incomes_updating() - done')
 
@@ -141,19 +133,26 @@ def run_topup_adverts():
     logging.info('scheduler.run_topup_adverts() - done')
 
 
-def run_process_adverts():
+def run_stat_updating():
     logging.info('scheduler.run_process_adverts() - started')
     advert_service.load_adverts(MY_SELLER)
     advert_service.load_adverts_stat(MY_SELLER)
+    
+    cards_service.load_cards(MY_SELLER)
+    card_stat_service.load_cards_stat(MY_SELLER)
+    
     advert_service.process_adverts(MY_SELLER)
     logging.info('scheduler.run_process_adverts() - done')
 
 
 def run_all():
+    run_orders_and_sales_updating(MY_SELLER)
+    run_orders_and_sales_updating(MY_SELLER, True)
+
     run_stat_updating(MY_SELLER)
-    run_stat_updating_background(MY_SELLER)
+
     run_incomes_updating(MY_SELLER)
     run_remains_updating(MY_SELLER)
     run_remains_snapshot_updating(MY_SELLER)
+    
     run_finances_updating(MY_SELLER)
-    run_process_adverts(MY_SELLER)

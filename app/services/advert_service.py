@@ -2,7 +2,6 @@ import logging
 from datetime import datetime, timedelta
 
 from db.model.advert import AdvertType, Status, save_adverts, get_adverts_by_seller, Advert, get_active_adverts_by_seller, update_adverts
-from db.model.adverts_stat import save_adverts_stat
 from db.model.settings import get_seller_settings, save_settings
 from db.model.advert_schedule import get_advert_schedule, AdvertSchedule, WeekDay
 
@@ -33,10 +32,9 @@ def load_adverts(seller: Seller):
             receaved_adverts.extend(get_API(seller).adverts.load_adverts_info(advert_ids_chunked))
         
         if receaved_adverts:
-            adverts = save_adverts(seller, receaved_adverts)
+            # adverts = save_adverts(seller, receaved_adverts)
             ch_ad.save_adverts(seller, receaved_adverts)
-            # save_advert_bids(data)
-            logging.info(f"[{seller.trade_mark}] Adverts saved ({len(adverts)})")
+            logging.info(f"[{seller.trade_mark}] Adverts saved")
     except BaseAPIException as e:
         logging.error(f"Hidden API {e.method} ({e.url}) error {e.status_code}:\n{e.message}")
 
@@ -48,12 +46,12 @@ def load_adverts_stat(seller: Seller):
     adverts = get_adverts_by_seller(seller)
     data = get_API(seller).adverts.load_adverts_stat(adverts, settings.adverts_stat_last_updated if settings.adverts_stat_last_updated else now)
     if data:
-        ch_ad.save_advert_stat_hourly(seller, data, now.date(), now.hour - 1) # pапускаем в начале следующего часа, поэтому -1
+        # advert_stat, booster_stat = save_adverts_stat(seller, data)
+        ch_ad.save_advert_stat_hourly(seller, data, now.date(), now.hour - 1) # запускаем в начале следующего часа, поэтому -1
         ch_ad.save_advert_stat(seller, data)
-        advert_stat, booster_stat = save_adverts_stat(seller, data)
         settings.adverts_stat_last_updated = now
         save_settings(seller, settings)
-        logging.info(f"[{seller.trade_mark}] Adverts stat saved (adverts stat: {len(advert_stat)}, booster stat: {len(booster_stat)})")
+        logging.info(f"[{seller.trade_mark}] Adverts stat saved")
 
 
 def load_keywords(seller: Seller):
