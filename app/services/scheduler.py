@@ -76,8 +76,7 @@ def _run_every_minute_task():
 
 
 def _run_every_5minutes_task():
-    for seller in get_all_sellers():
-        executor.submit(safe_task, run_stat_updating, seller)
+    executor.submit(safe_task, run_stat_updating, MY_SELLER)
 
 
 def run_daily_task():
