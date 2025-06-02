@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from typing import Iterable, Dict, Any
 
 from admin.model import Seller
@@ -89,11 +89,7 @@ def save_advert_stat(seller: Seller, stat: list[dict[str, Any]]) -> None:
     )
 
 
-def save_advert_stat_hourly(seller: Seller, stat: list[dict[str, Any]]) -> None:
-    now = datetime.now()
-    date = now.date()
-    hour = now.hour - 1 # pапускаем в начале следующего часа
-    minute = now.minute
+def save_advert_stat_hourly(seller: Seller, stat: list[dict[str, Any]], date: date, hour) -> None:
     client = get_client(seller)
 
     today_stat = client.execute(f"SELECT * FROM adverts_stat WHERE date = '{date.isoformat()}'")
@@ -133,7 +129,7 @@ def save_advert_stat_hourly(seller: Seller, stat: list[dict[str, Any]]) -> None:
         insert_rows.append((
             new_row[0], new_row[1], new_row[2], sum_delta,
             views_delta, clicks_delta, atbs_delta, orders_delta, shks_delta,
-            sum_price_delta, new_row[10], hour if minute > 1 else hour - 1
+            sum_price_delta, new_row[10], hour
         ))
     
     # 3️⃣ Вставляем дельты в ClickHouse

@@ -48,7 +48,7 @@ def load_adverts_stat(seller: Seller):
     adverts = get_adverts_by_seller(seller)
     data = get_API(seller).adverts.load_adverts_stat(adverts, settings.adverts_stat_last_updated if settings.adverts_stat_last_updated else now)
     if data:
-        ch_ad.save_advert_stat_hourly(seller, data)
+        ch_ad.save_advert_stat_hourly(seller, data, now.date(), now.hour - 1) # pапускаем в начале следующего часа, поэтому -1
         ch_ad.save_advert_stat(seller, data)
         advert_stat, booster_stat = save_adverts_stat(seller, data)
         settings.adverts_stat_last_updated = now
