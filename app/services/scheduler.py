@@ -57,22 +57,29 @@ def _schedule_jobs():
     for time_str, func in daily_jobs:
         schedule.every().day.at(time_str).do(func)
 
-    schedule.every().hour.at(":00").do(run_stat_updating)
 
-    for seconds in [":00", ":30"]:
-        schedule.every().minute.at(seconds).do(run_minute_tasks)
+    for seconds in [":00", ":20", ":40"]:
+        schedule.every().minute.at(seconds).do(run_tasks)
 
 
-def run_minute_tasks():
+def run_tasks():
     now = datetime.now()
-    _run_every_minute_task()
 
-    if now.minute % 5 == 0:
-        _run_every_5minutes_task()
+    _run_task()
+
+    if now.second == 0:
+        _run_every_minute_task()
+
+        if now.minute % 5 == 0:
+            _run_every_5minutes_task()
+
+
+def _run_task():
+    executor.submit(safe_task, supplies_service.get_supplies_offices_status, MY_SELLER)
 
 
 def _run_every_minute_task():
-    executor.submit(safe_task, supplies_service.get_supplies_offices_status, MY_SELLER)
+    pass
 
 
 def _run_every_5minutes_task():
