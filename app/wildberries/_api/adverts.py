@@ -20,6 +20,8 @@ class AdvertAPI(BaseAPIClient):
         FULLSTAT = BaseAPIEndpoints.url.__func__(_BASE_URL, "v2", "fullstats")
         AUTO_STAT_WORDS = BaseAPIEndpoints.url.__func__(_BASE_URL, "v2", "auto/stat-words")
         STAT_KEYWORDS = BaseAPIEndpoints.url.__func__(_BASE_URL, "v0", "stats/keywords")
+
+        RENAME = BaseAPIEndpoints.url.__func__(_BASE_URL, "v0", "rename")
         BIDS = BaseAPIEndpoints.url.__func__(_BASE_URL, "v0", "bids")
 
         BALANCE = BaseAPIEndpoints.url.__func__(_BASE_URL, "v1", "balance")
@@ -144,3 +146,12 @@ class AdvertAPI(BaseAPIClient):
             "return": True
         }
         return self.request('POST',AdvertAPI.Endpoints.TOPUP, params=params, json_payload=payload)
+    
+
+    @rate_limited(calls=5, period=1)
+    def rename_advert(self, advert: Advert, name: str):
+        payload = {
+            "advertId": advert.advert_id,
+            "name": name
+        }
+        return self.request('POST',AdvertAPI.Endpoints.RENAME, json_payload=payload)

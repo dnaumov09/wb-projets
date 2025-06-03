@@ -1,4 +1,5 @@
 import logging
+import re
 from datetime import datetime, timedelta
 
 from db.model.advert import AdvertType, Status, save_adverts, get_adverts_by_seller, Advert, get_active_adverts_by_seller, update_adverts
@@ -149,9 +150,11 @@ def topup_adverts(seller: Seller):
         if not _check_budget(today_schedule):
             continue
 
-        toup_amount = max(today_schedule.max_daily_budget, MIN_TOPUP_AMOUNT)
-        balance_from = _get_balance_from(balance, toup_amount)
-        api.adverts.topup_advert(advert, toup_amount, balance_from)
+        topup_amount = max(today_schedule.max_daily_budget, MIN_TOPUP_AMOUNT)
+        balance_from = _get_balance_from(balance, topup_amount)
+        api.adverts.topup_advert(advert, topup_amount, balance_from)
+        advert_name = _make_campaign_name(advert.name, topup_amount)
+        api.adverts.rename_advert(advert, advert_name)
 
 
 def process_adverts(seller: Seller):
@@ -210,3 +213,22 @@ def _get_balance_from(balance, topup_amount):
         2 if balance.get('bonuses', 0) >= topup_amount else # бонусы
         None
     )
+
+
+BRACKETS_PATTERN = r"\(.*?\)"  # вынесли regex в константу
+
+def _format_suffix(topup_amount: int) -> str:
+    """Формирует суффикс вроде 1к / день или 3.5к / день."""
+    suffix_value = topup_amount / 1000
+    if suffix_value.is_integer():
+        return f"{int(suffix_value)}к / день"
+    return f"{suffix_value:.1f}к / день"
+
+
+def _make_campaign_name(advert_name: str, topup_amount: int) -> str:
+    suffix = _format_suffix(topup_amount)
+    advert_name = advert_name.strip()
+
+    if "(" in advert_name and ")" in advert_name:
+        return re.sub(BRACKETS_PATTERN, f"({suffix})", advert_name)
+    return f"{advert_name} ({suffix})"
