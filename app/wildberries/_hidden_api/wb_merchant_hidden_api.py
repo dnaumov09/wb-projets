@@ -63,7 +63,7 @@ class WBHiddenAPI:
         self._s.cookies.update({
                 "x-supplier-id-external": cfg.supplier_id,
                 "wbx-validation-key": cfg.validation_key,
-                "WBTokenV3": cfg.wb_token,
+                # "WBTokenV3": cfg.wb_token,
             })
 
     def _post(self, url: str, payload: Dict[str, Any]) -> Dict[str, Any]:

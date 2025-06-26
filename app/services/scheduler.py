@@ -58,6 +58,9 @@ def _schedule_jobs():
         schedule.every().day.at(time_str).do(func)
 
 
+    schedule.every().hour.at(":00").do(run_stat_updating)
+
+
     for seconds in [":00", ":20", ":40"]:
         schedule.every().minute.at(seconds).do(run_tasks)
 
@@ -156,7 +159,7 @@ def run_all():
     run_orders_and_sales_updating(MY_SELLER)
     run_orders_and_sales_updating(MY_SELLER, True)
 
-    run_stat_updating(MY_SELLER)
+    run_stat_updating()
 
     run_incomes_updating(MY_SELLER)
     run_remains_updating(MY_SELLER)

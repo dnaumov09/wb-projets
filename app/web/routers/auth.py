@@ -35,34 +35,34 @@ async def get_current_user(request: Request):
     return user
 
 
-@router.get("/login")
-async def login_form(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request, "error": None})
+# @router.get("/login")
+# async def login_form(request: Request):
+#     return templates.TemplateResponse("login.html", {"request": request, "error": None})
 
 
-@router.post("/logout")
-async def logout():
-    response = RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
-    response.delete_cookie(key="access_token")
-    return response
+# @router.post("/logout")
+# async def logout():
+#     response = RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
+#     response.delete_cookie(key="access_token")
+#     return response
 
 
-@router.post("/login")
-async def login_for_access_token(
-    request: Request,
-    email: str = Form(...),
-    password: str = Form(...),
-):
-    user = crud.get_user(email)
-    if not user or not auth.verify_password(password, user.password):
-        return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid email or password"})
+# @router.post("/login")
+# async def login_for_access_token(
+#     request: Request,
+#     email: str = Form(...),
+#     password: str = Form(...),
+# ):
+#     user = crud.get_user(email)
+#     if not user or not auth.verify_password(password, user.password):
+#         return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid email or password"})
     
-    access_token = auth.create_access_token(data={"sub": user.email})
-    response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
-    response.set_cookie(key="access_token", value=f"Bearer {access_token}", httponly=True)
-    return response
+#     access_token = auth.create_access_token(data={"sub": user.email})
+#     response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+#     response.set_cookie(key="access_token", value=f"Bearer {access_token}", httponly=True)
+#     return response
 
 
-@router.get("/profile")
-async def read_users_me(request: Request, current_user: model.User = Depends(get_current_user)):
-    return templates.TemplateResponse("profile.html", {"request": request, "user": current_user})
+# @router.get("/profile")
+# async def read_users_me(request: Request, current_user: model.User = Depends(get_current_user)):
+#     return templates.TemplateResponse("profile.html", {"request": request, "user": current_user})
