@@ -141,7 +141,7 @@ def topup_adverts(seller: Seller):
     now = datetime.now()
     weekday = WeekDay(now.isoweekday() + 1) # так как запускается в scheduler в 23:55 прошедшего дня, то пополняем на след. день
     api = get_API(seller)
-    adverts = _get_active_adverts(seller)
+    adverts = get_active_adverts_by_seller(seller)
     balance = api.adverts.get_balance()
     
     for advert in adverts:
@@ -161,7 +161,7 @@ def process_adverts(seller: Seller):
     now = datetime.now()
     weekday = WeekDay(now.isoweekday())
     api = get_API(seller)
-    adverts = _get_active_adverts(seller)
+    adverts = get_active_adverts_by_seller(seller)
 
     for advert in adverts:
         today_schedule = get_advert_schedule(seller, advert.advert_id, weekday)
@@ -180,12 +180,6 @@ def process_adverts(seller: Seller):
                 api.adverts.start_advert(advert)
                 advert.status = Status.ONGOING
     update_adverts(seller, adverts)
-
-
-# обновляем кампании и получаем только активные 
-def _get_active_adverts(seller: Seller) -> list[Advert]:
-    load_adverts(seller)
-    return get_active_adverts_by_seller(seller)
 
 
 # проверяем расписание
