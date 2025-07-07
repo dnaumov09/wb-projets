@@ -35,6 +35,7 @@ def set_orher_loggers_level(level, handler):
         level = logging.WARNING    
     logging.getLogger('httpx').setLevel(level)
     logging.getLogger('telegram').setLevel(level)
+    logging.getLogger("apscheduler.scheduler").setLevel(level)
 
 
 def init_logging(level: int = logging.INFO):

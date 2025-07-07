@@ -1,11 +1,10 @@
 import logging
-import schedule
+import signal
 import time
-from threading import Thread
-from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.interval import IntervalTrigger
 
-from bot import notification_service
 from services import (
     remains_service,
     card_stat_service,
@@ -15,154 +14,126 @@ from services import (
     advert_service,
     finance_service,
     incomes_services,
-    supplies_service
+    supplies_service,
 )
 
 from admin.model import Seller
-from admin.services import get_all_sellers, get_my_seller
-
-MY_SELLER = get_my_seller()
-executor = ThreadPoolExecutor(max_workers=10)
+from admin.services import get_my_seller
 
 
-def safe_task(func, *args, **kwargs):
+MY_SELLER: Seller = get_my_seller()
+scheduler = BackgroundScheduler()
+
+
+# ------------ БЕЗОПАСНЫЙ ВЫЗОВ ------------
+
+def _timed_safe_task(func, *args, **kwargs):
+    # start = time.time()
     try:
         func(*args, **kwargs)
     except Exception as e:
-        logging.error(f"Error in {func.__name__}: {e}")
+        logging.exception(f"[{func.__name__}] error: {e}", exc_info=e)
+    # finally:
+    #     duration = time.time() - start
+    #     logging.info(f"[{func.__name__}] finished in {duration:.2f}s")
 
 
-def _run_schedule():
-    while True:
-        schedule.run_pending()
-        next_run = schedule.idle_seconds()
-        if next_run is None:
-            time.sleep(60)
-        else:
-            time.sleep(min(next_run, 60))
-
-
-def start_scheduler():
-    scheduler_thread = Thread(target=_run_schedule, daemon=True)
-    scheduler_thread.start()
-    _schedule_jobs()
-
-
-def _schedule_jobs():
-    daily_jobs = [
-        ("03:00", run_daily_task),
-        ("23:55", run_topup_adverts), # пополняем в конце дня на след день (в методе сразу добавлен 1 день)
-    ]
-
-    for time_str, func in daily_jobs:
-        schedule.every().day.at(time_str).do(func)
-
-
-    schedule.every().hour.at(":00").do(run_stat_updating)
-
-
-    for seconds in [":00", ":20", ":40"]:
-        schedule.every().minute.at(seconds).do(run_tasks)
-
-
-def run_tasks():
-    now = datetime.now()
-
-    _run_task()
-
-    if now.second == 0:
-        _run_every_minute_task()
-
-        if now.minute % 5 == 0:
-            _run_every_5minutes_task()
-
-
-def _run_task():
-    executor.submit(safe_task, supplies_service.get_supplies_offices_status, MY_SELLER)
-
-
-def _run_every_minute_task():
-    pass
-
-
-def _run_every_5minutes_task():
-    executor.submit(safe_task, run_orders_and_sales_updating, MY_SELLER)
-
-
-def run_daily_task():
-    for seller in get_all_sellers():
-        executor.submit(safe_task, run_orders_and_sales_updating, seller, True)
-        executor.submit(safe_task, run_incomes_updating, seller)
-        executor.submit(safe_task, run_remains_updating, seller)
-        executor.submit(safe_task, run_remains_snapshot_updating, seller)
-        executor.submit(safe_task, run_keywords_stat_updating, seller)
-
+# ------------ ОСНОВНЫЕ ЗАДАЧИ ------------
 
 def run_orders_and_sales_updating(seller: Seller, background: bool = False):
-    logging.info('scheduler.run_orders_and_sales_updating() - started')
+    logging.info('run_orders_and_sales_updating - started')
     cards_service.load_cards(seller)
     orders_service.load_orders(seller, background)
     sales_service.load_sales(seller, background)
-    logging.info('scheduler.run_orders_and_sales_updating() - done')
-
+    logging.info('run_orders_and_sales_updating - done')
 
 def run_keywords_stat_updating(seller: Seller):
-    logging.info('scheduler.run_keywords_stat_updating() - started')
+    logging.info('run_keywords_stat_updating - started')
     advert_service.load_keywords(seller)
     advert_service.load_keywords_stat(seller)
-    logging.info('scheduler.run_keywords_stat_updating() - done')
-
+    logging.info('run_keywords_stat_updating - done')
 
 def run_remains_updating(seller: Seller):
-    logging.info('scheduler.run_remains_updating() - started')
+    logging.info('run_remains_updating - started')
     remains_service.load_remains(seller)
-    logging.info('scheduler.run_remains_updating() - done')
-
+    logging.info('run_remains_updating - done')
 
 def run_remains_snapshot_updating(seller: Seller):
-    logging.info('scheduler.run_remains_snapshot_updating() - started')
+    logging.info('run_remains_snapshot_updating - started')
     remains_service.create_remains_snapshot(seller)
-    logging.info('scheduler.run_remains_snapshot_updating() - done')
-
+    logging.info('run_remains_snapshot_updating - done')
 
 def run_incomes_updating(seller: Seller):
-    logging.info('scheduler.update_incomes() - started')
+    logging.info('run_incomes_updating - started')
     incomes_services.load_incomes(seller)
-    logging.info('scheduler.run_incomes_updating() - done')
-
+    logging.info('run_incomes_updating - done')
 
 def run_finances_updating(seller: Seller):
-    logging.info('scheduler.run_finances_updating() - started')
+    logging.info('run_finances_updating - started')
     finance_service.load_finances(seller)
-    logging.info('scheduler.run_finances_updating() - done')
-
+    logging.info('run_finances_updating - done')
 
 def run_topup_adverts():
-    logging.info('scheduler.run_topup_adverts() - started')
+    logging.info('run_topup_adverts - started')
     advert_service.topup_adverts(MY_SELLER)
-    logging.info('scheduler.run_topup_adverts() - done')
-
+    logging.info('run_topup_adverts - done')
 
 def run_stat_updating():
-    logging.info('scheduler.run_process_adverts() - started')
+    logging.info('run_stat_updating - started')
     advert_service.load_adverts(MY_SELLER)
     advert_service.load_adverts_stat(MY_SELLER)
-    
     cards_service.load_cards(MY_SELLER)
     card_stat_service.load_cards_stat(MY_SELLER)
-    
     advert_service.process_adverts(MY_SELLER)
-    logging.info('scheduler.run_process_adverts() - done')
+    logging.info('run_stat_updating - done')
 
 
-def run_all():
+def run_daily_tasks():
     run_orders_and_sales_updating(MY_SELLER)
-    run_orders_and_sales_updating(MY_SELLER, True)
-
-    run_stat_updating()
-
     run_incomes_updating(MY_SELLER)
     run_remains_updating(MY_SELLER)
     run_remains_snapshot_updating(MY_SELLER)
-    
-    run_finances_updating(MY_SELLER)
+    run_keywords_stat_updating(MY_SELLER)
+
+
+def run_supplies_offices_status_updating(seller: Seller):
+    supplies_service.get_supplies_offices_status(seller)
+
+
+# ------------ КОНФИГУРАЦИЯ ------------
+
+SCHEDULE_CONFIG = [
+    {"func": run_daily_tasks, "trigger": CronTrigger(hour=3, minute=0)},
+    {"func": run_topup_adverts, "trigger": CronTrigger(hour=23, minute=55)},
+    {"func": run_stat_updating, "trigger": CronTrigger(minute=0)},
+    {"func": lambda: run_supplies_offices_status_updating(MY_SELLER), "trigger": IntervalTrigger(seconds=20)},
+    {"func": lambda: run_orders_and_sales_updating(MY_SELLER), "trigger": IntervalTrigger(minutes=5)},
+]
+
+
+# ------------ ОБЁРТКА И ЗАПУСК ------------
+
+def wrap_job(func):
+    return lambda: _timed_safe_task(func)
+
+def run_scheduler():
+    for config in SCHEDULE_CONFIG:
+        scheduler.add_job(
+            func=wrap_job(config["func"]),
+            trigger=config["trigger"],
+            max_instances=1,
+            misfire_grace_time=60
+        )
+
+    scheduler.start()
+    logging.info("Scheduler started")
+
+    def shutdown(signum, frame):
+        logging.info(f"Received signal {signum}, shutting down scheduler...")
+        scheduler.shutdown(wait=False)
+        logging.info("Scheduler shut down complete.")
+
+    signal.signal(signal.SIGINT, shutdown)
+    signal.signal(signal.SIGTERM, shutdown)
+
+    return scheduler

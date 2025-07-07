@@ -1,28 +1,27 @@
 import os
 import asyncio
-
-from aiogram import Bot, Dispatcher, flags
-from aiogram.filters import CommandStart
-from aiogram.client.default import DefaultBotProperties
+from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
+from aiogram.filters import CommandStart
 from aiogram.types import Message
+from aiogram.client.default import DefaultBotProperties
 
-# from ...old.feedbacks_handler import router as feedbacks_router
 from bot.stat_handler import router as stat_router
 from bot.security_handler import AuthorizationMiddleware
 
-bot = Bot(token=os.getenv('TG_BOT_TOKEN'), default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+# Инициализация бота
+bot = Bot(
+    token=os.getenv('TG_BOT_TOKEN'),
+    default=DefaultBotProperties(parse_mode=ParseMode.HTML)
+)
 dp = Dispatcher()
 
-# dp.include_router(feedbacks_router) 
+# Роутеры и middleware
 dp.include_router(stat_router)
 dp.message.middleware(AuthorizationMiddleware())
 
-loop = asyncio.new_event_loop()
-asyncio.set_event_loop(loop)
-
-
-START_TEXT = ( 
+# Стартовое сообщение
+START_TEXT = (
     'Hi!'
     # '📊 <b>Привет! Добро пожаловать в бота статистики Wildberries!</b>'
     # '\n\n'
@@ -38,15 +37,19 @@ START_TEXT = (
 )
 
 
-def start_bot():
-    loop.create_task(dp.start_polling(bot))
-    loop.run_forever()
-
-
-def send_message(chat_id: int, text: str, disable_notifications: bool = False, reply_markup = None):
-    asyncio.run_coroutine_threadsafe(bot.send_message(chat_id=chat_id, text=text, disable_notification=disable_notifications, reply_markup=reply_markup), loop)
-
-
 @dp.message(CommandStart())
 async def cmd_start(message: Message):
     await message.answer(START_TEXT)
+
+
+async def create_bot_task():
+    await dp.start_polling(bot)
+
+
+# Вспомогательная функция для отправки сообщений извне
+def send_message(chat_id: int, text: str, disable_notifications: bool = False, reply_markup=None):
+    loop = asyncio.get_event_loop()
+    asyncio.run_coroutine_threadsafe(
+        bot.send_message(chat_id=chat_id, text=text, disable_notification=disable_notifications, reply_markup=reply_markup),
+        loop
+    )

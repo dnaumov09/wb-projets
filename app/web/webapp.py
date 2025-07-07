@@ -1,5 +1,6 @@
 import uvicorn
 import threading
+import asyncio
 from fastapi import FastAPI, Request, Depends
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -24,7 +25,8 @@ app.include_router(data.router)
 app.mount("/static", StaticFiles(directory="app/web/templates/static"), name="static")
 templates = Jinja2Templates(directory='app/web/templates')
 
-def run_server():
+
+def create_server_task():
     config = uvicorn.Config(
         app=app,
         host="0.0.0.0",
@@ -32,12 +34,7 @@ def run_server():
         # log_config=get_uvicorn_log_config()
     )
     server = uvicorn.Server(config)
-    server.run()
-
-
-def start():
-    server_thread = threading.Thread(target=run_server, daemon=True)
-    server_thread.start()
+    return asyncio.create_task(server.serve())
 
 
 @app.get("/")

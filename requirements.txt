@@ -7,7 +7,9 @@ python-dotenv
 aiogram
 sqlalchemy
 psycopg2-binary
-schedule
+# schedule
+# aioschedule
+apscheduler
 ratelimit
 pytz
 alembic
