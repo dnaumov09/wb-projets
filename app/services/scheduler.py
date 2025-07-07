@@ -103,6 +103,9 @@ def run_supplies_offices_status_updating(seller: Seller):
 # ------------ КОНФИГУРАЦИЯ ------------
 
 SCHEDULE_CONFIG = [
+    # weekly tasks
+    {"func": lambda: run_finances_updating(MY_SELLER), "trigger": CronTrigger(day_of_week="mon", hour=12, minute=0)},
+
     # daily tasks
     {"func": run_daily_tasks, "trigger": CronTrigger(hour=3, minute=0)},
     {"func": run_topup_adverts, "trigger": CronTrigger(hour=23, minute=55)},
