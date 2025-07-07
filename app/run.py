@@ -1,11 +1,12 @@
 from dotenv import load_dotenv
 load_dotenv()
 
-import asyncio
 import logging
+import utils.logging_settings as logging_settings
+
+import asyncio
 import traceback
 
-import utils.logging_settings as logging_settings
 from services import scheduler
 from bot import bot
 from web import webapp
@@ -15,7 +16,6 @@ async def restartable_task(name: str, create_task_fn):
     """Запускает задачу с бесконечным перезапуском при падении."""
     while True:
         try:
-            logging.info(f"[{name}] starting...")
             await create_task_fn()
         except Exception:
             logging.exception(f"[{name}] crashed with exception:\n{traceback.format_exc()}")

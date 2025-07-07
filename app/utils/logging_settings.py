@@ -29,13 +29,13 @@ class Formatter(logging.Formatter):
 formatter = Formatter(fmt=MESSAGE_FORMAT,datefmt='%d-%m-%Y %H:%M:%S')
 
 
-def set_orher_loggers_level(level, handler):
+def set_orher_loggers_level(level):
     # for not main loggers
     if level < logging.WARNING:
         level = logging.WARNING    
     logging.getLogger('httpx').setLevel(level)
     logging.getLogger('telegram').setLevel(level)
-    logging.getLogger("apscheduler.scheduler").setLevel(level)
+    logging.getLogger("apscheduler").setLevel(level)
 
 
 def init_logging(level: int = logging.INFO):
@@ -47,7 +47,7 @@ def init_logging(level: int = logging.INFO):
     logger.addHandler(handler)
     logger.setLevel(level)
 
-    set_orher_loggers_level(level, handler)
+    set_orher_loggers_level(level)
 
 
 def get_uvicorn_log_config():

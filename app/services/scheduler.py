@@ -103,11 +103,17 @@ def run_supplies_offices_status_updating(seller: Seller):
 # ------------ КОНФИГУРАЦИЯ ------------
 
 SCHEDULE_CONFIG = [
+    # daily tasks
     {"func": run_daily_tasks, "trigger": CronTrigger(hour=3, minute=0)},
     {"func": run_topup_adverts, "trigger": CronTrigger(hour=23, minute=55)},
     {"func": run_stat_updating, "trigger": CronTrigger(minute=0)},
-    {"func": lambda: run_supplies_offices_status_updating(MY_SELLER), "trigger": IntervalTrigger(seconds=20)},
-    {"func": lambda: run_orders_and_sales_updating(MY_SELLER), "trigger": IntervalTrigger(minutes=5)},
+
+    # every 5 minutes
+    {"func": lambda: run_orders_and_sales_updating(MY_SELLER), "trigger": CronTrigger(minute="*/5")},
+
+    # every 30 seconds
+    # {"func": lambda: run_supplies_offices_status_updating(MY_SELLER), "trigger": IntervalTrigger(seconds=30)},
+    {"func": lambda: run_supplies_offices_status_updating(MY_SELLER), "trigger": CronTrigger(second="*/30")}
 ]
 
 
