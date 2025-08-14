@@ -20,13 +20,28 @@ def load_finances(seller: Seller):
             last_sunday = get_last_sunday_235959999999()
             data = get_API(seller).statistics.load_financial_report(last_monday, last_sunday)
             if not data:
-                pass
+                logging.info(f"[{seller.trade_mark}] No financial data to process")
+                return
+            
+            logging.info(f"[{seller.trade_mark}] Processing {len(data)} financial records")
             
             realizations = []
-            for chunk in chunked(data, 10000):
-                r = save_realizations(chunk, seller)
-                realizations.append(r[0])
-                realizations.append(r[1])
+            total_chunks = (len(data) + 999) // 1000  # Было 10000, стало 1000
+            chunk_count = 0
+            
+            # Уменьшаем размер чанка для избежания слишком больших SQL запросов
+            for chunk in chunked(data, 1000):  # Было 10000, стало 1000
+                chunk_count += 1
+                logging.info(f"[{seller.trade_mark}] Processing chunk {chunk_count}/{total_chunks} ({len(chunk)} records)")
+                
+                try:
+                    r = save_realizations(chunk, seller)
+                    realizations.append(r[0])
+                    realizations.append(r[1])
+                    logging.info(f"[{seller.trade_mark}] Chunk {chunk_count} processed successfully")
+                except Exception as e:
+                    logging.error(f"[{seller.trade_mark}] Error processing chunk {chunk_count}: {e}")
+                    raise
                 
 
             settings.finances_last_updated = datetime.now()

@@ -1,4 +1,6 @@
 from .model import Seller, SellerUser, SellerDatabase, DatabaseUser, session
+from sqlalchemy.orm import selectinload
+
 
 BLOOMSTORM_SID = 'cd079a55-56e9-454f-bb41-cdb030894913'
 
@@ -8,7 +10,15 @@ def get_all_sellers() -> list[Seller]:
 
 
 def get_my_seller() -> Seller:
-    return session.query(Seller).filter(Seller.sid == BLOOMSTORM_SID).first()
+    return (
+        session.query(Seller)
+        .options(
+            selectinload(Seller.databases),
+            selectinload(Seller.db_users),
+        )
+        .filter(Seller.sid == BLOOMSTORM_SID)
+        .first()
+    )
 
 
 def get_users_by_seller(seller_sid: str) -> list[SellerUser]:

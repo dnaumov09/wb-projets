@@ -100,6 +100,11 @@ def run_supplies_offices_status_updating(seller: Seller):
     supplies_service.get_supplies_offices_status(seller)
 
 
+def run_weekly():
+    run_daily_tasks()
+    run_finances_updating(MY_SELLER)
+
+
 # ------------ КОНФИГУРАЦИЯ ------------
 
 SCHEDULE_CONFIG = [

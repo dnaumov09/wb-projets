@@ -27,12 +27,12 @@ async def restartable_task(name: str, create_task_fn):
 
 
 async def main():
-    scheduler.run_scheduler()
+    scheduler.run_weekly()
+    # scheduler.run_scheduler()
 
-    bot_wrapper = restartable_task("bot", bot.create_bot_task)
-    webapp_wrapper = restartable_task("webapp", webapp.create_server_task)
-
-    await asyncio.gather(bot_wrapper, webapp_wrapper)
+    # bot_wrapper = restartable_task("bot", bot.create_bot_task)
+    # webapp_wrapper = restartable_task("webapp", webapp.create_server_task)
+    # await asyncio.gather(bot_wrapper, webapp_wrapper)
 
 
 if __name__ == "__main__":

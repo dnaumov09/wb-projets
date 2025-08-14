@@ -47,9 +47,11 @@ async def create_bot_task():
 
 
 # Вспомогательная функция для отправки сообщений извне
-def send_message(chat_id: int, text: str, disable_notifications: bool = False, reply_markup=None):
-    loop = asyncio.get_event_loop()
-    asyncio.run_coroutine_threadsafe(
-        bot.send_message(chat_id=chat_id, text=text, disable_notification=disable_notifications, reply_markup=reply_markup),
-        loop
-    )
+async def send_message(chat_id: int, text: str, disable_notifications: bool = False, reply_markup=None):
+    asyncio.sleep(5)
+    await bot.send_message(chat_id=chat_id, text=text, disable_notification=disable_notifications, reply_markup=reply_markup)
+    # loop = asyncio.get_event_loop()
+    # asyncio.run_coroutine_threadsafe(
+        # ,
+        # loop
+    # )
